@@ -25,6 +25,7 @@ public class Client {
 	public void run() throws IOException {
 		DatagramPacket packet;
 		running = true;
+		Log.out("Starting CLient");
 		while(true) {
 			ArrayList<String> userData = getRequestData();
 			if (userData.get(1) == "R") {
@@ -105,9 +106,10 @@ public class Client {
 	public static void main(String[] args) throws SocketException, IOException {
 		Log.enable(false);
 		if (args.length > 0) {
-			int index;
-			for (index = 0; index < args.length; ++index) {
-	            if(args[index] == "v" || args[index] == "V") {
+			System.out.println(args[0]);
+			int i;
+			for (i = 0; i < args.length; i++) {
+	            if(args[i].equals("v") || args[i].equals("V")) {
 	            	Log.enable(true);
 	            }
 	        }
