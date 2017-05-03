@@ -123,7 +123,6 @@ public class Client {
 		String file = getUserInput("Filename: ");
 		data.add(rorW);
 		data.add(file);
-		reader.close();
 		return data;
 	}
 	
