@@ -32,25 +32,43 @@ public class Client {
 	}
 	
 	public void run() throws IOException {
+		InetSocketAddress address;
 		DatagramPacket packet;
 		running = true;
 		Log.out("Starting Client");
+		if (testMode) {
+			address = addrHost;
+		} else {
+			address = addrServer;
+		}
 		while(true) {
 			ArrayList<String> userData = getRequestData();
 			if (userData.get(0).equals("R")) {
-				packet = makePacket(Var.READ, userData.get(1).getBytes(), Var.ZERO,MODE.getBytes(), Var.ZERO);
+				packet = makePacket(address,Var.READ, userData.get(1).getBytes(), Var.ZERO,MODE.getBytes(), Var.ZERO);
 				Log.packet("Client Sending READ", packet);
 			} else {
-				packet = makePacket(Var.WRITE, userData.get(1).getBytes(), Var.ZERO,MODE.getBytes(), Var.ZERO);
+				packet = makePacket(address, Var.WRITE, userData.get(1).getBytes(), Var.ZERO,MODE.getBytes(), Var.ZERO);
 				Log.packet("Client Sending WRITE", packet);
 			}
 			socket.send(packet);
 			
 			socket.receive(packet);
+			if (userData.get(0).equals("R")) {
+				readMode(packet);
+			} else {
+				writeMode(packet);
+			}
 			Log.packet("Client Receive", packet);
 		}
 	}
 	
+	private void readMode(DatagramPacket packet) {
+		int serverPort = packet.getPort();
+	}
+	
+	private void writeMode (DatagramPacket packet) {
+		int serverPort = packet.getPort();
+	}
 	/**
 	 * Prompts and collects the data from the user of filename and read or write
 	 * @return ArrayList where first element is if its read or write and second element is filename
@@ -81,7 +99,7 @@ public class Client {
 		return s;
 	}
 	
-	private DatagramPacket makePacket(byte[]... bytes) {
+	private DatagramPacket makePacket(InetSocketAddress sendAddr, byte[]... bytes) {
 		// Get the required length of the byte array.
 		int length = 0;
 		for (byte[] b : bytes) {
@@ -103,10 +121,7 @@ public class Client {
 		}
 		
 		// Create a packet from the buffer (using the host address) and return it.
-		if (testMode) {
-			return new DatagramPacket(buffer, buffer.length, addrServer);
-		}
-		return new DatagramPacket(buffer, buffer.length, addrHost);
+		return new DatagramPacket(buffer, buffer.length, sendAddr);
 	}
 	
 	public void close() {
