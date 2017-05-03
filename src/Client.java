@@ -103,6 +103,15 @@ public class Client {
 	}
 
 	public static void main(String[] args) throws SocketException, IOException {
+		Log.enable(false);
+		if (args.length > 0) {
+			int index;
+			for (index = 0; index < args.length; ++index) {
+	            if(args[index] == "v" || args[index] == "V") {
+	            	Log.enable(true);
+	            }
+	        }
+		}
 		new Client().run();
 	}
 
