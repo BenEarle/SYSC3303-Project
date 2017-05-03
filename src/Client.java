@@ -47,15 +47,24 @@ public class Client {
 		socket.send(packet);
 	}
 	
+	/**
+	 * Prompts and collects the data from the user of filename and read or write
+	 * @return ArrayList where first element is if its read or write and second element is filename
+	 */
 	private ArrayList<String> getRequestData() {
 		ArrayList<String> data = new ArrayList<String>();
-		String rorW = getUserInput("Read or Write: ");
+		String rorW = getUserInput("Read or Write ('R' or 'W': ");
 		String file = getUserInput("Filename?: ");
 		data.add(rorW);
 		data.add(file);
 		return data;
 	}
 	
+	/**
+	 * Prompts the user for input with the given prompt
+	 * @param prompt string to display to the user
+	 * @return the input from the user
+	 */
 	private String getUserInput(String prompt) {
 		Scanner reader = new Scanner(System.in);  // Reading from System.in
 		String s = reader.next();
