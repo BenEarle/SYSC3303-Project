@@ -27,6 +27,7 @@ public class WriteThread extends ClientResponseThread {
 
 	public void run() {
 		int index = 0;
+		DatagramPacket packet;
 		byte[] data;
 		// Send initial Acknowledge
 		byte[] ack = Var.ACK_WRITE;
@@ -41,7 +42,8 @@ public class WriteThread extends ClientResponseThread {
 		}
 		// Loop
 		do {
-			data = super.receivePacket();
+			packet = super.receivePacket();
+			data = packet.getData();
 			if (data[0] != 0 || data[1] != 3)
 				throw new IllegalArgumentException();
 
@@ -54,11 +56,11 @@ public class WriteThread extends ClientResponseThread {
 				throw new IllegalArgumentException();
 
 			// Make an array with the bytes to write
-			bytesToWrite = new byte[Var.BLOCK_SIZE];
-			for (int i = 3; i < data.length; i++) {
+			bytesToWrite = new byte[packet.getLength() - 4];
+			for (int i = 4; i < packet.getLength(); i++) {
 				if (data[i] == 0)
 					break;
-				bytesToWrite[i - 3] = data[i];
+				bytesToWrite[i - 4] = data[i];
 			}
 			
 			//write the block to the file
@@ -71,12 +73,13 @@ public class WriteThread extends ClientResponseThread {
 			//Send the acknowledge
 			super.sendPacket(ack);
 		} while (bytesToWrite.length == Var.BLOCK_SIZE);
-		super.close();
+		
 		try {
 			fw.close();
 		} catch (IOException e) {
 			Log.err(e.getStackTrace().toString());
 		}
+		super.close();
 	}
 
 	

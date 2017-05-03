@@ -76,15 +76,14 @@ public abstract class ClientResponseThread extends Thread {
 		}
 	}
 
-	protected byte[] receivePacket(){
-		byte[] data = new byte[Var.BUF_SIZE];
-		DatagramPacket rPacket = new DatagramPacket(data, data.length);
+	protected DatagramPacket receivePacket(){
+		DatagramPacket rPacket = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
 		try {
 			socket.receive(rPacket);
 		} catch (IOException e) {
 			Log.err(e.getStackTrace().toString());
 		}
-		return data;
+		return rPacket;
 	}
 
 	protected void close(){
