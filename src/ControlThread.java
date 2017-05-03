@@ -9,8 +9,10 @@ import util.Var;
 public class ControlThread extends Thread {
 	private DatagramSocket socRecv;
 	private boolean running;
-
-	public ControlThread() {
+	private boolean verbose;
+	
+	public ControlThread(boolean verbose) {
+		this.verbose = verbose;
 		try {
 			socRecv = new DatagramSocket(Var.PORT_SERVER);
 		} catch (SocketException e) {
@@ -23,6 +25,7 @@ public class ControlThread extends Thread {
 		running = true;
 
 		while (running) {
+			if(verbose) System.out.println("SERVER<ControlThread>: Waiting to receive a packet...");
 			// Wait to get a packet.
 			DatagramPacket packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
 			try {
@@ -67,6 +70,7 @@ public class ControlThread extends Thread {
 	}
 	
 	public void close() {
+		if(verbose) System.out.println("SERVER<ControlThread>: closed control thread.");
 		if (running) {
 			running = false;
 			socRecv.close();

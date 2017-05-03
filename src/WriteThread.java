@@ -10,6 +10,7 @@ public class WriteThread extends ClientResponseThread {
 	public WriteThread(DatagramPacket initialPacket) {
 		super(initialPacket);
 	}
+	
 	// send ACK packet 0400
 	//
 	// make a file writer (filename)

@@ -1,31 +1,36 @@
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.SocketException;
-
-import util.Log;
-import util.Var;
+import java.util.Scanner;
 
 public class Server {
-	
-	public static void main(String[] args) throws SocketException {
-		ControlThread ct = new ControlThread();
+
+	@SuppressWarnings({ "deprecation", "resource" })
+	public static void main(String[] args) {
+		boolean verbose = true;
+		
+		System.out.println("SERVER<main>: starting up control thread...");
+		ControlThread ct = new ControlThread(verbose);
 		ct.start();
+		Scanner sc = new Scanner(System.in);
+		
 		boolean quit = false;
 		//Loop until the user types in Quit
 		while(!quit){
+			System.out.print("SERVER<main>: ");
 			//get user input
 			//if user said quit quit = true
-			if (args.length > 0) {
-				int i;
-				for (i = 0; i < args.length; i++) {
-					if(args[i].equals("q") & args[i+1].equals("u") & args[i+1].equals("i") & args[i+1].equals("t")) {
-						quit = true;
-					}
-				}
+			String input = sc.next();
+			if (input.equals("quit")) {
+				quit = true;
+			} else if(input.equals("verbose")){
+				verbose = !verbose;
+			} else {
+				System.out.println("SERVER<main>: Type in 'help' for a list of commands...");
 			}
-			if (quit) ct.close();
 		}
+		if(quit){
+			System.out.println("SERVER<main>: closing the control thread...");
+			ct.close();
+			ct.stop();
+		}
+		
 	}
-
 }
