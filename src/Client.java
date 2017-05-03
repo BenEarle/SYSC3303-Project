@@ -18,18 +18,18 @@ public class Client {
 	private InetSocketAddress addrHost, addrServer;
 	private boolean running;
 	private boolean testMode;
+	Scanner reader;
 	
 	public Client() throws SocketException {
 		socket = new DatagramSocket();
 		addrHost = new InetSocketAddress("localhost", Var.PORT_CLIENT);
 		addrServer = new InetSocketAddress("localhost", Var.PORT_SERVER);
+		reader = new Scanner(System.in);
 		this.testMode = false;
 	}
 	
 	public Client(boolean testMode) throws SocketException {
-		socket = new DatagramSocket();
-		addrHost = new InetSocketAddress("localhost", Var.PORT_CLIENT);
-		addrServer = new InetSocketAddress("localhost", Var.PORT_SERVER);
+		this();
 		this.testMode = testMode;
 	}
 	
@@ -115,13 +115,12 @@ public class Client {
 	 * @return ArrayList where first element is if its read or write and second element is filename
 	 */
 	private ArrayList<String> getRequestData() {
-		Scanner reader = new Scanner(System.in);
 		ArrayList<String> data = new ArrayList<String>();
-		String rorW = getUserInput("Read or Write or Shutdown ('R' or 'W' or 'S'): ", reader);
+		String rorW = getUserInput("Read or Write or Shutdown ('R' or 'W' or 'S'): ");
 		if (rorW.equals("S")) {
 			close();
 		}
-		String file = getUserInput("Filename: ", reader);
+		String file = getUserInput("Filename: ");
 		data.add(rorW);
 		data.add(file);
 		reader.close();
@@ -133,7 +132,7 @@ public class Client {
 	 * @param prompt string to display to the user
 	 * @return the input from the user
 	 */
-	private String getUserInput(String prompt, Scanner reader) {
+	private String getUserInput(String prompt) {
 		System.out.print(prompt);
 		String s = reader.nextLine();
 		System.out.println();
@@ -169,6 +168,7 @@ public class Client {
 		if (running) {
 			running = false;
 			socket.close();
+			reader.close();
 			System.exit(0);
 		}
 	}
