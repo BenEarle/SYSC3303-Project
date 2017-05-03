@@ -1,3 +1,4 @@
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -6,6 +7,7 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import util.FileReader;
 import util.Log;
 import util.Var;
 
@@ -56,18 +58,28 @@ public class Client {
 			if (userData.get(0).equals("R")) {
 				readMode(packet);
 			} else {
-				writeMode(packet);
+				writeMode(packet, userData.get(1));
 			}
 			Log.packet("Client Receive", packet);
 		}
 	}
 	
 	private void readMode(DatagramPacket packet) {
-		int serverPort = packet.getPort();
+		InetSocketAddress address = new InetSocketAddress(packet.getAddress(), packet.getPort());
+		
 	}
 	
-	private void writeMode (DatagramPacket packet) {
-		int serverPort = packet.getPort();
+	private void writeMode (DatagramPacket packet, String fileName) throws IOException {
+		InetSocketAddress address = new InetSocketAddress(packet.getAddress(), packet.getPort());
+		FileReader file = new FileReader(fileName);
+		byte[] data = file.read();
+		int dataLength = data.length;
+		
+		while(dataLength%512 == 0) {
+			
+			
+		}
+		
 	}
 	/**
 	 * Prompts and collects the data from the user of filename and read or write
