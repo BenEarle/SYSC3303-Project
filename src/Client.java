@@ -69,17 +69,28 @@ public class Client {
 		
 	}
 	
-	private void writeMode (DatagramPacket packet, String fileName) throws IOException {
+	private void writeMode(DatagramPacket packet, String fileName) throws IOException {
 		InetSocketAddress address = new InetSocketAddress(packet.getAddress(), packet.getPort());
 		FileReader file = new FileReader(fileName);
+		byte[] blockNum = new byte[2];
 		byte[] data = file.read();
 		int dataLength = data.length;
-		
-		while(dataLength%512 == 0) {
-			
-			
+		packet = makePacket(address,Var.DATA,blockNum, data);
+		socket.receive(packet);
+		if (packet.getData()[1] == Var.ACK[1]){
+			if()
 		}
 		
+	}
+	
+	private byte[] bytesIncrement(byte[] data) {
+		if (data[1] == 0xff) {
+			data[0]++;
+			data[1] = 0x00;
+		} else {
+			data[1]++;
+		}
+		return data;
 	}
 	/**
 	 * Prompts and collects the data from the user of filename and read or write
