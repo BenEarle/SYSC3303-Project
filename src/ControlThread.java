@@ -38,12 +38,13 @@ public class ControlThread extends Thread {
 			int res = readPacket(packet);
 			switch (res) {
 			case 1:
-				//READ
+				//Start a new ReadThread to handle the request.
+				new ReadThread(packet, verbose).start();
 				Log.packet("Server Sending READ", packet);
 				break;
 			case 2:
 				//Start a new WriteThread to handle the request.
-				new WriteThread(packet).start();
+				new WriteThread(packet, verbose).start();
 				Log.packet("Server Sending WRITE", packet);
 				break;
 			default:

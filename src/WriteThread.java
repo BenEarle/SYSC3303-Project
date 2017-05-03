@@ -6,9 +6,9 @@ import util.Log;
 import util.Var;
 
 public class WriteThread extends ClientResponseThread {
-
-	public WriteThread(DatagramPacket initialPacket) {
-		super(initialPacket);
+	
+	public WriteThread(DatagramPacket initialPacket, boolean verbose) {
+		super(initialPacket, verbose);
 	}
 	
 	// send ACK packet 0400

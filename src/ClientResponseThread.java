@@ -12,8 +12,10 @@ public abstract class ClientResponseThread extends Thread {
 	protected String file, mode;
 	protected InetAddress clientIP;
 	protected int clientPort;
+	protected boolean verbose;
 	
-	ClientResponseThread(DatagramPacket initialPacket) {
+	ClientResponseThread(DatagramPacket initialPacket, boolean verbose) {
+		this.verbose = verbose;
 		unpack(initialPacket);
 		setUpSocket();
 	}
