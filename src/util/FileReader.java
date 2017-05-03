@@ -25,9 +25,9 @@ public class FileReader {
 		if (closed)
 			throw new IOException("File has already been closed.");
 		
-		byte[] buf = new byte[512];
+		byte[] buf = new byte[Var.BLOCK_SIZE];
 		int bytesRead = in.read(buf);
-		if (bytesRead < 512) {
+		if (bytesRead < Var.BLOCK_SIZE) {
 			byte[] data = new byte[bytesRead];
 			System.arraycopy(buf, 0, data, 0, bytesRead);
 			return data;

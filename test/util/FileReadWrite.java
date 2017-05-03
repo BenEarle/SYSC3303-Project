@@ -12,7 +12,7 @@ import org.junit.Test;
 
 public class FileReadWrite {
 	private static final String FILENAME = "test.txt";
-	private static final int ITERATIONS = 512;
+	private static final int ITERATIONS = 420;
 	
 	private FileReader r;
 	private FileWriter w;
@@ -48,8 +48,8 @@ public class FileReadWrite {
 	@Test
 	public void test1() throws IOException {
 		Random rand = new Random();
-		byte[][] bytes = new byte[ITERATIONS][512];
-		byte[] end = new byte[400];
+		byte[][] bytes = new byte[ITERATIONS][Var.BLOCK_SIZE];
+		byte[] end = new byte[ITERATIONS];
 		
 		for (int i = 0; i < ITERATIONS; i++) {
 			rand.nextBytes(bytes[i]);
@@ -59,10 +59,15 @@ public class FileReadWrite {
 		w.write(end);
 		w.close();
 		
+		byte[] buf;
 		for (int i = 0; i < ITERATIONS; i++) {
-			assertEquals(Log.bBytes(bytes[i]), Log.bBytes(r.read()));
+			buf = r.read();
+			assertEquals(Var.BLOCK_SIZE, buf.length);
+			assertEquals(Log.bBytes(bytes[i]), Log.bBytes(buf));
 		}
-		assertEquals(Log.bBytes(end), Log.bBytes(r.read()));
+		buf = r.read();
+		assertEquals(ITERATIONS, buf.length);
+		assertEquals(Log.bBytes(end), Log.bBytes(buf));
 	}
 
 	@Test
@@ -85,7 +90,7 @@ public class FileReadWrite {
 			bytes = r.read();
 			actual += Log.bString(bytes);
 		}
-		while (bytes.length == 512 && i++ < ITERATIONS);
+		while (bytes.length == Var.BLOCK_SIZE && i++ < ITERATIONS * 1000);
 		
 		assertEquals(expected, actual);
 	}
