@@ -1,0 +1,95 @@
+<diagram program="umletino" version="14.2"><zoom_level>10</zoom_level><element><id>UMLClass</id><coordinates><x>90</x><y>43</y><w>120</w><h>200</h></coordinates><panel_attributes>halign=left
+Client
+
+    c1                 c2          
+    X                    X
+
+
+    c5                 c6             
+     X                   X
+
+
+    c9                c10 
+     X                  X
+
+
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>790</x><y>43</y><w>120</w><h>200</h></coordinates><panel_attributes>halign=left
+Server
+
+    s1                 s2          
+   
+
+
+    s3                 s4             
+    
+
+
+    s5                s6 
+
+
+
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>470</x><y>43</y><w>140</w><h>200</h></coordinates><panel_attributes>halign=left
+Error Simulator
+
+    es2                 es3          
+     X                     X
+
+
+    es4                   es5             
+      X                      X
+
+
+    es5                   es6 
+      X                      X
+
+
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>210</x><y>43</y><w>110</w><h>200</h></coordinates><panel_attributes>halign=left
+Data Socket
+
+     c3            c4
+      X             X
+
+
+     c7            c8
+      X             X
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>390</x><y>43</y><w>80</w><h>90</h></coordinates><panel_attributes>halign=left
+Data Socket
+
+  es1
+   X
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>90</x><y>303</y><w>90</w><h>160</h></coordinates><panel_attributes>halign=left
+c1-
+c2-
+c3-
+c4-
+c5-
+c6-
+c7-
+c8-
+c9-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>490</x><y>293</y><w>90</w><h>160</h></coordinates><panel_attributes>halign=left
+es1-
+es2-
+es3-
+es4-
+es5-
+es6-
+es7-
+es8-
+es9-</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>790</x><y>303</y><w>90</w><h>160</h></coordinates><panel_attributes>halign=left
+s1-
+s2-
+s3-
+s4-
+s5-
+s6-
+s7-
+s8-
+s9-</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>100</x><y>90</y><w>800</w><h>150</h></coordinates><panel_attributes></panel_attributes><additional_attributes>10;10;780;10;780;130;10;130</additional_attributes></element><element><id>UMLClass</id><coordinates><x>710</x><y>43</y><w>80</w><h>90</h></coordinates><panel_attributes>halign=left
+Data Socket
+
+  s1
+   X
+</panel_attributes><additional_attributes></additional_attributes></element></diagram>
