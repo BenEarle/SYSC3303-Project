@@ -10,16 +10,25 @@ import util.Log;
 import util.Var;
 
 public class Client {
-	private static final String FILENAME = "test.txt";
 	private static final String MODE = "netASCII";
 	
 	private DatagramSocket socket;
-	private InetSocketAddress addrHost;
+	private InetSocketAddress addrHost, addrServer;
 	private boolean running;
+	private boolean testMode;
 	
 	public Client() throws SocketException {
 		socket = new DatagramSocket();
 		addrHost = new InetSocketAddress("localhost", Var.PORT_CLIENT);
+		addrServer = new InetSocketAddress("localhost", Var.PORT_SERVER);
+		this.testMode = false;
+	}
+	
+	public Client(boolean testMode) throws SocketException {
+		socket = new DatagramSocket();
+		addrHost = new InetSocketAddress("localhost", Var.PORT_CLIENT);
+		addrServer = new InetSocketAddress("localhost", Var.PORT_SERVER);
+		this.testMode = testMode;
 	}
 	
 	public void run() throws IOException {
@@ -94,6 +103,9 @@ public class Client {
 		}
 		
 		// Create a packet from the buffer (using the host address) and return it.
+		if (testMode) {
+			return new DatagramPacket(buffer, buffer.length, addrServer);
+		}
 		return new DatagramPacket(buffer, buffer.length, addrHost);
 	}
 	
@@ -111,15 +123,19 @@ public class Client {
 
 	public static void main(String[] args) throws SocketException, IOException {
 		Log.enable(false);
+		boolean test = false;
 		if (args.length > 0) {
 			int i;
 			for (i = 0; i < args.length; i++) {
 	            if(args[i].equals("v") || args[i].equals("V")) {
 	            	Log.enable(true);
 	            }
+	            if(args[i].equals("t") || args[i].equals("T")) {
+	            	test = true;
+	            }
 	        }
 		}
-		new Client().run();
+		new Client(test).run();
 	}
 
 }
