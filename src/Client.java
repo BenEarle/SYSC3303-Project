@@ -73,14 +73,30 @@ public class Client {
 		InetSocketAddress address = new InetSocketAddress(packet.getAddress(), packet.getPort());
 		FileReader file = new FileReader(fileName);
 		byte[] blockNum = new byte[2];
+		blockNum[1] = 0x01;
+		blockNum[0] = 0x00;
 		byte[] data = file.read();
 		int dataLength = data.length;
 		packet = makePacket(address,Var.DATA,blockNum, data);
+		socket.send(packet);
+		while(dataLength%Var.BLOCK_SIZE == 0) {
+			socket.receive(packet);
+			if (packet.getData()[1] == Var.ACK[1]){
+				if(packet.getData()[2] == blockNum[0] && packet.getData()[3] == blockNum[1] ) {
+					data = file.read();
+					dataLength = data.length;
+					bytesIncrement(blockNum);
+					packet = makePacket(address,Var.DATA,blockNum, data);
+					socket.send(packet);
+				}
+			}
+		}
 		socket.receive(packet);
 		if (packet.getData()[1] == Var.ACK[1]){
-			if()
+			if(packet.getData()[2] == blockNum[0] && packet.getData()[3] == blockNum[1] ) {
+				Log.out("Write Seccuessful");
+			}
 		}
-		
 	}
 	
 	private byte[] bytesIncrement(byte[] data) {
