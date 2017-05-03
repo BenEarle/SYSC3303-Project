@@ -1,5 +1,7 @@
 package util;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.DatagramPacket;
 
 public class Log {
@@ -18,7 +20,9 @@ public class Log {
 	 * @param s
 	 */
 	public static void out(String s) {
-		if (enabled) System.out.println(s);
+		if (!enabled) return;
+		
+		System.out.println(s);
 	}
 	
 	/**
@@ -26,7 +30,23 @@ public class Log {
 	 * @param s
 	 */
 	public static void err(String s) {
-		if (enabled) System.err.println(s);
+		if (!enabled) return;
+		
+		System.err.println(s);
+	}
+	
+	/**
+	 * Log an error message and stack trace.
+	 * @param message
+	 */
+	public static void err(String message, Throwable e) {
+		if (!enabled) return;
+		
+		StringWriter sw = new StringWriter();
+		e.printStackTrace(new PrintWriter(sw));
+		String err = sw.toString();
+		
+		err(message + " -> " + err);
 	}
 	
 	/**
@@ -35,14 +55,15 @@ public class Log {
 	 * @param packet
 	 */
 	public static void packet(String s, DatagramPacket packet) {
-		if (enabled)
-			out(
-					"\n" + s +  ":\n" +
-					"\tport\t" + packet.getPort() + "\n" +
-					"\tlength\t" + packet.getLength() + "\n" +
-					"\tbytes\t[" + bBytes(packet.getData(), packet.getLength()) + "]\n" +
-					"\tstring\t'" + bString(packet.getData(), packet.getLength()) + "'"
-				);
+		if (!enabled) return;
+		
+		out(
+				"\n" + s +  ":\n" +
+				"\tport\t" + packet.getPort() + "\n" +
+				"\tlength\t" + packet.getLength() + "\n" +
+				"\tbytes\t[" + bBytes(packet.getData(), packet.getLength()) + "]\n" +
+				"\tstring\t'" + bString(packet.getData(), packet.getLength()) + "'"
+			);
 	}
 
 	/**
