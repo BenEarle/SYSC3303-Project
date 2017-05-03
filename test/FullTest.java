@@ -6,7 +6,7 @@ import org.junit.Test;
 
 public class FullTest {
 	private Server server;
-	private Host host;
+	private ErrorSimulator host;
 	private Client client;
 
 	@Before
@@ -23,7 +23,7 @@ public class FullTest {
 			}
 		}).start();
 
-		host = new Host();
+		host = new ErrorSimulator();
 		new Thread(new Runnable() {
 			@Override
 			public void run() {

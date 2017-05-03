@@ -17,7 +17,7 @@ import util.Var;
 public class HostTest {
 	private static final SocketAddress ADDR = new InetSocketAddress("localhost", Var.PORT_CLIENT);
 	
-	private Host host;
+	private ErrorSimulator host;
 	private DatagramSocket socClient, socServer;
 
 	@Before
@@ -29,7 +29,7 @@ public class HostTest {
 		socClient.setSoTimeout(1000);
 		socServer.setSoTimeout(1000);
 		
-		host = new Host();
+		host = new ErrorSimulator();
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
