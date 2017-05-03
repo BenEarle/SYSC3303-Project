@@ -81,6 +81,10 @@ public class ControlThread extends Thread {
 		return !running;
 	}
 
+	public void setVerbose(boolean verbose) {
+		this.verbose = verbose;
+	}
+
 }
 
 

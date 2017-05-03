@@ -22,6 +22,9 @@ public class Server {
 				quit = true;
 			} else if(input.equals("verbose")){
 				verbose = !verbose;
+				ct.setVerbose(verbose);
+			} else if (input.equals("help")) {
+				System.out.println("SERVER<main>: List of available commands: quit, verbose, help");
 			} else {
 				System.out.println("SERVER<main>: Type in 'help' for a list of commands...");
 			}
