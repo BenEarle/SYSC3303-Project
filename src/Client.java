@@ -25,14 +25,14 @@ public class Client {
 	public void run() throws IOException {
 		DatagramPacket packet;
 		running = true;
-		Log.out("Starting CLient");
+		Log.out("Starting Client");
 		while(true) {
 			ArrayList<String> userData = getRequestData();
-			if (userData.get(1) == "R") {
-				packet = makePacket(Var.READ, userData.get(2).getBytes(), Var.ZERO,MODE.getBytes(), Var.ZERO);
+			if (userData.get(0) == "R") {
+				packet = makePacket(Var.READ, userData.get(1).getBytes(), Var.ZERO,MODE.getBytes(), Var.ZERO);
 				Log.packet("Client Sending READ", packet);
 			} else {
-				packet = makePacket(Var.WRITE, userData.get(2).getBytes(), Var.ZERO,MODE.getBytes(), Var.ZERO);
+				packet = makePacket(Var.WRITE, userData.get(1).getBytes(), Var.ZERO,MODE.getBytes(), Var.ZERO);
 				Log.packet("Client Sending WRITE", packet);
 			}
 			socket.send(packet);
@@ -47,11 +47,16 @@ public class Client {
 	 * @return ArrayList where first element is if its read or write and second element is filename
 	 */
 	private ArrayList<String> getRequestData() {
+		Scanner reader = new Scanner(System.in);
 		ArrayList<String> data = new ArrayList<String>();
-		String rorW = getUserInput("Read or Write ('R' or 'W'): ");
-		String file = getUserInput("Filename: ");
+		String rorW = getUserInput("Read or Write or Shutdown ('R' or 'W' or 'S'): ", reader);
+		if (rorW.equals("S")) {
+			close();
+		}
+		String file = getUserInput("Filename: ", reader);
 		data.add(rorW);
 		data.add(file);
+		reader.close();
 		return data;
 	}
 	
@@ -60,10 +65,10 @@ public class Client {
 	 * @param prompt string to display to the user
 	 * @return the input from the user
 	 */
-	private String getUserInput(String prompt) {
-		Scanner reader = new Scanner(System.in);  // Reading from System.in
-		String s = reader.next();
-		reader.close();
+	private String getUserInput(String prompt, Scanner reader) {
+		System.out.print(prompt);
+		String s = reader.nextLine();
+		System.out.println();
 		return s;
 	}
 	
@@ -96,6 +101,7 @@ public class Client {
 		if (running) {
 			running = false;
 			socket.close();
+			System.exit(0);
 		}
 	}
 
@@ -106,7 +112,6 @@ public class Client {
 	public static void main(String[] args) throws SocketException, IOException {
 		Log.enable(false);
 		if (args.length > 0) {
-			System.out.println(args[0]);
 			int i;
 			for (i = 0; i < args.length; i++) {
 	            if(args[i].equals("v") || args[i].equals("V")) {
