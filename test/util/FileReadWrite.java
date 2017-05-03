@@ -2,41 +2,64 @@ package util;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Random;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 public class FileReadWrite {
 	private static final String FILENAME = "test.txt";
+	private static final String DIR1 = "temp/";
+	private static final String DIR2 = "some/boDY/Once/tOLd/ME/";
 	private static final int ITERATIONS = 420;
 	
 	private FileReader r;
 	private FileWriter w;
-
-	@Before
-	public void setUp() throws Exception {
-		r = new FileReader(FILENAME);
-		w = new FileWriter(FILENAME);
+	
+	private void createFile(String filename) throws IOException {
+		File f = new File(filename);
+		if (!f.exists()) {
+			if (f.getParentFile() != null) {
+				f.getParentFile().mkdirs();
+			}
+			f.createNewFile();
+		}
+	}
+	
+	private void deleteFile(String filename) {
+		File f = new File(filename);
+		if (f.exists()) {
+			f.delete();
+		}
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		r.close();
-		w.close();
+		if (w != null) {
+			w.close();
+		}
+		if (r != null) {
+			r.close();
+		}
 	}
 
 	@Test
-	public void testFilename() {
+	public void testFilename() throws IOException {
+		createFile(FILENAME);
+		w = new FileWriter(FILENAME);
+		r = new FileReader(FILENAME);
+		
 		assertEquals(FILENAME, r.getFilename());
 		assertEquals(FILENAME, w.getFilename());
 	}
 
 	@Test
 	public void testFileNoExist() throws FileNotFoundException {
+		deleteFile(FILENAME);
+		
 		try {
 			r = new FileReader("thisfiledoesnotexist.zip.txt");
 			fail("FileNotFoundException did not fire.");
@@ -47,6 +70,10 @@ public class FileReadWrite {
 
 	@Test
 	public void test1() throws IOException {
+		final String filename = DIR1 + FILENAME;
+		deleteFile(filename);
+		
+		w = new FileWriter(filename);
 		Random rand = new Random();
 		byte[][] bytes = new byte[ITERATIONS][Var.BLOCK_SIZE];
 		byte[] end = new byte[ITERATIONS];
@@ -58,7 +85,8 @@ public class FileReadWrite {
 		rand.nextBytes(end);
 		w.write(end);
 		w.close();
-		
+
+		r = new FileReader(filename);
 		byte[] buf;
 		for (int i = 0; i < ITERATIONS; i++) {
 			buf = r.read();
@@ -72,6 +100,10 @@ public class FileReadWrite {
 
 	@Test
 	public void test2() throws IOException {
+		final String filename = DIR1 + DIR2 + FILENAME;
+		deleteFile(filename);
+		
+		w = new FileWriter(filename);
 		Random rand = new Random();
 		String expected = "";
 		byte[] bytes;
@@ -83,7 +115,8 @@ public class FileReadWrite {
 			expected += Log.bString(bytes);
 		}
 		w.close();
-		
+
+		r = new FileReader(filename);
 		String actual = "";
 		int i = 0;
 		do {

@@ -12,6 +12,9 @@ public class FileWriter {
 
 	public FileWriter(String filename) throws IOException {
 		file = new File(filename);
+		if (file.getParentFile() != null) {
+			file.getParentFile().mkdirs();
+		}
 		file.createNewFile();
 		out = new BufferedOutputStream(new FileOutputStream(file));
 		closed = false;
