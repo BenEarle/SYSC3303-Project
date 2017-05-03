@@ -34,6 +34,6 @@ public class Server {
 			ct.close();
 			ct.stop();
 		}
-		
+		sc.close();
 	}
 }
