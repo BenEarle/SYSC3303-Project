@@ -3,6 +3,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 import util.Log;
 import util.Var;
@@ -43,6 +45,22 @@ public class Client {
 		packet = makePacket(Var.WRITE, "aaaa".getBytes(), new byte[] {0, 2, 6});
 		Log.packet("Client Sending Invalid", packet);
 		socket.send(packet);
+	}
+	
+	private ArrayList<String> getRequestData() {
+		ArrayList<String> data = new ArrayList<String>();
+		String rorW = getUserInput("Read or Write: ");
+		String file = getUserInput("Filename?: ");
+		data.add(rorW);
+		data.add(file);
+		return data;
+	}
+	
+	private String getUserInput(String prompt) {
+		Scanner reader = new Scanner(System.in);  // Reading from System.in
+		String s = reader.next();
+		reader.close();
+		return s;
 	}
 	
 	private DatagramPacket makePacket(byte[]... bytes) {
