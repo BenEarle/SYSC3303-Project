@@ -8,12 +8,12 @@ import java.net.SocketException;
 import util.Log;
 import util.Var;
 
-public class Host {
+public class ErrorSimulator {
 	private DatagramSocket socClient, socServer;
 	private SocketAddress addrClient, addrServer;
 	private boolean running;
 
-	public Host() throws SocketException {
+	public ErrorSimulator() throws SocketException {
 		socClient = new DatagramSocket(Var.PORT_CLIENT);
 		socServer = new DatagramSocket();
 		addrServer = new InetSocketAddress("localhost", Var.PORT_SERVER);
@@ -55,7 +55,7 @@ public class Host {
 	}
 
 	public static void main(String[] args) throws SocketException, IOException {
-		new Host().run();
+		new ErrorSimulator().run();
 	}
 
 }
