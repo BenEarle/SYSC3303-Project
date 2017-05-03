@@ -25,26 +25,20 @@ public class Client {
 	public void run() throws IOException {
 		DatagramPacket packet;
 		running = true;
-		
-		// Send 10 packets alternating between read and write.
-		for (int i = 0; i < 10; i++) {
-			if (i % 2 != 0) {	// READ
-				packet = makePacket(Var.READ, FILENAME.getBytes(), Var.ZERO, MODE.getBytes(), Var.ZERO);
+		while(true) {
+			ArrayList<String> userData = getRequestData();
+			if (userData.get(1) == "R") {
+				packet = makePacket(Var.READ, userData.get(2).getBytes(), Var.ZERO,MODE.getBytes(), Var.ZERO);
 				Log.packet("Client Sending READ", packet);
-			} else {			// WRITE
-				packet = makePacket(Var.WRITE, FILENAME.getBytes(), Var.ZERO, MODE.getBytes(), Var.ZERO);
+			} else {
+				packet = makePacket(Var.WRITE, userData.get(2).getBytes(), Var.ZERO,MODE.getBytes(), Var.ZERO);
 				Log.packet("Client Sending WRITE", packet);
 			}
 			socket.send(packet);
-
+			
 			socket.receive(packet);
 			Log.packet("Client Receive", packet);
 		}
-		
-		// Send out an invalid packet.
-		packet = makePacket(Var.WRITE, "aaaa".getBytes(), new byte[] {0, 2, 6});
-		Log.packet("Client Sending Invalid", packet);
-		socket.send(packet);
 	}
 	
 	/**
@@ -53,8 +47,8 @@ public class Client {
 	 */
 	private ArrayList<String> getRequestData() {
 		ArrayList<String> data = new ArrayList<String>();
-		String rorW = getUserInput("Read or Write ('R' or 'W': ");
-		String file = getUserInput("Filename?: ");
+		String rorW = getUserInput("Read or Write ('R' or 'W'): ");
+		String file = getUserInput("Filename: ");
 		data.add(rorW);
 		data.add(file);
 		return data;
