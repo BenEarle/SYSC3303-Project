@@ -67,7 +67,6 @@ public abstract class ClientResponseThread extends Thread {
 		}
 	}
 	
-	@SuppressWarnings("unused")
 	protected void sendPacket(byte[] data){
 		DatagramPacket sPacket = new DatagramPacket(data, data.length, clientIP, clientPort);
 		try {
@@ -77,7 +76,6 @@ public abstract class ClientResponseThread extends Thread {
 		}
 	}
 
-	@SuppressWarnings("unused")
 	protected byte[] receivePacket(){
 		byte[] data = new byte[Var.BUF_SIZE];
 		DatagramPacket rPacket = new DatagramPacket(data, data.length);
@@ -88,4 +86,9 @@ public abstract class ClientResponseThread extends Thread {
 		}
 		return data;
 	}
+
+	protected void close(){
+		socket.close();
+	}
+	
 }
