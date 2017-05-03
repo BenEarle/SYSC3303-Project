@@ -18,7 +18,7 @@ public abstract class ClientResponseThread extends Thread {
 		setUpSocket();
 	}
 
-	private void unpack(DatagramPacket p) {
+	protected void unpack(DatagramPacket p) {
 		clientPort = p.getPort();
 		clientIP = p.getAddress();
 		byte[] data = p.getData();
@@ -58,7 +58,7 @@ public abstract class ClientResponseThread extends Thread {
 			throw new IllegalArgumentException();
 	}
 
-	private void setUpSocket() {
+	protected void setUpSocket() {
 		try {
 			socket = new DatagramSocket();
 		} catch (SocketException e) {
@@ -68,7 +68,7 @@ public abstract class ClientResponseThread extends Thread {
 	}
 	
 	@SuppressWarnings("unused")
-	private void sendPacket(byte[] data){
+	protected void sendPacket(byte[] data){
 		DatagramPacket sPacket = new DatagramPacket(data, data.length, clientIP, clientPort);
 		try {
 			socket.send(sPacket);
@@ -78,7 +78,7 @@ public abstract class ClientResponseThread extends Thread {
 	}
 
 	@SuppressWarnings("unused")
-	private byte[] receivePacket(){
+	protected byte[] receivePacket(){
 		byte[] data = new byte[Var.BUF_SIZE];
 		DatagramPacket rPacket = new DatagramPacket(data, data.length);
 		try {
