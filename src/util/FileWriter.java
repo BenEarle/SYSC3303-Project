@@ -4,7 +4,6 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Random;
 
 public class FileWriter {
 	private File file;
@@ -33,16 +32,4 @@ public class FileWriter {
 		out.close();
 		closed = true;
 	}
-	
-	public static void main(String[] args) throws IOException {
-		FileWriter r = new FileWriter("test.txt");
-		byte[] b = new byte[512];
-		Random rand = new Random();
-		rand.nextBytes(b);
-		r.write(b);
-		rand.nextBytes(b);
-		r.write(b);
-		r.close();
-	}
-
 }

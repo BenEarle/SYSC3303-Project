@@ -40,11 +40,4 @@ public class FileReader {
 		in.close();
 		closed = true;
 	}
-	
-	public static void main(String[] args) throws IOException {
-		FileReader r = new FileReader("test.txt");
-		System.out.println(r.read().length);
-		System.out.println(r.read().length);
-		System.out.println(r.read().length);
-	}
 }
