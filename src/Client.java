@@ -37,7 +37,7 @@ public class Client {
 		Log.out("Starting Client");
 		while(true) {
 			ArrayList<String> userData = getRequestData();
-			if (userData.get(0) == "R") {
+			if (userData.get(0).equals("R")) {
 				packet = makePacket(Var.READ, userData.get(1).getBytes(), Var.ZERO,MODE.getBytes(), Var.ZERO);
 				Log.packet("Client Sending READ", packet);
 			} else {
