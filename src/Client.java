@@ -79,6 +79,7 @@ public class Client {
 		int dataLength = data.length;
 		packet = makePacket(address,Var.DATA,blockNum, data);
 		socket.send(packet);
+		Log.packet("Client Sending WRITE Data:", packet);
 		while(dataLength%Var.BLOCK_SIZE == 0) {
 			socket.receive(packet);
 			if (packet.getData()[1] == Var.ACK[1]){
@@ -88,6 +89,7 @@ public class Client {
 					bytesIncrement(blockNum);
 					packet = makePacket(address,Var.DATA,blockNum, data);
 					socket.send(packet);
+					Log.packet("Client Sending WRITE Data", packet);
 				}
 			}
 		}
