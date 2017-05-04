@@ -5,9 +5,11 @@ import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 import util.FileReader;
+import util.FileWriter;
 import util.Log;
 import util.Var;
 
@@ -56,7 +58,7 @@ public class Client {
 			
 			socket.receive(packet);
 			if (userData.get(0).equals("R")) {
-				readMode(packet);
+				readMode(packet, userData.get(1));
 			} else {
 				writeMode(packet, userData.get(1));
 			}
@@ -64,9 +66,31 @@ public class Client {
 		}
 	}
 	
-	private void readMode(DatagramPacket packet) {
+	private void readMode(DatagramPacket packet, String fileName) throws IOException {
+		byte[] fileData;
+		int blockLength = packet.getLength();
 		InetSocketAddress address = new InetSocketAddress(packet.getAddress(), packet.getPort());
-		
+		FileWriter writer = new FileWriter(fileName);
+		byte[] blockNum = new byte[2];
+		while ((blockLength = packet.getLength()) % Var.BLOCK_SIZE == 0) {
+			if (packet.getData()[1] == Var.DATA[1] && blockNum[0] == packet.getData()[2]
+					&& blockNum[1] == packet.getData()[3]) {
+				fileData = Arrays.copyOfRange(packet.getData(), 5, packet.getLength());
+				writer.write(fileData);
+				packet = makePacket(address, Var.ACK, blockNum);
+				socket.send(packet);
+				blockNum = bytesIncrement(blockNum);
+			}
+		}
+		if (packet.getData()[1] == Var.DATA[1] && blockNum[0] == packet.getData()[2]
+				&& blockNum[1] == packet.getData()[3]) {
+			fileData = Arrays.copyOfRange(packet.getData(), 5, packet.getLength());
+			writer.write(fileData);
+			packet = makePacket(address, Var.ACK, blockNum);
+			socket.send(packet);
+			blockNum = bytesIncrement(blockNum);
+		}
+		writer.close();
 	}
 	
 	private void writeMode(DatagramPacket packet, String fileName) throws IOException {
@@ -77,25 +101,25 @@ public class Client {
 		blockNum[0] = 0x00;
 		byte[] data = file.read();
 		int dataLength = data.length;
-		packet = makePacket(address,Var.DATA,blockNum, data);
+		packet = makePacket(address, Var.DATA, blockNum, data);
 		socket.send(packet);
 		Log.packet("Client Sending WRITE Data:", packet);
-		while(dataLength%Var.BLOCK_SIZE == 0) {
+		while (dataLength % Var.BLOCK_SIZE == 0) {
 			socket.receive(packet);
-			if (packet.getData()[1] == Var.ACK[1]){
-				if(packet.getData()[2] == blockNum[0] && packet.getData()[3] == blockNum[1] ) {
+			if (packet.getData()[1] == Var.ACK[1]) {
+				if (packet.getData()[2] == blockNum[0] && packet.getData()[3] == blockNum[1]) {
 					data = file.read();
 					dataLength = data.length;
-					bytesIncrement(blockNum);
-					packet = makePacket(address,Var.DATA,blockNum, data);
+					blockNum = bytesIncrement(blockNum);
+					packet = makePacket(address, Var.DATA, blockNum, data);
 					socket.send(packet);
 					Log.packet("Client Sending WRITE Data", packet);
 				}
 			}
 		}
 		socket.receive(packet);
-		if (packet.getData()[1] == Var.ACK[1]){
-			if(packet.getData()[2] == blockNum[0] && packet.getData()[3] == blockNum[1] ) {
+		if (packet.getData()[1] == Var.ACK[1]) {
+			if (packet.getData()[2] == blockNum[0] && packet.getData()[3] == blockNum[1]) {
 				Log.out("Write Seccuessful");
 			}
 		}
