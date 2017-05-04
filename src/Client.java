@@ -99,30 +99,54 @@ public class Client {
 		byte[] blockNum = new byte[2];
 		blockNum[1] = 0x01;
 		blockNum[0] = 0x00;
-		byte[] data = file.read();
-		int dataLength = data.length;
+		
+		boolean lastPacket = false;
+		byte[] data;
+		
+		try{
+			data = file.read();
+			// Check if length read is less than full block size
+			if(data.length != Var.BLOCK_SIZE) lastPacket = true; 
+		// Exception if no bytes left in file. Send last packet empty
+		} catch(Exception e) {
+			data = new byte[1]; // Empty Message
+			lastPacket = true;
+		}
+		
+		// Send first packet
 		packet = makePacket(address, Var.DATA, blockNum, data);
 		socket.send(packet);
 		Log.packet("Client Sending WRITE Data:", packet);
-		while (dataLength % Var.BLOCK_SIZE == 0) {
+		
+		while(!lastPacket){
 			socket.receive(packet);
+			// Ensure packet is ack
 			if (packet.getData()[1] == Var.ACK[1]) {
+				// Ensure packet has correct index
 				if (packet.getData()[2] == blockNum[0] && packet.getData()[3] == blockNum[1]) {
-					data = file.read();
-					dataLength = data.length;
+					try{
+						data = file.read();
+						// Check if length read is less than full block size
+						if(data.length != Var.BLOCK_SIZE) lastPacket = true; 
+					// Exception if no bytes left in file. Send last packet empty
+					} catch(Exception e) {
+						data = new byte[1]; // Empty Message
+						lastPacket = true;
+					}
 					blockNum = bytesIncrement(blockNum);
 					packet = makePacket(address, Var.DATA, blockNum, data);
 					socket.send(packet);
 					Log.packet("Client Sending WRITE Data", packet);
-				}
-			}
+				} else throw new IndexOutOfBoundsException();
+			} else throw new IllegalArgumentException();
 		}
+		// Receive last ACK packet
 		socket.receive(packet);
 		if (packet.getData()[1] == Var.ACK[1]) {
 			if (packet.getData()[2] == blockNum[0] && packet.getData()[3] == blockNum[1]) {
 				Log.out("Write Seccuessful");
-			}
-		}
+			} else throw new IndexOutOfBoundsException();
+		} else throw new IllegalArgumentException();
 	}
 	
 	private byte[] bytesIncrement(byte[] data) {
