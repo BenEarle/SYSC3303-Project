@@ -31,24 +31,24 @@ public class ControlThread extends Thread {
 			try {
 				socRecv.receive(packet);
 			} catch (IOException e) {
-				Log.err("ERROR: " + e.toString());
+				Log.err("SERVER<ControlThread>: ERROR: " + e.toString());
 				Log.err(e.getStackTrace().toString());
 			}
-			Log.packet("Server Receive", packet);
+			if(verbose) Log.packet("SERVER<ControlThread>: Server Receive", packet);
 			int res = readPacket(packet);
 			switch (res) {
 			case 1:
 				//Start a new ReadThread to handle the request.
 				new ReadThread(packet, verbose).start();
-				Log.packet("Server Sending READ", packet);
+				if(verbose) Log.packet("SERVER<ControlThread>: Server Sending READ", packet);
 				break;
 			case 2:
 				//Start a new WriteThread to handle the request.
 				new WriteThread(packet, verbose).start();
-				Log.packet("Server Sending WRITE", packet);
+				if(verbose) Log.packet("SERVER<ControlThread>: Server Sending WRITE", packet);
 				break;
 			default:
-				Log.out("Server got invalid packet, closing.");
+				if(verbose) Log.out("SERVER<ControlThread>: Server got invalid packet, closing.");
 				close();
 				throw new IllegalArgumentException();
 			}
@@ -71,7 +71,7 @@ public class ControlThread extends Thread {
 	}
 	
 	public void close() {
-		if(verbose) System.out.println("SERVER<ControlThread>: closed control thread.");
+		if(verbose) System.out.println("SERVER<ControlThread>: Closed control thread.");
 		if (running) {
 			running = false;
 			socRecv.close();
