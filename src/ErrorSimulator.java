@@ -28,7 +28,12 @@ public class ErrorSimulator {
 		
 		// Set up variables to remember addresses of client and server
 		SocketAddress addrClient = requestPacket.getSocketAddress();
-		SocketAddress addrServer= null; // after first response from server
+		SocketAddress addrServer = null; // after first response from server
+		
+		// data used
+		byte[] data;
+		boolean lastData = false;
+		boolean lastAck = false;
 		
 		// First packet goes to Server's well-known port
 		requestPacket.setSocketAddress(SERVER_ADDRESS);
@@ -42,17 +47,23 @@ public class ErrorSimulator {
 		// Update address for server, where future requests are sent
 		addrServer = packet.getSocketAddress();
 		
+		// Parse Packet from Server
+		data = packet.getData();
+		// Data packet
+		if(data[0]==Var.DATA[0] && data[1]==Var.DATA[1] && packet.getLength() != 516){
+			Log.out("Received Last Packet");
+			lastData = true; 
+		// ack packet
+		} else if (data[0]==Var.ACK[0] && data[1]==Var.ACK[1] && lastData == true){
+			lastAck = true;
+		}
+
 		// Send first packet back to client
 		packet.setSocketAddress(addrClient);
 		socClient.send(packet);
 		
 		// Begin loop: forward message to client, get response and forward to server ...
-		
 		running = true;
-		byte[] data;
-		boolean lastData = false;
-		boolean lastAck = false;
-		
 		while (running) {
 			
 			// Receive packet from Client
@@ -81,7 +92,7 @@ public class ErrorSimulator {
 			socServer.receive(packet);
 			Log.packet("ErrorSimulatorChannel: Server -> Client", packet);
 			
-			// Parse Packet from Client
+			// Parse Packet from Server
 			data = packet.getData();
 			// Data packet
 			if(data[0]==Var.DATA[0] && data[1]==Var.DATA[1] && packet.getLength() != 516){
