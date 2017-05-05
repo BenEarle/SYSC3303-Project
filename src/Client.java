@@ -1,11 +1,11 @@
-import java.io.FileNotFoundException;
+//import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.Arrays;
+//import java.util.Arrays;
 import java.util.Scanner;
 
 import util.FileReader;
@@ -30,11 +30,13 @@ public class Client {
 		this.testMode = false;
 	}
 	
+	// Constructor
 	public Client(boolean testMode) throws SocketException {
 		this();
 		this.testMode = testMode;
 	}
 	
+	// Take input, send request to server, and enter required mode to process transfer
 	public void run() throws IOException {
 		InetSocketAddress address;
 		DatagramPacket packet;
@@ -46,7 +48,10 @@ public class Client {
 			address = addrServer;
 		}
 		while(true) {
+			// Get input from User
 			ArrayList<String> userData = getRequestData();
+			
+			// Create and send request according to input
 			if (userData.get(0).equals("R")) {
 				packet = makePacket(address,Var.READ, userData.get(1).getBytes(), Var.ZERO,MODE.getBytes(), Var.ZERO);
 				Log.packet("Client Sending READ", packet);
@@ -56,77 +61,110 @@ public class Client {
 			}
 			socket.send(packet);
 			
-			socket.receive(packet);
+			// Go into appropriate mode to receive message
 			if (userData.get(0).equals("R")) {
-				readMode(packet, userData.get(1));
+				readMode(userData.get(1));
 			} else {
-				writeMode(packet, userData.get(1));
+				writeMode(userData.get(1));
 			}
-			Log.packet("Client Receive", packet);
 		}
 	}
-	
-	private void readMode(DatagramPacket packet, String fileName) throws IOException {
-		byte[] fileData;
-		int blockLength = packet.getLength();
-		InetSocketAddress address = new InetSocketAddress(packet.getAddress(), packet.getPort());
-		FileWriter writer = new FileWriter(fileName);
+	/*************************************************************************/
+	// Mode for reading a file from server and saving it locally
+	/*************************************************************************/
+	private void readMode(String fileName) throws IOException {
+		
+		InetSocketAddress address = null; // Where all ack packets are sent 
+		FileWriter writer = new FileWriter(fileName); 
+		
+		DatagramPacket packet = null; // packet to send and receive data during transfer
+		boolean lastPacket = false;   // flag to indicate transfer is ending
+		byte[] data;                  // Data in packet
+		byte[] bytesToWrite;          // Bytes to be written to file
+		
+		// Initialize packet block number to receive first block of data
 		byte[] blockNum = new byte[2];
-		while ((blockLength = packet.getLength()) % Var.BLOCK_SIZE == 0) {
-			if (packet.getData()[1] == Var.DATA[1] && blockNum[0] == packet.getData()[2]
-					&& blockNum[1] == packet.getData()[3]) {
-				fileData = Arrays.copyOfRange(packet.getData(), 5, packet.getLength());
-				writer.write(fileData);
-				packet = makePacket(address, Var.ACK, blockNum);
-				socket.send(packet);
-				blockNum = bytesIncrement(blockNum);
-			}
+		blockNum[0] = 0x00;
+		blockNum[1] = 0x01;
+			
+		// Loop until last data packet is received
+		while (!lastPacket) {
+			// Create packet then receive and get info from packet
+			packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
+			socket.receive(packet);
+			data = packet.getData();
+			Log.packet("Client receiving READ DATA",packet);
+			// Save address to send response to
+			address = new InetSocketAddress(packet.getAddress(), packet.getPort());
+			
+			// Ensure packet is Valid Data packet
+			if (data[0]==Var.DATA[0] && data[1]==Var.DATA[1]){ 
+				// Ensure packet has correct block number
+				if(blockNum[0]==data[2] && blockNum[1]==data[3]) {
+					// Get bytes to write to file from packet
+					bytesToWrite = new byte[packet.getLength() - 4];
+					for (int i = 4; i < packet.getLength(); i++) {
+						if (data[i] == 0) break;
+						bytesToWrite[i - 4] = data[i];
+					}
+					
+					// Flag as last data packet if not full block size
+					if(bytesToWrite.length != Var.BLOCK_SIZE) lastPacket = true;
+					
+					//write the block to the file
+					try {
+						// To account for empty packets being 1 null byte
+						if(bytesToWrite.length!=1 || bytesToWrite[0]!=0)
+							writer.write(bytesToWrite);
+					} catch (IOException e) {
+						Log.err(e.getStackTrace().toString());
+					}
+					
+					//Send the acknowledge packet
+					packet = makePacket(address, Var.ACK, blockNum);
+					socket.send(packet);
+					blockNum = bytesIncrement(blockNum);
+					Log.packet("Client sending READ ACK",packet);
+					
+				} else throw new IndexOutOfBoundsException();
+			} else throw new IllegalArgumentException();
 		}
-		if (packet.getData()[1] == Var.DATA[1] && blockNum[0] == packet.getData()[2]
-				&& blockNum[1] == packet.getData()[3]) {
-			fileData = Arrays.copyOfRange(packet.getData(), 5, packet.getLength());
-			writer.write(fileData);
-			packet = makePacket(address, Var.ACK, blockNum);
-			socket.send(packet);
-			blockNum = bytesIncrement(blockNum);
-		}
+		Log.out("Read Operation Successful");
+		// Close ouput stream
 		writer.close();
 	}
-	
-	private void writeMode(DatagramPacket packet, String fileName) throws IOException {
-		InetSocketAddress address = new InetSocketAddress(packet.getAddress(), packet.getPort());
-		FileReader file = new FileReader(fileName);
+	/*************************************************************************/
+	// Mode for writing a file to the server
+	/*************************************************************************/
+	private void writeMode(String fileName) throws IOException { 
+		// Data for transfer
+		InetSocketAddress address = null; // Where all data packets are sent 
+		FileReader reader = new FileReader(fileName);
+		DatagramPacket packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE); // to receive ack
+		boolean lastPacket = false;   // flag to indicate transfer is ending
+		byte[] data;                  // Data in packet
+		
+		// Initialize blockNum to accept inital ACK
 		byte[] blockNum = new byte[2];
-		blockNum[1] = 0x01;
 		blockNum[0] = 0x00;
+		blockNum[1] = 0x00;
 		
-		boolean lastPacket = false;
-		byte[] data;
-		
-		try{
-			data = file.read();
-			// Check if length read is less than full block size
-			if(data.length != Var.BLOCK_SIZE) lastPacket = true; 
-		// Exception if no bytes left in file. Send last packet empty
-		} catch(Exception e) {
-			data = new byte[1]; // Empty Message
-			lastPacket = true;
-		}
-		
-		// Send first packet
-		packet = makePacket(address, Var.DATA, blockNum, data);
-		socket.send(packet);
-		Log.packet("Client Sending WRITE Data:", packet);
-		
+		// Loop until last data packet is sent
 		while(!lastPacket){
+			// Create packet then receive and get info from packet
+			packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
 			socket.receive(packet);
+			data = packet.getData();
+			Log.packet("Client receiving WRITE ACK", packet);
+			// Save address to send data to
+			address = new InetSocketAddress(packet.getAddress(), packet.getPort());
 			// Ensure packet is ack
-			if (packet.getData()[1] == Var.ACK[1]) {
+			if (data[1] == Var.ACK[1]) {
 				// Ensure packet has correct index
-				if (packet.getData()[2] == blockNum[0] && packet.getData()[3] == blockNum[1]) {
+				if (data[2] == blockNum[0] && data[3] == blockNum[1]) {
+					// Get data from file and check if length read is less than full block size 
 					try{
-						data = file.read();
-						// Check if length read is less than full block size
+						data = reader.read();
 						if(data.length != Var.BLOCK_SIZE) lastPacket = true; 
 					// Exception if no bytes left in file. Send last packet empty
 					} catch(Exception e) {
@@ -134,19 +172,33 @@ public class Client {
 						lastPacket = true;
 					}
 					blockNum = bytesIncrement(blockNum);
+					
+					// Send write data to Server
 					packet = makePacket(address, Var.DATA, blockNum, data);
-					socket.send(packet);
 					Log.packet("Client Sending WRITE Data", packet);
+					socket.send(packet);
+					
 				} else throw new IndexOutOfBoundsException();
 			} else throw new IllegalArgumentException();
 		}
-		// Receive last ACK packet
+		
+		// Receive final ACK packet
+		packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
 		socket.receive(packet);
-		if (packet.getData()[1] == Var.ACK[1]) {
-			if (packet.getData()[2] == blockNum[0] && packet.getData()[3] == blockNum[1]) {
-				Log.out("Write Seccuessful");
+		data = packet.getData();
+		Log.packet("Client receiving FINAL WRITE ACK", packet);
+		// Confirm packet is ACK
+		if (data[1] == Var.ACK[1]) {
+			// Confirm block number is correct
+			if (data[2] == blockNum[0] && data[3] == blockNum[1]) {
+				
+				Log.out("Write Operation Successful");
+				
 			} else throw new IndexOutOfBoundsException();
 		} else throw new IllegalArgumentException();
+		
+		// Close file
+		reader.close();
 	}
 	
 	private byte[] bytesIncrement(byte[] data) {
