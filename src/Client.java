@@ -75,7 +75,7 @@ public class Client {
 	private void readMode(String fileName) throws IOException {
 		
 		InetSocketAddress address = null; // Where all ack packets are sent 
-		FileWriter writer = new FileWriter(fileName); 
+		FileWriter writer = new FileWriter(Var.CLIENT_ROOT + fileName); 
 		
 		DatagramPacket packet = null; // packet to send and receive data during transfer
 		boolean lastPacket = false;   // flag to indicate transfer is ending
@@ -139,7 +139,7 @@ public class Client {
 	private void writeMode(String fileName) throws IOException { 
 		// Data for transfer
 		InetSocketAddress address = null; // Where all data packets are sent 
-		FileReader reader = new FileReader(fileName);
+		FileReader reader = new FileReader(Var.CLIENT_ROOT + fileName);
 		DatagramPacket packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE); // to receive ack
 		boolean lastPacket = false;   // flag to indicate transfer is ending
 		byte[] data;                  // Data in packet

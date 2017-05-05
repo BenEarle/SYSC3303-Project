@@ -35,7 +35,7 @@ public class WriteThread extends ClientResponseThread {
 		// Open FileWriter
 		FileWriter fw = null;
 		try {
-			fw = new FileWriter(file);
+			fw = new FileWriter(Var.SERVER_ROOT + file);
 		} catch (IOException e) {
 			Log.err(e.getStackTrace().toString());
 		}

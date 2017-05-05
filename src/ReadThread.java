@@ -27,7 +27,7 @@ public class ReadThread extends ClientResponseThread {
 		DatagramPacket packet;
 		FileReader fr = null;
 		try {
-			fr = new FileReader(file);
+			fr = new FileReader(Var.SERVER_ROOT + file);
 		} catch (FileNotFoundException e) {
 			Log.err(e.getStackTrace().toString());
 		}
