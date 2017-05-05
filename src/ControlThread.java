@@ -40,12 +40,12 @@ public class ControlThread extends Thread {
 			case 1:
 				//Start a new ReadThread to handle the request.
 				new ReadThread(packet, verbose).start();
-				if(verbose) Log.packet("SERVER<ControlThread>: Server Sending READ", packet);
+				//if(verbose) Log.packet("SERVER<ControlThread>: Server Sending READ", packet);
 				break;
 			case 2:
 				//Start a new WriteThread to handle the request.
 				new WriteThread(packet, verbose).start();
-				if(verbose) Log.packet("SERVER<ControlThread>: Server Sending WRITE", packet);
+				//if(verbose) Log.packet("SERVER<ControlThread>: Server Sending WRITE", packet);
 				break;
 			default:
 				if(verbose) Log.out("SERVER<ControlThread>: Server got invalid packet, closing.");
