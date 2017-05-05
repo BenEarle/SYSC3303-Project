@@ -26,32 +26,38 @@ public class WriteThread extends ClientResponseThread {
 	// filewriter.close()
 
 	public void run() {
-		int index = 0;
 		DatagramPacket packet;
 		byte[] data;
-		// Send initial Acknowledge
-		byte[] ack = Var.ACK_WRITE;
+		byte[] ack = {0,4,0,0}; // initial ack message
 		byte[] bytesToWrite = null;
-		if(verbose) Log.out("SERVER<WriteThread>: Sending ACK: " + ack.toString());
-		super.sendPacket(ack);
-		FileWriter fw = null;
+		int index = 0; // current block of file		
+		
 		// Open FileWriter
+		FileWriter fw = null;
 		try {
 			fw = new FileWriter(file);
 		} catch (IOException e) {
 			Log.err(e.getStackTrace().toString());
 		}
-		// Loop
+		
+		// Send initial Acknowledge
+		if(verbose) Log.out("SERVER<WriteThread>: Sending Initial ACK" + ack.toString());
+		super.sendPacket(ack);
+				
+		// Loop until all packets are received
 		do {
+			// receive packet
 			packet = super.receivePacket();
-			if(verbose) Log.packet("SERVER<WriteThread>: Received WRITE Data:", packet);
+			if(verbose) Log.packet("SERVER<WriteThread>: Received WRITE Data", packet);
 			data = packet.getData();
 			if (data[0] != 0 || data[1] != 3)
 				throw new IllegalArgumentException();
-
+			
+			// Get block number from data and assign to ack message
 			ack[2] = data[2];
 			ack[3] = data[3];
 			index++;
+			
 			// Enforce correct packet number
 			// ack 2 and 3 are a single number
 			if (ack[2] * 256 + ack[3] != index)
@@ -67,23 +73,26 @@ public class WriteThread extends ClientResponseThread {
 			
 			//write the block to the file
 			try {
-				fw.write(bytesToWrite);
+				// To account for empty packets being 1 null byte
+				if(bytesToWrite.length!=1 || bytesToWrite[0]!=0)
+					fw.write(bytesToWrite);
 			} catch (IOException e) {
 				Log.err(e.getStackTrace().toString());
 			}
 			
 			//Send the acknowledge
-			if(verbose) Log.out("SERVER<WriteThread>: Sending ACK: " + ack.toString());
+			if(verbose) Log.out("SERVER<WriteThread>: Sending WRITE ACK" + ack.toString());
 			super.sendPacket(ack);
 		} while (bytesToWrite.length == Var.BLOCK_SIZE);
 		
+		// Close input stream
 		try {
 			fw.close();
 		} catch (IOException e) {
 			Log.err(e.getStackTrace().toString());
 		}
 		super.close();
-		if(verbose) Log.out("SERVER<WriteThread>: Write completed successfully.");
+		if(verbose) Log.out("SERVER<WriteThread>: Write completed successfully");
 	}
 
 	
