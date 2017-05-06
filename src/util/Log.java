@@ -29,9 +29,7 @@ public class Log {
 	 * Log an error message.
 	 * @param s
 	 */
-	public static void err(String s) {
-		if (!enabled) return;
-		
+	public static void err(String s) {		
 		System.err.println(s);
 	}
 	
@@ -40,8 +38,6 @@ public class Log {
 	 * @param message
 	 */
 	public static void err(String message, Throwable e) {
-		if (!enabled) return;
-		
 		StringWriter sw = new StringWriter();
 		e.printStackTrace(new PrintWriter(sw));
 		String err = sw.toString();
