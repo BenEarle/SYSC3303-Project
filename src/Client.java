@@ -1,5 +1,6 @@
 //import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
@@ -22,17 +23,16 @@ public class Client {
 	private boolean testMode;
 	Scanner reader;
 	
-	public Client() throws SocketException {
+	public Client(InputStream in) throws SocketException {
 		socket = new DatagramSocket();
 		addrHost = new InetSocketAddress("localhost", Var.PORT_CLIENT);
 		addrServer = new InetSocketAddress("localhost", Var.PORT_SERVER);
-		reader = new Scanner(System.in);
+		reader = new Scanner(in);
 		this.testMode = false;
 	}
 	
-	// Constructor
-	public Client(boolean testMode) throws SocketException {
-		this();
+	public Client(InputStream in, boolean testMode) throws SocketException {
+		this(in);
 		this.testMode = testMode;
 	}
 	
@@ -40,14 +40,15 @@ public class Client {
 	public void run() throws IOException {
 		InetSocketAddress address;
 		DatagramPacket packet;
-		running = true;
 		Log.out("Starting Client");
 		if (testMode) {
 			address = addrHost;
 		} else {
 			address = addrServer;
 		}
-		while(true) {
+
+		running = true;
+		while (running) {
 			// Get input from User
 			ArrayList<String> userData = getRequestData();
 			
@@ -59,13 +60,20 @@ public class Client {
 				packet = makePacket(address, Var.WRITE, userData.get(1).getBytes(), Var.ZERO,MODE.getBytes(), Var.ZERO);
 				Log.packet("Client Sending WRITE", packet);
 			}
-			socket.send(packet);
 			
-			// Go into appropriate mode to receive message
-			if (userData.get(0).equals("R")) {
-				readMode(userData.get(1));
-			} else {
-				writeMode(userData.get(1));
+			try {
+				socket.send(packet);
+			
+				// Go into appropriate mode to receive message
+				if (userData.get(0).equals("R")) {
+					readMode(userData.get(1));
+				} else {
+					writeMode(userData.get(1));
+				}
+			} catch (SocketException e) {
+				if (running) {
+					throw e;
+				}
 			}
 		}
 	}
@@ -117,7 +125,7 @@ public class Client {
 						if(bytesToWrite.length!=1 || bytesToWrite[0]!=0)
 							writer.write(bytesToWrite);
 					} catch (IOException e) {
-						Log.err(e.getStackTrace().toString());
+						Log.err("", e);
 					}
 					
 					//Send the acknowledge packet
@@ -233,8 +241,17 @@ public class Client {
 	 */
 	private String getUserInput(String prompt) {
 		System.out.print(prompt);
-		String s = reader.nextLine();
-		System.out.println();
+		String s = "";
+		try {
+			if (reader.hasNextLine()) {
+				s = reader.nextLine();
+				System.out.println();
+			}
+		} catch (IllegalStateException e) {
+			if (running) {
+				throw e;
+			}
+		}
 		return s;
 	}
 	
@@ -268,7 +285,6 @@ public class Client {
 			running = false;
 			socket.close();
 			reader.close();
-			System.exit(0);
 		}
 	}
 
@@ -290,7 +306,7 @@ public class Client {
 	            }
 	        }
 		}
-		new Client(test).run();
+		new Client(System.in, test).run();
 	}
 
 }

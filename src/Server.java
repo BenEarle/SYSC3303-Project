@@ -1,25 +1,28 @@
+import java.io.InputStream;
 import java.util.Scanner;
 
 public class Server {
-
-	@SuppressWarnings({ "deprecation", "resource" })
-	public static void main(String[] args) {
+	private boolean running;
+	private ControlThread ct;
+	private Scanner sc;
+	
+	public Server(InputStream in) {
 		boolean verbose = true;
 		
 		System.out.println("SERVER<Main>: starting up control thread...");
-		ControlThread ct = new ControlThread(verbose);
+		ct = new ControlThread(verbose);
 		ct.start();
-		Scanner sc = new Scanner(System.in);
+		sc = new Scanner(in);
 		
-		boolean quit = false;
+		running = true;
 		//Loop until the user types in Quit
-		while(!quit){
+		while(running){
 			System.out.print("SERVER<Main>: ");
 			//get user input
 			//if user said quit quit = true
 			String input = sc.next();
 			if (input.equals("quit")) {
-				quit = true;
+				close();
 			} else if(input.equals("verbose")){
 				verbose = !verbose;
 				ct.setVerbose(verbose);
@@ -29,11 +32,20 @@ public class Server {
 				System.out.println("SERVER<Main>: Type in 'help' for a list of commands...");
 			}
 		}
-		if(quit){
-			System.out.println("SERVER<Main>: closing the control thread...");
-			ct.close();
-			ct.stop();
-		}
+	}
+	
+	public boolean isClosed() {
+		return running;
+	}
+	
+	public void close() {
+		running = false;
 		sc.close();
+		ct.close();
+		ct.interrupt();
+	}
+
+	public static void main(String[] args) {
+		new Server(System.in);
 	}
 }
