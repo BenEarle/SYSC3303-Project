@@ -9,10 +9,8 @@ import util.Var;
 public class ControlThread extends Thread {
 	private DatagramSocket socRecv;
 	private boolean running;
-	private boolean verbose;
 	
-	public ControlThread(boolean verbose) {
-		this.verbose = verbose;
+	public ControlThread() {
 		try {
 			socRecv = new DatagramSocket(Var.PORT_SERVER);
 		} catch (SocketException e) {
@@ -25,7 +23,7 @@ public class ControlThread extends Thread {
 		running = true;
 
 		while (running) {
-			if(verbose) System.out.println("SERVER<ControlThread>: Waiting to receive a packet...");
+			Log.out("SERVER<ControlThread>: Waiting to receive a packet...");
 			// Wait to get a packet.
 			DatagramPacket packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
 			try {
@@ -34,21 +32,21 @@ public class ControlThread extends Thread {
 				Log.err("SERVER<ControlThread>: ERROR: " + e.toString());
 				Log.err(e.getStackTrace().toString());
 			}
-			if(verbose) Log.packet("SERVER<ControlThread>: Server Receive", packet);
+			Log.packet("SERVER<ControlThread>: Server Receive", packet);
 			int res = readPacket(packet);
 			switch (res) {
 			case 1:
 				//Start a new ReadThread to handle the request.
-				new ReadThread(packet, verbose).start();
+				new ReadThread(packet).start();
 				//if(verbose) Log.packet("SERVER<ControlThread>: Server Sending READ", packet);
 				break;
 			case 2:
 				//Start a new WriteThread to handle the request.
-				new WriteThread(packet, verbose).start();
+				new WriteThread(packet).start();
 				//if(verbose) Log.packet("SERVER<ControlThread>: Server Sending WRITE", packet);
 				break;
 			default:
-				if(verbose) Log.out("SERVER<ControlThread>: Server got invalid packet, closing.");
+				Log.out("SERVER<ControlThread>: Server got invalid packet, closing.");
 				close();
 				throw new IllegalArgumentException();
 			}
@@ -71,7 +69,7 @@ public class ControlThread extends Thread {
 	}
 	
 	public void close() {
-		if(verbose) System.out.println("SERVER<ControlThread>: Closed control thread.");
+		Log.out("SERVER<ControlThread>: Closed control thread.");
 		if (running) {
 			running = false;
 			socRecv.close();
@@ -80,10 +78,6 @@ public class ControlThread extends Thread {
 
 	public boolean isClosed() {
 		return !running;
-	}
-
-	public void setVerbose(boolean verbose) {
-		this.verbose = verbose;
 	}
 
 }

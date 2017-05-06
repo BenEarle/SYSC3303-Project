@@ -8,8 +8,8 @@ import util.Var;
 
 public class ReadThread extends ClientResponseThread {
 
-	public ReadThread(DatagramPacket initialPacket, boolean verbose) {
-		super(initialPacket, verbose);
+	public ReadThread(DatagramPacket initialPacket) {
+		super(initialPacket);
 	}
 
 	/*
@@ -60,13 +60,13 @@ public class ReadThread extends ClientResponseThread {
 		for(int i=0; i<data.length; i++) msg[i+4] = data[i]; // Copy data into message
 		
 		// Send first data packet
-		if(verbose) Log.out("SERVER<ReadThread>: Sending Initial READ Data");	
+		Log.out("SERVER<ReadThread>: Sending Initial READ Data");	
 		super.sendPacket(msg);
 
 		// Loop until all packets are sent
 		while (!lastPacket) {
 			// Receive packet
-			if(verbose) Log.out("SERVER<ReadThread>: Receiving ACK Data");
+			Log.out("SERVER<ReadThread>: Receiving ACK Data");
 			packet = super.receivePacket();
 			// Ensure packet is ack
 			if (packet.getData()[0]==Var.ACK[0] &&  packet.getData()[1]==Var.ACK[1]) {
@@ -94,19 +94,19 @@ public class ReadThread extends ClientResponseThread {
 					for(int i=0; i<data.length; i++) msg[i+4] = data[i]; // Copy data into message
 					
 					// Send Packet
-					if(verbose) Log.out("SERVER<ReadThread>: Sending READ Data");
+					Log.out("SERVER<ReadThread>: Sending READ Data");
 					super.sendPacket(msg);
 					
 				} else throw new IndexOutOfBoundsException();
 			} else throw new IllegalArgumentException();
 		}
 		// Receive final ACK packet
-		if(verbose) Log.out("SERVER<ReadThread>: Receiving Final ACK Data");
+		Log.out("SERVER<ReadThread>: Receiving Final ACK Data");
 		packet = super.receivePacket();
 		// Ensure ACK is valid
 		if (packet.getData()[0]==Var.ACK[0] && packet.getData()[1]==Var.ACK[1]) {
 			// Ensure block number is valid
-			if (packet.getData()[2] == blockNum[0] && packet.getData()[3] == blockNum[1] && verbose) {
+			if (packet.getData()[2] == blockNum[0] && packet.getData()[3] == blockNum[1]) {
 				
 				Log.out("SERVER<ReadThread>: Read completed successfully.");
 				

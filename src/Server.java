@@ -1,31 +1,33 @@
 import java.io.InputStream;
 import java.util.Scanner;
 
+import util.Log;
+
 public class Server {
 	private boolean running;
 	private ControlThread ct;
 	private Scanner sc;
 	
 	public Server(InputStream in) {
-		boolean verbose = true;
-		
-		System.out.println("SERVER<Main>: starting up control thread...");
-		ct = new ControlThread(verbose);
+		System.out.println("SERVER<Main>:Starting Server");
+		Log.enable(true);
+		Log.out("SERVER<Main>: starting up control thread...");
+		Log.enable(false);
+		ct = new ControlThread();
 		ct.start();
 		sc = new Scanner(in);
 		
 		running = true;
 		//Loop until the user types in Quit
 		while(running){
-			System.out.print("SERVER<Main>: ");
+			Log.out("SERVER<Main>: ");
 			//get user input
 			//if user said quit quit = true
 			String input = sc.next();
 			if (input.equals("quit")) {
 				close();
 			} else if(input.equals("verbose")){
-				verbose = !verbose;
-				ct.setVerbose(verbose);
+				Log.enable(true);
 			} else if (input.equals("help")) {
 				System.out.println("SERVER<Main>: List of available commands: quit, verbose, help");
 			} else {

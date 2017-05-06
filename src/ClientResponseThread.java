@@ -12,10 +12,8 @@ public abstract class ClientResponseThread extends Thread {
 	protected String file, mode;
 	protected InetAddress clientIP;
 	protected int clientPort;
-	protected boolean verbose;
 	
-	ClientResponseThread(DatagramPacket initialPacket, boolean verbose) {
-		this.verbose = verbose;
+	ClientResponseThread(DatagramPacket initialPacket) {
 		unpack(initialPacket);
 		setUpSocket();
 	}
@@ -71,7 +69,7 @@ public abstract class ClientResponseThread extends Thread {
 	
 	protected void sendPacket(byte[] data){
 		DatagramPacket sPacket = new DatagramPacket(data, data.length, clientIP, clientPort);
-		if(verbose) Log.packet("Sending Packet",sPacket);
+		Log.packet("Sending Packet",sPacket);
 		try {
 			socket.send(sPacket);
 		} catch (IOException e) {
@@ -86,7 +84,7 @@ public abstract class ClientResponseThread extends Thread {
 		} catch (IOException e) {
 			Log.err(e.getStackTrace().toString());
 		}
-		if(verbose) Log.packet("Packet Received",rPacket);
+		Log.packet("Packet Received",rPacket);
 		return rPacket;
 	}
 

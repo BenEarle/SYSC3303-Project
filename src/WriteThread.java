@@ -7,8 +7,8 @@ import util.Var;
 
 public class WriteThread extends ClientResponseThread {
 	
-	public WriteThread(DatagramPacket initialPacket, boolean verbose) {
-		super(initialPacket, verbose);
+	public WriteThread(DatagramPacket initialPacket) {
+		super(initialPacket);
 	}
 	
 	// send ACK packet 0400
@@ -41,14 +41,14 @@ public class WriteThread extends ClientResponseThread {
 		}
 		
 		// Send initial Acknowledge
-		if(verbose) Log.out("SERVER<WriteThread>: Sending Initial ACK" + ack.toString());
+		Log.out("SERVER<WriteThread>: Sending Initial ACK" + ack.toString());
 		super.sendPacket(ack);
 				
 		// Loop until all packets are received
 		do {
 			// receive packet
 			packet = super.receivePacket();
-			if(verbose) Log.packet("SERVER<WriteThread>: Received WRITE Data", packet);
+			Log.packet("SERVER<WriteThread>: Received WRITE Data", packet);
 			data = packet.getData();
 			if (data[0] != 0 || data[1] != 3)
 				throw new IllegalArgumentException();
@@ -81,7 +81,7 @@ public class WriteThread extends ClientResponseThread {
 			}
 			
 			//Send the acknowledge
-			if(verbose) Log.out("SERVER<WriteThread>: Sending WRITE ACK" + ack.toString());
+			Log.out("SERVER<WriteThread>: Sending WRITE ACK" + ack.toString());
 			super.sendPacket(ack);
 		} while (bytesToWrite.length == Var.BLOCK_SIZE);
 		
@@ -92,7 +92,7 @@ public class WriteThread extends ClientResponseThread {
 			Log.err(e.getStackTrace().toString());
 		}
 		super.close();
-		if(verbose) Log.out("SERVER<WriteThread>: Write completed successfully");
+		Log.out("SERVER<WriteThread>: Write completed successfully");
 	}
 
 	
