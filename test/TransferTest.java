@@ -108,27 +108,18 @@ public class TransferTest {
 	}
 
 	@Test
-	public void test0() throws Exception {
-		testWriteFile("0.txt");
-		testReadFile("0.txt");
-	}
+	public void testFiles() throws Exception {
+		File folder = new File("src/testFile");
+		Log.enable(false);
 
-	@Test
-	public void test512() throws Exception {
-		testWriteFile("512.txt");
-		testReadFile("512.txt");
-	}
-
-	@Test
-	public void test1221() throws Exception {
-		testWriteFile("1221.txt");
-		testReadFile("1221.txt");
-	}
-
-	@Test
-	public void testTest() throws Exception {
-		testWriteFile("test.txt");
-		testReadFile("test.txt");
+		for (File f : folder.listFiles()) {
+			if (f.isFile()) {
+				String filename = f.getName();
+				System.out.println("\n---------------------\nTesting '" + filename + "'\n---------------------\n");
+				testWriteFile(filename);
+				testReadFile(filename);
+			}
+		}
 	}
 
 }
