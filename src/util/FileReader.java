@@ -6,6 +6,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+/*************************************************************************/
+//This class is used by both the client and the server to read byte 
+//arrays from files. It will read and return one block at a time.
+/*************************************************************************/
+
 public class FileReader {
 	private File file;
 	private BufferedInputStream in;

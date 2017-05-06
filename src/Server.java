@@ -1,13 +1,18 @@
 import java.io.InputStream;
 import java.util.Scanner;
-
 import util.Log;
 
+/*************************************************************************/
+// This class is the main class for the server. When run it will open a 
+// command line interface for the user, typing help will show them the 
+// available commands. On start up it will launch the ControlThread, 
+// which will open port 69 and start waiting for requests.
+/*************************************************************************/
 public class Server {
 	private boolean running;
 	private ControlThread ct;
 	private Scanner sc;
-	
+
 	public Server(InputStream in) {
 		System.out.println("SERVER<Main>:Starting Server");
 		Log.enable(true);
@@ -16,17 +21,17 @@ public class Server {
 		ct = new ControlThread();
 		ct.start();
 		sc = new Scanner(in);
-		
+
 		running = true;
-		//Loop until the user types in Quit
-		while(running){
+		// Loop until the user types in Quit
+		while (running) {
 			Log.out("SERVER<Main>: ");
-			//get user input
-			//if user said quit quit = true
+			// get user input
+			// if user said quit quit = true
 			String input = sc.next();
 			if (input.equals("quit")) {
 				close();
-			} else if(input.equals("verbose")){
+			} else if (input.equals("verbose")) {
 				Log.enable(true);
 			} else if (input.equals("help")) {
 				System.out.println("SERVER<Main>: List of available commands: quit, verbose, help");
@@ -35,11 +40,11 @@ public class Server {
 			}
 		}
 	}
-	
+
 	public boolean isClosed() {
 		return running;
 	}
-	
+
 	public void close() {
 		running = false;
 		sc.close();

@@ -1,5 +1,10 @@
 package util;
 
+/*************************************************************************/
+// This class is used to store constants that are used throughout our 
+// project.
+/*************************************************************************/
+
 public class Var {
 	public static final int PORT_CLIENT = 23;
 	public static final int PORT_SERVER = 69;

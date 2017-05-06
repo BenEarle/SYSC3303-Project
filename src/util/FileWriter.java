@@ -5,6 +5,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+/*************************************************************************/
+// This class is used by both the client and the server to write byte 
+// arrays out to a file. It takes a file name as input and must be closed
+// to ensure that the data is written correctly.
+/*************************************************************************/
+
 public class FileWriter {
 	private File file;
 	private BufferedOutputStream out;
