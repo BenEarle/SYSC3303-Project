@@ -14,13 +14,16 @@ public class Server {
 	private Scanner sc;
 
 	public Server(InputStream in) {
-		System.out.println("SERVER<Main>:Starting Server");
+		sc = new Scanner(in);
+	}
+	
+	public void run() {
+		System.out.println("SERVER<Main>: Starting Server");
 		Log.enable(true);
 		Log.out("SERVER<Main>: starting up control thread...");
 		Log.enable(false);
 		ct = new ControlThread();
 		ct.start();
-		sc = new Scanner(in);
 
 		running = true;
 		// Loop until the user types in Quit
@@ -42,14 +45,16 @@ public class Server {
 	}
 
 	public boolean isClosed() {
-		return running;
+		return !running;
 	}
 
 	public void close() {
-		running = false;
-		sc.close();
-		ct.close();
-		ct.interrupt();
+		if (running) {
+			running = false;
+			//sc.close();
+			ct.close();
+			ct.interrupt();
+		}
 	}
 
 	public static void main(String[] args) {

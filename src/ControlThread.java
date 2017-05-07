@@ -20,8 +20,7 @@ public class ControlThread extends Thread {
 		try {
 			socRecv = new DatagramSocket(Var.PORT_SERVER);
 		} catch (SocketException e) {
-			Log.err("ERROR: The server was unable to bind to port 69.");
-			Log.err(e.getStackTrace().toString());
+			Log.err("The server was unable to bind to port " + Var.PORT_SERVER + ".", e);
 		}
 	}
 	
@@ -35,9 +34,12 @@ public class ControlThread extends Thread {
 			try {
 				socRecv.receive(packet);
 			} catch (IOException e) {
-				Log.err("SERVER<ControlThread>: ERROR: " + e.toString());
-				Log.err(e.getStackTrace().toString());
+				if (!running && e.getMessage().equals("socket closed")) {
+					break;
+				}
+				Log.err("SERVER<ControlThread>: ERROR", e);
 			}
+			
 			Log.packet("SERVER<ControlThread>: Server Receive", packet);
 			int res = readPacket(packet);
 			switch (res) {
@@ -54,7 +56,6 @@ public class ControlThread extends Thread {
 			default:
 				Log.out("SERVER<ControlThread>: Server got invalid packet, closing.");
 				close();
-				throw new IllegalArgumentException();
 			}
 		}
 	}
@@ -84,8 +85,8 @@ public class ControlThread extends Thread {
 	}
 
 	public void close() {
-		Log.out("SERVER<ControlThread>: Closed control thread.");
 		if (running) {
+			Log.out("SERVER<ControlThread>: Closed control thread.");
 			running = false;
 			socRecv.close();
 		}
