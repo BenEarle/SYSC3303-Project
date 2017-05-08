@@ -49,14 +49,14 @@ public class WriteThread extends ClientResponseThread {
 		}
 
 		// Send initial Acknowledge
-		Log.out("SERVER<WriteThread>: Sending Initial ACK" + ack.toString());
+		Log.out("Server<WriteThread>: Sending Initial ACK" + ack.toString());
 		super.sendPacket(ack);
 
 		// Loop until all packets are received
 		do {
 			// receive packet
 			packet = super.receivePacket();
-			Log.packet("SERVER<WriteThread>: Received WRITE Data", packet);
+			Log.packet("Server<WriteThread>: Received WRITE Data", packet);
 			data = packet.getData();
 			if (data[0] != 0 || data[1] != 3)
 				throw new IllegalArgumentException();
@@ -83,7 +83,7 @@ public class WriteThread extends ClientResponseThread {
 			}
 
 			// Send the acknowledge
-			Log.out("SERVER<WriteThread>: Sending WRITE ACK" + ack.toString());
+			Log.out("Server<WriteThread>: Sending WRITE ACK" + ack.toString());
 			super.sendPacket(ack);
 		} while (bytesToWrite.length == Var.BLOCK_SIZE);
 
@@ -94,7 +94,7 @@ public class WriteThread extends ClientResponseThread {
 			Log.err("ERROR Closing file writer", e);
 		}
 		super.close();
-		Log.out("SERVER<WriteThread>: Write completed successfully.");
+		Log.out("Server<WriteThread>: Write completed successfully.");
 	}
 
 }

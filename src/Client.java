@@ -43,6 +43,8 @@ public class Client {
 		InetSocketAddress address;
 		DatagramPacket packet = null;
 		Log.out("Client: Starting Client");
+		System.out.println("Team #1 SYSC3303 Client Commandline [Iteration 1]");
+		System.out.println("Client: Type 'help' to get a list of available commands.");
 		if (testMode) {
 			address = addrHost;
 		} else {
@@ -55,8 +57,7 @@ public class Client {
 			String file = null;
 			String StrIn = getUserInput("Client: ");
 			// Create and send request according to input
-			switch (StrIn) {
-			case("R"):
+			switch (StrIn.toLowerCase()) {
 			case("r"):
 			case("read"):
 				file = getUserInput("Filename: ");
@@ -64,7 +65,6 @@ public class Client {
 				Log.packet("Client: Sending READ", packet);
 				RRQ = true;
 				break;
-			case("W"):
 			case("w"):
 			case("write"):
 				file = getUserInput("Filename: ");
@@ -73,13 +73,11 @@ public class Client {
 				Log.packet("Client: Sending WRITE", packet);
 				WRQ = true;
 				break;
-			case("V"):
 			case("v"):
 			case("verbose"):
 				Log.enable(true);
 				break;
 			case("test"):
-			case("T"):
 			case("t"):
 				testMode = !testMode;
 				if (testMode) {
@@ -88,16 +86,13 @@ public class Client {
 					address = addrServer;
 				}
 				break;	
-			case("S"):
 			case("s"):
 			case("shutdown"):
 			case("quit"):
 			case("q"):
-			case("Q"):
 				close();
 				break;
 			case("h"):
-			case("H"):
 			case("help"):
 				System.out.println("Client: Available commands: read, write, verbose, test, help.");
 				break;

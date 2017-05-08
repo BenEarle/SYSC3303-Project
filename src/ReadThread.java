@@ -71,13 +71,13 @@ public class ReadThread extends ClientResponseThread {
 			msg[i + 4] = data[i]; // Copy data into message
 
 		// Send first data packet
-		Log.out("SERVER<ReadThread>: Sending Initial READ Data");
+		Log.out("Server<ReadThread>: Sending Initial READ Data");
 		super.sendPacket(msg);
 
 		// Loop until all packets are sent
 		while (!lastPacket) {
 			// Receive packet
-			Log.out("SERVER<ReadThread>: Receiving ACK Data");
+			Log.out("Server<ReadThread>: Receiving ACK Data");
 			packet = super.receivePacket();
 			// Ensure packet is ack
 			if (packet.getData()[0] == Var.ACK[0] && packet.getData()[1] == Var.ACK[1]) {
@@ -109,7 +109,7 @@ public class ReadThread extends ClientResponseThread {
 						msg[i + 4] = data[i]; // Copy data into message
 
 					// Send Packet
-					Log.out("SERVER<ReadThread>: Sending READ Data");
+					Log.out("Server<ReadThread>: Sending READ Data");
 					super.sendPacket(msg);
 
 				} else
@@ -119,7 +119,7 @@ public class ReadThread extends ClientResponseThread {
 		}
 		
 		// Receive final ACK packet
-		Log.out("SERVER<ReadThread>: Receiving Final ACK Data");
+		Log.out("Server<ReadThread>: Receiving Final ACK Data");
 		packet = super.receivePacket();
 		// Ensure ACK is valid
 		if (packet.getData()[0] == Var.ACK[0] && packet.getData()[1] == Var.ACK[1]) {
@@ -136,7 +136,7 @@ public class ReadThread extends ClientResponseThread {
 			Log.err("ERROR Closing file reader", e);
 		}
 		super.close();
-		Log.out("SERVER<ReadThread>: Read completed successfully.");
+		Log.out("Server<ReadThread>: Read completed successfully.");
 	}
 
 	/*************************************************************************/

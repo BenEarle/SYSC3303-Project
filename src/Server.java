@@ -19,15 +19,17 @@ public class Server {
 	}
 	
 	public void run() {
-		System.out.println("SERVER<Main>: Starting Server");
-		Log.out("SERVER<Main>: starting up control thread...");
+		Log.out("Server<Main>: Starting Server");
+		Log.out("Server<Main>: starting up control thread...");
+		System.out.println("Team #1 SYSC3303 Client Commandline [Iteration 1]");
+		System.out.println("Server<Main>: Type 'help' to get a list of available commands.");
 		ct = new ControlThread();
 		ct.start();
 
 		running = true;
 		// Loop until the user types in Quit
 		while (running) {
-			System.out.print("SERVER<Main>: ");
+			System.out.print("Server<Main>: ");
 			// get user input
 			// if user said quit quit = true
 			String input = sc.next();
@@ -36,9 +38,9 @@ public class Server {
 			} else if (input.equals("verbose")) {
 				Log.enable(true);
 			} else if (input.equals("help")) {
-				System.out.println("SERVER<Main>: List of available commands: quit, verbose, help");
+				System.out.println("Server<Main>: List of available commands: quit, verbose, help");
 			} else {
-				System.out.println("SERVER<Main>: Type in 'help' for a list of commands...");
+				System.out.println("Server<Main>: Type in 'help' for a list of commands...");
 			}
 		}
 	}
@@ -64,6 +66,6 @@ public class Server {
 			}
 		}	
 		new Server(System.in).run();
-		Log.out("SERVER<Main>: Closed main thread.");
+		Log.out("Server<Main>: Closed main thread.");
 	}
 }
