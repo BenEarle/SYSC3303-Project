@@ -24,6 +24,7 @@ public class ControlThread extends Thread {
 			socRecv.setSoTimeout(Var.TIMEOUT);
 		} catch (SocketException e) {
 			Log.err("The server was unable to bind to port " + Var.PORT_SERVER + ".", e);
+			System.exit(1);
 		}
 	}
 	

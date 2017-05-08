@@ -43,7 +43,9 @@ public class WriteThread extends ClientResponseThread {
 		try {
 			fw = new FileWriter(Var.SERVER_ROOT + file);
 		} catch (IOException e) {
-			Log.err(e.getStackTrace().toString());
+			Log.err("ERROR Starting file writer",e);
+			super.close();
+			return;
 		}
 
 		// Send initial Acknowledge
@@ -77,7 +79,7 @@ public class WriteThread extends ClientResponseThread {
 			try {
 				fw.write(bytesToWrite);
 			} catch (IOException e) {
-				Log.err(e.getStackTrace().toString());
+				Log.err("ERROR writing to file", e);
 			}
 
 			// Send the acknowledge
@@ -89,10 +91,10 @@ public class WriteThread extends ClientResponseThread {
 		try {
 			fw.close();
 		} catch (IOException e) {
-			Log.err(e.getStackTrace().toString());
+			Log.err("ERROR Closing file writer", e);
 		}
 		super.close();
-		Log.out("SERVER<WriteThread>: Write completed successfully");
+		Log.out("SERVER<WriteThread>: Write completed successfully.");
 	}
 
 }

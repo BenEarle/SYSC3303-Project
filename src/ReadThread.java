@@ -36,7 +36,9 @@ public class ReadThread extends ClientResponseThread {
 			fr = new FileReader(Var.SERVER_ROOT + file);
 		} catch (FileNotFoundException e) {
 			// There is potential here to send a file not found error back to the client.
-			Log.err(e.getStackTrace().toString());
+			Log.err("ERROR Starting file reader",e);
+			super.close();
+			return;
 		}
 
 		// Initialize block index to send first block
@@ -122,9 +124,7 @@ public class ReadThread extends ClientResponseThread {
 		// Ensure ACK is valid
 		if (packet.getData()[0] == Var.ACK[0] && packet.getData()[1] == Var.ACK[1]) {
 			// Ensure block number is valid
-			if (packet.getData()[2] == blockNum[0] && packet.getData()[3] == blockNum[1]) 
-				Log.out("SERVER<ReadThread>: Read completed successfully.");
-			else
+			if (packet.getData()[2] != blockNum[0] || packet.getData()[3] != blockNum[1])
 				throw new IndexOutOfBoundsException();
 		} else
 			throw new IllegalArgumentException();
@@ -133,8 +133,10 @@ public class ReadThread extends ClientResponseThread {
 		try {
 			fr.close();
 		} catch (IOException e) {
-			Log.err(e.getStackTrace().toString());
+			Log.err("ERROR Closing file reader", e);
 		}
+		super.close();
+		Log.out("SERVER<ReadThread>: Read completed successfully.");
 	}
 
 	/*************************************************************************/

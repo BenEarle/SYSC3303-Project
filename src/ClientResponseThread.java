@@ -75,8 +75,7 @@ public abstract class ClientResponseThread extends Thread {
 		try {
 			socket = new DatagramSocket();
 		} catch (SocketException e) {
-			Log.err("ERROR: Creating socket.");
-			Log.err(e.getStackTrace().toString());
+			Log.err("ERROR Starting socket", e);
 		}
 	}
 
@@ -86,7 +85,7 @@ public abstract class ClientResponseThread extends Thread {
 		try {
 			socket.send(sPacket);
 		} catch (IOException e) {
-			Log.err(e.getStackTrace().toString());
+			Log.err("ERROR Sending packet", e);
 		}
 	}
 
@@ -95,7 +94,7 @@ public abstract class ClientResponseThread extends Thread {
 		try {
 			socket.receive(rPacket);
 		} catch (IOException e) {
-			Log.err(e.getStackTrace().toString());
+			Log.err("ERROR Receiving packet", e);
 		}
 		Log.packet("Packet Received", rPacket);
 		return rPacket;

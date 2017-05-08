@@ -1,2 +1,4 @@
 /bin/
 /temp/
+/src/testFile/s_*
+/src/testFile/c_*
