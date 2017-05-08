@@ -12,7 +12,7 @@
 
   Ben Croskery -
   Ben Earle - Server main, control, read and write threads, formatting, and comments  
-  Dillon Verhaegne - 
+  Dillon Verhaegne - Client side support, verbose mode, test mode, conforming to TFTP protocal
   Patrick Perron - Writing threads for server, debugging read/write transfers, Main ErrorSimulator code
   Shane Corrigan -
   
