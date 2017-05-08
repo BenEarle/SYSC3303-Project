@@ -97,7 +97,9 @@ public class WriteThread extends ClientResponseThread {
 			Log.err("ERROR Closing file writer", e);
 		}
 		super.close();
-		Log.out("Server<WriteThread>: Write completed successfully.");
+		// Sorry they share a command line...
+		System.out.println("Server<WriteThread>: Write completed successfully.");
+		System.out.print("Server<Main>: ");
 	}
 
 }

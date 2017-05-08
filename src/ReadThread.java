@@ -136,7 +136,9 @@ public class ReadThread extends ClientResponseThread {
 			Log.err("ERROR Closing file reader", e);
 		}
 		super.close();
-		Log.out("Server<ReadThread>: Read completed successfully.");
+		// Sorry they share a command line...
+		System.out.println("Server<ReadThread>: Read completed successfully.");
+		System.out.print("Server<Main>: ");
 	}
 
 	/*************************************************************************/

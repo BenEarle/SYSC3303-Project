@@ -52,15 +52,17 @@ public class ControlThread extends Thread {
 				case 1:
 					// Start a new ReadThread to handle the request.
 					new ReadThread(packet).start();
-					Log.packet("SERVER<ControlThread>: Server received a READ request. ", packet);
+					System.out.println("\nSERVER<ControlThread>: Server received a READ request. ");
+					Log.packet("Request: ", packet);
 					break;
 				case 2:
 					// Start a new WriteThread to handle the request.
 					new WriteThread(packet).start();
-					Log.packet("SERVER<ControlThread>: Server received a WRITE request", packet);
+					System.out.println("\nSERVER<ControlThread>: Server received a WRITE request");
+					Log.packet("Request: ", packet);
 					break;
 				default:
-					Log.out("SERVER<ControlThread>: Server got invalid packet, closing.");
+					Log.err("SERVER<ControlThread>: Server got invalid packet, closing.");
 					close();
 				}
 				Log.out("SERVER<ControlThread>: Waiting to receive a packet...");
