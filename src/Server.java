@@ -21,7 +21,6 @@ public class Server {
 	public void run() {
 		System.out.println("SERVER<Main>: Starting Server");
 		Log.out("SERVER<Main>: starting up control thread...");
-		Log.enable(false);
 		ct = new ControlThread();
 		ct.start();
 
@@ -58,6 +57,12 @@ public class Server {
 	}
 
 	public static void main(String[] args) {
+		Log.enable(false);
+		for (int i = 0; i < args.length; i++) {
+			if (args[i].equals("v") || args[i].equals("V")) {
+				Log.enable(true);
+			}
+		}	
 		new Server(System.in).run();
 		Log.out("SERVER<Main>: Closed main thread.");
 	}
