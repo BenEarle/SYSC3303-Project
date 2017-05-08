@@ -19,7 +19,6 @@ public class Server {
 	
 	public void run() {
 		System.out.println("SERVER<Main>: Starting Server");
-		Log.enable(true);
 		Log.out("SERVER<Main>: starting up control thread...");
 		Log.enable(false);
 		ct = new ControlThread();
@@ -28,7 +27,7 @@ public class Server {
 		running = true;
 		// Loop until the user types in Quit
 		while (running) {
-			Log.out("SERVER<Main>: ");
+			System.out.print("SERVER<Main>: ");
 			// get user input
 			// if user said quit quit = true
 			String input = sc.next();
@@ -50,10 +49,10 @@ public class Server {
 
 	public void close() {
 		if (running) {
+			// This will stop the IO loop
 			running = false;
-			//sc.close();
-			ct.close();
-			ct.interrupt();
+			// This will interrupt and kill the server control thread.
+			ct.close(); 
 		}
 	}
 

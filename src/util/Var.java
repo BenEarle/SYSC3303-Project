@@ -10,6 +10,7 @@ public class Var {
 	public static final int PORT_SERVER = 69;
 	public static final int BUF_SIZE    = 516;
 	public static final int BLOCK_SIZE  = 512;
+	public static final int TIMEOUT = 1000;
 	
 	public static String CLIENT_ROOT = "src/testFile/";
 	public static String SERVER_ROOT = "src/testFile/server/";

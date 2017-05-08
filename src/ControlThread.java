@@ -2,6 +2,8 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
+
 import util.Log;
 import util.Var;
 
@@ -19,6 +21,7 @@ public class ControlThread extends Thread {
 	public ControlThread() {
 		try {
 			socRecv = new DatagramSocket(Var.PORT_SERVER);
+			socRecv.setSoTimeout(Var.TIMEOUT);
 		} catch (SocketException e) {
 			Log.err("The server was unable to bind to port " + Var.PORT_SERVER + ".", e);
 		}
@@ -26,36 +29,40 @@ public class ControlThread extends Thread {
 	
 	public void run() {
 		running = true;
-		
+		boolean timeout;
 		while (running) {
+			timeout = false;
 			Log.out("SERVER<ControlThread>: Waiting to receive a packet...");
 			// Wait to get a packet.
 			DatagramPacket packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
 			try {
 				socRecv.receive(packet);
+			} catch (SocketTimeoutException ste) {
+			    timeout = true;
 			} catch (IOException e) {
 				if (!running && e.getMessage().equals("socket closed")) {
 					break;
 				}
 				Log.err("SERVER<ControlThread>: ERROR", e);
-			}
-			
-			Log.packet("SERVER<ControlThread>: Server Receive", packet);
-			int res = readPacket(packet);
-			switch (res) {
-			case 1:
-				// Start a new ReadThread to handle the request.
-				new ReadThread(packet).start();
-				Log.packet("SERVER<ControlThread>: Server received a READ request. ", packet);
-				break;
-			case 2:
-				// Start a new WriteThread to handle the request.
-				new WriteThread(packet).start();
-				Log.packet("SERVER<ControlThread>: Server received a WRITE request", packet);
-				break;
-			default:
-				Log.out("SERVER<ControlThread>: Server got invalid packet, closing.");
-				close();
+			} 
+			if (!timeout){
+				Log.packet("SERVER<ControlThread>: Server Receive", packet);
+				int res = readPacket(packet);
+				switch (res) {
+				case 1:
+					// Start a new ReadThread to handle the request.
+					new ReadThread(packet).start();
+					Log.packet("SERVER<ControlThread>: Server received a READ request. ", packet);
+					break;
+				case 2:
+					// Start a new WriteThread to handle the request.
+					new WriteThread(packet).start();
+					Log.packet("SERVER<ControlThread>: Server received a WRITE request", packet);
+					break;
+				default:
+					Log.out("SERVER<ControlThread>: Server got invalid packet, closing.");
+					close();
+				}
 			}
 		}
 	}
