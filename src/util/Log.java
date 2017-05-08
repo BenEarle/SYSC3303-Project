@@ -56,15 +56,50 @@ public class Log {
 	 * @param packet
 	 */
 	public static void packet(String s, DatagramPacket packet) {
+		String type;
+		String sendString;
+		byte[] data = packet.getData();
 		if (!enabled) return;
-		
-		out(
-				"\n" + s +  ":\n" +
-				"\tport\t" + packet.getPort() + "\n" +
-				"\tlength\t" + packet.getLength() + "\n" +
-				"\tbytes\t[" + bBytes(packet.getData(), packet.getLength()) + "]\n" +
-				"\tstring\t'" + bString(packet.getData(), packet.getLength()) + "'"
-			);
+		switch(data[1]) {
+		case(0x01) : 
+			type = "RRQ";
+			break;
+		case(0x02) :
+			type = "WRQ";
+			break;
+		case(0x03) :
+			type = "DATA";
+			break;
+		case(0x04):
+			type = "ACK";
+			break;
+		case(0x05):
+			type = "ERROR";
+			break;
+		default:
+				type = "Unknown";
+		}
+		if (data[0] != 0x00) {
+			type = "Unknown";
+		}
+		if (type.equals("RRQ") || type.equals("WRQ")) {
+			sendString = "\n" + s +  ":\n" + 
+						 "\tIP\t\t" + packet.getAddress().toString() + "\n" +
+						 "\tport\t\t" + packet.getPort() + "\n" +
+						 "\tlength\t\t" + packet.getLength() + "\n" + 
+						 "\tType\t\t" + type + "\n" +
+						 "\tName and Mode\t" + new String(data).substring(2).trim() + "";
+		} else if (type.equals("DATA") || type.equals("ACK")) {
+			sendString = "\n" + s +  ":\n" + 
+					 "\tIP\t\t" + packet.getAddress().toString() + "\n" +
+					 "\tport\t\t" + packet.getPort() + "\n" +
+					 "\tlength\t\t" + (packet.getLength() - 4 ) + "\n" + 
+					 "\tType\t\t" + type + "\n" +
+					 "\tBlock #\t\t" + (packet.getData()[2] * 256 + packet.getData()[3]) + "";
+		} else {
+			sendString = "Packet print not yet implimented";
+		}
+		out(sendString);
 	}
 
 	/**
