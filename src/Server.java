@@ -33,7 +33,7 @@ public class Server {
 			// get user input
 			// if user said quit quit = true
 			String input = sc.next();
-			if (input.equals("quit")) {
+			if (input.toLowerCase().equals("quit") || input.toLowerCase().equals("shutdown") || input.toLowerCase().equals("s") || input.toLowerCase().equals("q")) {
 				close();
 			} else if (input.equals("verbose")) {
 				Log.enable(true);
