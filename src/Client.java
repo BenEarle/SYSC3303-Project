@@ -87,6 +87,14 @@ public class Client {
 				} else {
 					address = addrServer;
 				}
+				break;	
+			case("S"):
+			case("s"):
+			case("shutdown"):
+			case("quit"):
+			case("q"):
+			case("Q"):
+				close();
 				break;
 			case("h"):
 			case("H"):
@@ -265,24 +273,6 @@ public class Client {
 		} else {
 			data[1]++;
 		}
-		return data;
-	}
-
-	/**
-	 * Prompts and collects the data from the user of filename and read or write
-	 * 
-	 * @return ArrayList where first element is if its read or write and second
-	 *         element is filename
-	 */
-	private ArrayList<String> getRequestData() {
-		ArrayList<String> data = new ArrayList<String>();
-		String rorW = getUserInput("Client: ");
-		if (rorW.equals("S")) {
-			close();
-		}
-		String file = getUserInput("Filename: ");
-		data.add(rorW);
-		data.add(file);
 		return data;
 	}
 
