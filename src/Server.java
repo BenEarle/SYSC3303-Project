@@ -35,9 +35,11 @@ public class Server {
 			String input = sc.next();
 			if (input.toLowerCase().equals("quit") || input.toLowerCase().equals("shutdown") || input.toLowerCase().equals("s") || input.toLowerCase().equals("q")) {
 				close();
-			} else if (input.equals("verbose")) {
-				Log.enable(true);
-			} else if (input.equals("help")) {
+			} else if (input.toLowerCase().equals("verbose") || input.toLowerCase().equals("v")) {
+				System.out.print("Server<Main>: Verbose mode is now " );
+				if(Log.toggleEnable()) System.out.println("enabled.");
+				else System.out.println("disabled.");
+			} else if (input.toLowerCase().equals("help") || input.toLowerCase().equals("h")) {
 				System.out.println("Server<Main>: List of available commands: quit, verbose, help");
 			} else {
 				System.out.println("Server<Main>: Type in 'help' for a list of commands...");

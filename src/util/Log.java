@@ -15,6 +15,11 @@ public class Log {
 		enabled = e;
 	}
 	
+	public static boolean toggleEnable(){
+		enabled = !enabled;
+		return enabled;
+	}
+	
 	/**
 	 * Log a general message.
 	 * @param s

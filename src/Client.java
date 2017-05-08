@@ -75,7 +75,9 @@ public class Client {
 				break;
 			case("v"):
 			case("verbose"):
-				Log.enable(true);
+				System.out.print("Client: Verbose mode is now " );
+				if(Log.toggleEnable()) System.out.println("enabled.");
+				else System.out.println("disabled.");
 				break;
 			case("test"):
 			case("t"):
