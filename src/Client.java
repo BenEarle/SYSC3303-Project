@@ -87,6 +87,9 @@ public class Client {
 				} else {
 					address = addrServer;
 				}
+				System.out.print("Client: Test mode is now " );
+				if(testMode) System.out.println("enabled.");
+				else System.out.println("disabled.");
 				break;	
 			case("s"):
 			case("shutdown"):
