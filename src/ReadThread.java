@@ -55,7 +55,7 @@ public class ReadThread extends ClientResponseThread {
 			if (data.length != Var.BLOCK_SIZE)
 				lastPacket = true;
 		} catch (Exception e) {
-			data = new byte[1]; // Empty Message
+			data = new byte[0]; // Empty Message
 			lastPacket = true;
 		}
 
@@ -90,7 +90,7 @@ public class ReadThread extends ClientResponseThread {
 						// Exception if no bytes left in file. Send last packet
 						// empty
 					} catch (Exception e) {
-						data = new byte[1]; // Empty Message
+						data = new byte[0]; // Empty Message
 						lastPacket = true;
 					}
 
