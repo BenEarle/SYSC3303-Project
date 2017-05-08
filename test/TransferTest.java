@@ -66,7 +66,7 @@ public class TransferTest {
 		if (s != null && !s.isClosed()) {
 			s.close();
 		}
-		Thread.sleep(10);
+		Thread.sleep(50);
 	}
 
 	@Test
@@ -84,7 +84,13 @@ public class TransferTest {
 //		}).start();
 
 		// Wait then close both client and server, then check.
-		Thread.sleep(100);
+		int i = 100;
+		while (s == null || s.isClosed()) {
+			Thread.sleep(10);
+			if (i-- == 0) {
+				fail("Server was never started.");
+			}
+		}
 		stop();
 //		assertTrue(c.isClosed());
 		assertTrue(s.isClosed());
@@ -94,7 +100,13 @@ public class TransferTest {
 		runClient("S\n");
 
 		// Wait then check both are closed.
-		Thread.sleep(100);
+		i = 100;
+		while (s == null || !s.isClosed() || c == null || !c.isClosed()) {
+			Thread.sleep(10);
+			if (i-- == 0) {
+				fail("Server or client was never started.");
+			}
+		}
 		assertTrue(c.isClosed());
 		assertTrue(s.isClosed());
 	}
@@ -169,6 +181,7 @@ public class TransferTest {
 				runServer(null);
 			}
 		}
+		Thread.sleep(50);
 	}
 
 }
