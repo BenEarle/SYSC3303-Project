@@ -5,7 +5,7 @@
 # Group #1:
   Ben Croskery (100973306)
   Ben Earle (100970237)
-  Dillon Verhaeghe (10096889)
+  Dillon Verhaeghe (100965889)
   Patrick Perron (100965104)
   Shane Corrigan (100965710)
   
