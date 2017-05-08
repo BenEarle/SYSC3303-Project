@@ -16,7 +16,7 @@ import util.Var;
 
 public class ControlThread extends Thread {
 	private DatagramSocket socRecv;
-	private boolean running;
+	private boolean running, timeout;
 
 	public ControlThread() {
 		try {
@@ -29,16 +29,15 @@ public class ControlThread extends Thread {
 	
 	public void run() {
 		running = true;
-		boolean timeout;
+		Log.out("SERVER<ControlThread>: Waiting to receive a packet...");
 		while (running) {
 			timeout = false;
-			Log.out("SERVER<ControlThread>: Waiting to receive a packet...");
 			// Wait to get a packet.
 			DatagramPacket packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
 			try {
 				socRecv.receive(packet);
 			} catch (SocketTimeoutException ste) {
-			    timeout = true;
+				timeout = true;
 			} catch (IOException e) {
 				if (!running && e.getMessage().equals("socket closed")) {
 					break;
@@ -63,6 +62,7 @@ public class ControlThread extends Thread {
 					Log.out("SERVER<ControlThread>: Server got invalid packet, closing.");
 					close();
 				}
+				Log.out("SERVER<ControlThread>: Waiting to receive a packet...");
 			}
 		}
 	}
