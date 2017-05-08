@@ -65,7 +65,7 @@ es6 - Receive Datagram
 es7 - Extract message
 es8 - From message
 es9 - Create Datagram
-es10 - Send Datagram</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>700</x><y>272</y><w>180</w><h>130</h></coordinates><panel_attributes>halign=left
+es10 - Send Datagram</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>720</x><y>282</y><w>180</w><h>120</h></coordinates><panel_attributes>halign=left
 s1 - Receive Datagram
 s2 - Extract message
 s3 - Verify ACK
@@ -92,7 +92,7 @@ Data Socket
 
         s1
          X
-        s8
+        s7
          X</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>10</x><y>160</y><w>90</w><h>90</h></coordinates><panel_attributes>lt=.&gt;&gt;</panel_attributes><additional_attributes>10;70;70;10</additional_attributes></element><element><id>Relation</id><coordinates><x>10</x><y>110</y><w>30</w><h>140</h></coordinates><panel_attributes>lt=.&gt;&gt;</panel_attributes><additional_attributes>10;120;10;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>280</x><y>172</y><w>90</w><h>80</h></coordinates><panel_attributes>halign=left
 Data Socket
 
@@ -103,11 +103,11 @@ Control Thread
            
 
 </panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>820</x><y>142</y><w>210</w><h>110</h></coordinates><panel_attributes>halign=left
-Server Response Thread
+Read Thread
 
-    s2               s3             s4          s5    
-    X                 X              X            X                           
-                       s7             s6          
+    s2               s3             s4              
+    X                 X              X                                      
+                       s6             s5          
                        X              X
                                                           
                                                         
