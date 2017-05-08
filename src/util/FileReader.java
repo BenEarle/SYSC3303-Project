@@ -26,7 +26,7 @@ public class FileReader {
 		return file.getName();
 	}
 	
-	public byte[] read() throws IOException {
+	public synchronized byte[] read() throws IOException {
 		if (closed)
 			throw new IOException("File has already been closed.");
 		

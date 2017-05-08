@@ -58,5 +58,6 @@ public class Server {
 
 	public static void main(String[] args) {
 		new Server(System.in).run();
+		Log.out("SERVER<Main>: Closed main thread.");
 	}
 }

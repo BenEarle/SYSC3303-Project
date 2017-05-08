@@ -30,7 +30,7 @@ public class FileWriter {
 		return file.getName();
 	}
 	
-	public void write(byte[] data) throws IOException {
+	public synchronized void write(byte[] data) throws IOException {
 		if (closed)
 			throw new IOException("File has already been closed.");
 		
