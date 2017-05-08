@@ -128,9 +128,7 @@ public class Client {
 
 					// write the block to the file
 					try {
-						// To account for empty packets being 1 null byte
-						if (bytesToWrite.length != 1 || bytesToWrite[0] != 0)
-							writer.write(bytesToWrite);
+						writer.write(bytesToWrite);
 					} catch (IOException e) {
 						Log.err("", e);
 					}
@@ -189,7 +187,7 @@ public class Client {
 							lastPacket = true;
 						// Exception if no bytes left in file. Send last packet empty
 					} catch (Exception e) {
-						data = new byte[1]; // Empty Message
+						data = new byte[0]; // Empty Message
 						lastPacket = true;
 					}
 					blockNum = bytesIncrement(blockNum);
