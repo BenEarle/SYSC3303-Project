@@ -1,0 +1,134 @@
+<diagram program="umletino" version="14.2"><zoom_level>10</zoom_level><element><id>UMLClass</id><coordinates><x>100</x><y>52</y><w>120</w><h>200</h></coordinates><panel_attributes>halign=left
+Client
+
+    c1                 c2          
+    X                    X
+
+
+                          c7
+                           X
+
+
+    c6                 c5 
+     X                  X
+
+
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>900</x><y>52</y><w>180</w><h>200</h></coordinates><panel_attributes>halign=left
+Server
+
+    s1                 s2                s3
+    X                   X                 X
+ 
+
+                                              s4             
+                                               X
+
+
+    s8                  s7                 s6 
+    X                    X                  X
+
+
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>480</x><y>52</y><w>160</w><h>200</h></coordinates><panel_attributes>halign=left
+Error Simulator
+
+    es2            es3           es4          
+     X                X               X
+
+
+
+
+
+
+    es9            es8           es7          
+     X                X               X
+
+
+
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>230</x><y>52</y><w>80</w><h>200</h></coordinates><panel_attributes>halign=left
+Data Socket
+
+     c3           
+      X            
+
+
+
+
+
+
+     c4            
+      X            
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>380</x><y>52</y><w>90</w><h>90</h></coordinates><panel_attributes>halign=left
+Data Socket 23
+
+  es1
+   X
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>100</x><y>282</y><w>170</w><h>100</h></coordinates><panel_attributes>halign=left
+c1- form RRQ Packet
+c2- form Datagram
+c3- send Datagram (Port 69)
+c4- receive Datagram
+c5- extract the message
+c7- close()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>480</x><y>272</y><w>160</w><h>160</h></coordinates><panel_attributes>halign=left
+es1 - Receive Datagram
+es2 - Extract message
+es3 - From message
+es4 - Create Datagram
+es5 - Send Datagram
+es6 - Receive Datagram
+es7 - Extract message
+es8 - From message
+es9 - Create Datagram
+es10 - Send Datagram</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>900</x><y>292</y><w>180</w><h>130</h></coordinates><panel_attributes>halign=left
+s1 - Receive UDP Datagram
+s2 - Extract message
+s3 - Verify RRQ
+s4 - Read File
+s4 - Create socket
+s5 - Form Data Packet
+s6 - Form Datagram
+s7 - Send Datagram
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>110</x><y>99</y><w>960</w><h>150</h></coordinates><panel_attributes></panel_attributes><additional_attributes>10;10;940;10;940;130;10;130</additional_attributes></element><element><id>UMLClass</id><coordinates><x>800</x><y>52</y><w>90</w><h>70</h></coordinates><panel_attributes>halign=left
+Data Socket 69
+
+          s1
+          X
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>650</x><y>52</y><w>80</w><h>200</h></coordinates><panel_attributes>halign=left
+Data Socket
+
+     es5
+      X
+
+
+
+
+
+
+    es6
+     X</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>800</x><y>172</y><w>90</w><h>80</h></coordinates><panel_attributes>halign=left
+Data Socket
+
+        s9
+        X
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>110</x><y>160</y><w>90</w><h>90</h></coordinates><panel_attributes>lt=.&gt;&gt;</panel_attributes><additional_attributes>10;70;70;10</additional_attributes></element><element><id>Relation</id><coordinates><x>110</x><y>110</y><w>30</w><h>140</h></coordinates><panel_attributes>lt=.&gt;&gt;</panel_attributes><additional_attributes>10;120;10;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>380</x><y>172</y><w>90</w><h>80</h></coordinates><panel_attributes>halign=left
+Data Socket
+
+    es10
+     X
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>100</x><y>402</y><w>170</w><h>100</h></coordinates><panel_attributes>halign=left
+c1- form ACK Packet
+c2- form Datagram
+c3- send Datagram (Port 69)
+c4- receive Datagram
+c5- extract the message
+c7- close()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>900</x><y>442</y><w>180</w><h>130</h></coordinates><panel_attributes>halign=left
+s1 - Receive UDP Datagram
+s2 - Extract message
+s3 - Verify ACK
+s4 - Read File
+s4 - Create socket
+s5 - Form Data Packet
+s6 - Form Datagram
+s7 - Send Datagram
+</panel_attributes><additional_attributes></additional_attributes></element></diagram>
