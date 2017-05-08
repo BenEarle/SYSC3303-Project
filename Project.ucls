@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<class-diagram version="1.2.0" icons="true" always-add-relationships="false" generalizations="true" realizations="true" 
-  associations="true" dependencies="false" nesting-relationships="true" router="FAN">  
+<class-diagram version="1.2.0" icons="true" automaticImage="JPEG" always-add-relationships="false" 
+  generalizations="true" realizations="true" associations="true" dependencies="false" nesting-relationships="true" 
+  router="FAN">  
   <class id="1" language="java" name="util.Log" project="SYSC3303-Project" file="/SYSC3303-Project/src/util/Log.java" 
     binary="false" corner="BOTTOM_RIGHT">    
-    <position height="261" width="198" x="261" y="163"/>    
+    <position height="279" width="198" x="85" y="54"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -12,7 +13,7 @@
   </class>  
   <class id="2" language="java" name="util.Var" project="SYSC3303-Project" file="/SYSC3303-Project/src/util/Var.java" 
     binary="false" corner="BOTTOM_RIGHT">    
-    <position height="351" width="135" x="499" y="163"/>    
+    <position height="351" width="135" x="323" y="54"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -21,7 +22,7 @@
   </class>  
   <class id="3" language="java" name="util.FileWriter" project="SYSC3303-Project" 
     file="/SYSC3303-Project/src/util/FileWriter.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="207" width="156" x="674" y="163"/>    
+    <position height="207" width="156" x="498" y="54"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -30,7 +31,7 @@
   </class>  
   <class id="4" language="java" name="util.FileReader" project="SYSC3303-Project" 
     file="/SYSC3303-Project/src/util/FileReader.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="189" width="140" x="870" y="163"/>    
+    <position height="189" width="140" x="694" y="54"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -39,7 +40,7 @@
   </class>  
   <class id="5" language="java" name="WriteThread" project="SYSC3303-Project" 
     file="/SYSC3303-Project/src/WriteThread.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="99" width="171" x="1778" y="478"/>    
+    <position height="-1" width="-1" x="1699" y="484"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -48,7 +49,7 @@
   </class>  
   <class id="6" language="java" name="Server" project="SYSC3303-Project" file="/SYSC3303-Project/src/Server.java" 
     binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="1684" y="158"/>    
+    <position height="-1" width="-1" x="1511" y="143"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -57,7 +58,7 @@
   </class>  
   <class id="7" language="java" name="ControlThread" project="SYSC3303-Project" 
     file="/SYSC3303-Project/src/ControlThread.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="1649" y="604"/>    
+    <position height="-1" width="-1" x="1494" y="438"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -66,7 +67,7 @@
   </class>  
   <class id="8" language="java" name="Client" project="SYSC3303-Project" file="/SYSC3303-Project/src/Client.java" 
     binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="1186" y="261"/>    
+    <position height="-1" width="-1" x="1036" y="245"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -75,7 +76,7 @@
   </class>  
   <class id="9" language="java" name="ClientResponseThread" project="SYSC3303-Project" 
     file="/SYSC3303-Project/src/ClientResponseThread.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="261" width="221" x="1939" y="33"/>    
+    <position height="-1" width="-1" x="1782" y="171"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -84,7 +85,7 @@
   </class>  
   <class id="10" language="java" name="ReadThread" project="SYSC3303-Project" 
     file="/SYSC3303-Project/src/ReadThread.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="117" width="171" x="1989" y="478"/>    
+    <position height="-1" width="-1" x="1889" y="481"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -93,7 +94,7 @@
   </class>  
   <class id="11" language="java" name="ErrorSimulator" project="SYSC3303-Project" 
     file="/SYSC3303-Project/src/ErrorSimulator.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="1450" y="185"/>    
+    <position height="-1" width="-1" x="1313" y="159"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -101,11 +102,11 @@
     </display>  
   </class>  
   <generalization id="12">    
-    <end type="SOURCE" refId="5"/>    
+    <end type="SOURCE" refId="10"/>    
     <end type="TARGET" refId="9"/>  
   </generalization>  
   <generalization id="13">    
-    <end type="SOURCE" refId="10"/>    
+    <end type="SOURCE" refId="5"/>    
     <end type="TARGET" refId="9"/>  
   </generalization>  
   <association id="14">    
