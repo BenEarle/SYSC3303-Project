@@ -11,8 +11,8 @@
 # Responsibilities
 
   Ben Croskery -
-  Ben Earle -
-  Dillon Verhaegne -
+  Ben Earle - Server main, control, read and write threads, formatting, and comments  
+  Dillon Verhaegne - 
   Patrick Perron - Writing threads for server, debugging read/write transfers, Main ErrorSimulator code
   Shane Corrigan -
   
