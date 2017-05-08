@@ -14,7 +14,7 @@
 -----------------------------------------------------------------------------------------------------------
   Ben Croskery     -> Provided base code, util classes, FileRead/Writer Classes, Test Classes, Client 
                       Read/Write
-  Ben Earle        -> Server main, control, read and write threads, formatting, and comments  
+  Ben Earle        -> Server main, control, read and write threads, command line interfaces, formatting, and comments  
   Dillon Verhaeghe -> Client side support, verbose mode, test mode, conforming to TFTP protocal
   Patrick Perron   -> Writing threads for server, debugging read/write transfers, Main ErrorSimulator code
   Shane Corrigan   -> UMC Diagrams, Server main user interface  
