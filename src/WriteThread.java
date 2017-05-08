@@ -40,22 +40,25 @@ public class WriteThread extends ClientResponseThread {
 
 		// Open FileWriter
 		FileWriter fw = null;
-		try {
-			fw = new FileWriter(Var.SERVER_ROOT + file);
-		} catch (IOException e) {
-			Log.err("ERROR Starting file writer",e);
-			super.close();
-			return;
-		}
-
+		
 		// Send initial Acknowledge
 		Log.out("Server<WriteThread>: Sending Initial ACK" + ack.toString());
 		super.sendPacket(ack);
-
+		boolean firstData = true;
 		// Loop until all packets are received
 		do {
 			// receive packet
 			packet = super.receivePacket();
+			if(firstData){
+				firstData = false;
+				try {
+					fw = new FileWriter(Var.SERVER_ROOT + file);
+				} catch (IOException e) {
+					Log.err("ERROR Starting file writer",e);
+					super.close();
+					return;
+				}
+			}
 			Log.packet("Server<WriteThread>: Received WRITE Data", packet);
 			data = packet.getData();
 			if (data[0] != 0 || data[1] != 3)

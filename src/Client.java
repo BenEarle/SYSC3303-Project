@@ -132,7 +132,6 @@ public class Client {
 	private void readMode(String fileName) throws IOException {
 
 		InetSocketAddress address = null; // Where all ack packets are sent
-		FileWriter writer = new FileWriter(Var.CLIENT_ROOT + fileName);
 
 		DatagramPacket packet = null; // packet to send and receive data during
 										// transfer
@@ -144,12 +143,17 @@ public class Client {
 		byte[] blockNum = new byte[2];
 		blockNum[0] = 0x00;
 		blockNum[1] = 0x01;
-
+		boolean firstData = true;
+		FileWriter writer = null;
 		// Loop until last data packet is received
 		while (!lastPacket) {
 			// Create packet then receive and get info from packet
 			packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
 			socket.receive(packet);
+			if(firstData){
+				firstData = false;
+				writer = new FileWriter(Var.CLIENT_ROOT + fileName);
+			}
 			data = packet.getData();
 			Log.packet("Client: Receiving READ DATA", packet);
 			// Save address to send response to
