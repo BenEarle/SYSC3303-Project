@@ -177,7 +177,7 @@ public class Client {
 			} else
 				throw new IllegalArgumentException();
 		}
-		Log.out("Client: Read Operation Successful");
+		System.out.println("Client: Read Operation Successful");
 		// Close output stream
 		writer.close();
 	}
@@ -247,7 +247,7 @@ public class Client {
 			// Confirm block number is correct
 			if (data[2] == blockNum[0] && data[3] == blockNum[1]) {
 
-				Log.out("Write: Operation Successful");
+				System.out.println("Write: Operation Successful");
 
 			} else
 				throw new IndexOutOfBoundsException();
