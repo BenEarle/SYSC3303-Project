@@ -79,9 +79,7 @@ public class WriteThread extends ClientResponseThread {
 
 			// Write the block to the file
 			try {
-				// To account for empty packets being 1 null byte
-				if (bytesToWrite.length != 1 || bytesToWrite[0] != 0)
-					fw.write(bytesToWrite);
+				fw.write(bytesToWrite);
 			} catch (IOException e) {
 				Log.err(e.getStackTrace().toString());
 			}
