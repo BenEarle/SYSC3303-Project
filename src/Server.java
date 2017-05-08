@@ -15,6 +15,7 @@ public class Server {
 
 	public Server(InputStream in) {
 		sc = new Scanner(in);
+		running = false;
 	}
 	
 	public void run() {

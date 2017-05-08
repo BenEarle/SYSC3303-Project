@@ -71,11 +71,7 @@ public class WriteThread extends ClientResponseThread {
 
 			// Make an array with the bytes to write
 			bytesToWrite = new byte[packet.getLength() - 4];
-			for (int i = 4; i < packet.getLength(); i++) {
-				if (data[i] == 0)
-					break;
-				bytesToWrite[i - 4] = data[i];
-			}
+			System.arraycopy(data, 4, bytesToWrite, 0, bytesToWrite.length);
 
 			// Write the block to the file
 			try {

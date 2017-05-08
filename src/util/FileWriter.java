@@ -37,6 +37,13 @@ public class FileWriter {
 		out.write(data);
 	}
 	
+	public void write(byte[] data, int offset) throws IOException {
+		if (closed)
+			throw new IOException("File has already been closed.");
+		
+		out.write(data, offset, data.length - offset);
+	}
+	
 	public void close() throws IOException {
 		out.close();
 		closed = true;

@@ -116,11 +116,7 @@ public class Client {
 				if (blockNum[0] == data[2] && blockNum[1] == data[3]) {
 					// Get bytes to write to file from packet
 					bytesToWrite = new byte[packet.getLength() - 4];
-					for (int i = 4; i < packet.getLength(); i++) {
-						if (data[i] == 0)
-							break;
-						bytesToWrite[i - 4] = data[i];
-					}
+					System.arraycopy(data, 4, bytesToWrite, 0, bytesToWrite.length);
 
 					// Flag as last data packet if not full block size
 					if (bytesToWrite.length != Var.BLOCK_SIZE)

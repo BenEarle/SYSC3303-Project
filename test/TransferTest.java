@@ -25,9 +25,10 @@ public class TransferTest {
 	/**
 	 * Start up the server on a new thread.
 	 * @param in InputStream
+	 * @param wait If sleep for the server to start
 	 * @throws Exception
 	 */
-	public void runServer(String input) throws Exception {
+	public void runServer(String input, boolean wait) throws Exception {
 		if (input == null) {
 			s = new Server(System.in);
 		} else {
@@ -39,6 +40,19 @@ public class TransferTest {
 				s.run();
 			}
 		}, "Server").start();
+
+		if (wait) {
+			int i = 100;
+			while (s.isClosed()) {
+				Thread.sleep(10);
+				if (i-- == 0) {
+					fail("Server was never started.");
+				}
+			}
+		}
+	}
+	public void runServer(String input) throws Exception {
+		runServer(input, true);
 	}
 	
 	/**
@@ -84,29 +98,23 @@ public class TransferTest {
 //		}).start();
 
 		// Wait then close both client and server, then check.
-		int i = 100;
-		while (s == null || s.isClosed()) {
-			Thread.sleep(10);
-			if (i-- == 0) {
-				fail("Server was never started.");
-			}
-		}
 		stop();
 //		assertTrue(c.isClosed());
 		assertTrue(s.isClosed());
 
 		// Start client and server with closing commands.
-		runServer("quit\n");
+//		runServer("quit\n", false);
 		runClient("S\n");
+//		Thread.sleep(50);
 
 		// Wait then check both are closed.
-		i = 100;
-		while (s == null || !s.isClosed() || c == null || !c.isClosed()) {
-			Thread.sleep(10);
-			if (i-- == 0) {
-				fail("Server or client was never started.");
-			}
-		}
+//		int i = 100;
+//		while (s == null || !s.isClosed() || c == null || !c.isClosed()) {
+//			Thread.sleep(10);
+//			if (i-- == 0) {
+//				fail("Server or client was never started.");
+//			}
+//		}
 		assertTrue(c.isClosed());
 		assertTrue(s.isClosed());
 	}
