@@ -73,7 +73,7 @@ es10 - Send Datagram</panel_attributes><additional_attributes></additional_attri
 s1 - Receive UDP Datagram
 s2 - Extract message
 s3 - Verify RRQ
-s4 - Create Write Thread
+s4 - Create Read Thread
 s5 - Create socket
 s6 - Form ACK Packet
 s7 - Form Datagram
