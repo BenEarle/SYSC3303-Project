@@ -25,7 +25,7 @@
  Main Classes:
   * Server.java --------------- Code for Server User Interface, launches ControlThread
   * Client.java --------------- Code for Client that will send Read/Write requests
-  * ErrorSimulator.java ------- Code for Error simulator, thht forward messages back and forth between 
+  * ErrorSimulator.java ------- Code for Error simulator, that forward messages back and forth between 
                                 client and server
   * ReadThread.java ----------- Server Thread for handling read request from server
   * WriteThread.java ---------- Server Thread for handling write request from server
