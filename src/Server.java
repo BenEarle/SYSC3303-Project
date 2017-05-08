@@ -58,6 +58,6 @@ public class Server {
 	}
 
 	public static void main(String[] args) {
-		new Server(System.in);
+		new Server(System.in).run();
 	}
 }
