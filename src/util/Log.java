@@ -102,8 +102,8 @@ public class Log {
 					 "\tport\t\t" + packet.getPort() + "\n" +
 					 "\tlength\t\t" + (packet.getLength() - 4 ) + "\n" + 
 					 "\tType\t\t" + type + "\n" +
-					 "\tError Code\t\t" + packet.getData()[2] + packet.getData()[3] + "\n" + 	
-			 		 "\tError Message\t\t" + new String(data).substring(4).trim();			
+					 "\tError Code\t" + packet.getData()[2] + packet.getData()[3] + "\n" + 	
+			 		 "\tError Message\t" + new String(data).substring(4).trim();			
 			
 		} else{
 			sendString = "Packet print not yet implemented ";
