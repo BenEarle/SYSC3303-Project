@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import util.FileReader;
 import util.Log;
+import util.TFTPErrorHelper;
 import util.Var;
 
 /*************************************************************************/
@@ -20,13 +21,8 @@ public class ReadThread extends ClientResponseThread {
 	/*
 	 * Algorithm for Reading from a file:
 	 * 
-	 * Receive RRQ 
-	 * Open Socket and File 
-	 * do 
-	 *  Read data from file
-	 *  Send data 
-	 *  Receive ack 
-	 * while(data.len == 512)
+	 * Receive RRQ Open Socket and File do Read data from file Send data Receive
+	 * ack while(data.len == 512)
 	 */
 
 	public void run() {
@@ -35,8 +31,9 @@ public class ReadThread extends ClientResponseThread {
 		try {
 			fr = new FileReader(Var.SERVER_ROOT + file);
 		} catch (FileNotFoundException e) {
-			// There is potential here to send a file not found error back to the client.
-			Log.err("ERROR Starting file reader",e);
+			// There is potential here to send a file not found error back to
+			// the client.
+			Log.err("ERROR Starting file reader", e);
 			super.close();
 			return;
 		}
@@ -79,56 +76,52 @@ public class ReadThread extends ClientResponseThread {
 			// Receive packet
 			Log.out("Server<ReadThread>: Receiving ACK Data");
 			packet = super.receivePacket();
-			// Ensure packet is ack
-			if (packet.getData()[0] == Var.ACK[0] && packet.getData()[1] == Var.ACK[1]) {
-				// Ensure packet has correct index
-				if (packet.getData()[2] == blockNum[0] && packet.getData()[3] == blockNum[1]) {
-					// Get data from file and check if length read is less than
-					// full block size
-					try {
-						data = fr.read();
-						if (data.length != Var.BLOCK_SIZE)
-							lastPacket = true;
-						// Exception if no bytes left in file. Send last packet
-						// empty
-					} catch (Exception e) {
-						data = new byte[0]; // Empty Message
+			if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) == null) {
+				// Get data from file and check if length read is less than
+				// full block size
+				try {
+					data = fr.read();
+					if (data.length != Var.BLOCK_SIZE)
 						lastPacket = true;
-					}
+					// Exception if no bytes left in file. Send last packet
+					// empty
+				} catch (Exception e) {
+					data = new byte[0]; // Empty Message
+					lastPacket = true;
+				}
 
-					// Increment Block Number
-					blockNum = bytesIncrement(blockNum);
+				// Increment Block Number
+				blockNum = bytesIncrement(blockNum);
 
-					// Build message from data
-					msg = new byte[4 + data.length];
-					msg[0] = Var.DATA[0];
-					msg[1] = Var.DATA[1];
-					msg[2] = blockNum[0];
-					msg[3] = blockNum[1];
-					for (int i = 0; i < data.length; i++)
-						msg[i + 4] = data[i]; // Copy data into message
+				// Build message from data
+				msg = new byte[4 + data.length];
+				msg[0] = Var.DATA[0];
+				msg[1] = Var.DATA[1];
+				msg[2] = blockNum[0];
+				msg[3] = blockNum[1];
+				for (int i = 0; i < data.length; i++)
+					msg[i + 4] = data[i]; // Copy data into message
 
-					// Send Packet
-					Log.out("Server<ReadThread>: Sending READ Data");
-					super.sendPacket(msg);
+				// Send Packet
+				Log.out("Server<ReadThread>: Sending READ Data");
+				super.sendPacket(msg);
 
-				} else
-					throw new IndexOutOfBoundsException();
-			} else
-				throw new IllegalArgumentException();
+			} else {
+				System.out.println("Server<ReadThread>: Invalid ACK packet.");
+				super.close();
+				return;
+			}
 		}
-		
+
 		// Receive final ACK packet
 		Log.out("Server<ReadThread>: Receiving Final ACK Data");
 		packet = super.receivePacket();
-		// Ensure ACK is valid
-		if (packet.getData()[0] == Var.ACK[0] && packet.getData()[1] == Var.ACK[1]) {
-			// Ensure block number is valid
-			if (packet.getData()[2] != blockNum[0] || packet.getData()[3] != blockNum[1])
-				throw new IndexOutOfBoundsException();
-		} else
-			throw new IllegalArgumentException();
-
+		if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
+			System.out.println("Server<ReadThread>: Invalid ACK packet.");
+			super.close();
+			return;
+		}
+		
 		// Close file
 		try {
 			fr.close();
@@ -146,7 +139,7 @@ public class ReadThread extends ClientResponseThread {
 	// It will increment the smaller byte until it overflows then increment
 	// the larger one.
 	/*************************************************************************/
-	
+
 	private byte[] bytesIncrement(byte[] data) {
 		if (data[1] == 0xff) {
 			data[0]++;

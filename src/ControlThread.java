@@ -1,5 +1,6 @@
 import java.net.DatagramPacket;
 import util.Log;
+import util.TFTPErrorHelper;
 import util.UDPHelper;
 import util.Var;
 
@@ -24,28 +25,32 @@ public class ControlThread extends Thread {
 		while (running) {
 			// Wait to get a packet.
 			DatagramPacket packet = udp.receivePacket();
-			
 			if (packet != null){
-				Log.packet("SERVER<ControlThread>: Server Receive", packet);
-				int res = readPacket(packet);
-				switch (res) {
-				case 1:
-					// Start a new ReadThread to handle the request.
-					new ReadThread(packet).start();
-					System.out.println("\nSERVER<ControlThread>: Server received a READ request. ");
-					Log.packet("Request: ", packet);
-					break;
-				case 2:
-					// Start a new WriteThread to handle the request.
-					new WriteThread(packet).start();
-					System.out.println("\nSERVER<ControlThread>: Server received a WRITE request");
-					Log.packet("Request: ", packet);
-					break;
-				default:
-					Log.err("SERVER<ControlThread>: Server got invalid packet, closing.");
-					close();
-				}
-				Log.out("SERVER<ControlThread>: Waiting to receive a packet...");
+				if (TFTPErrorHelper.requestPacketChecker(udp, packet) == null){				
+					Log.packet("SERVER<ControlThread>: Server Receive", packet);
+					int res = readPacket(packet);
+					switch (res) {
+					case 1:
+						// Start a new ReadThread to handle the request.
+						new ReadThread(packet).start();
+						System.out.println("\nSERVER<ControlThread>: Server received a READ request. ");
+						Log.packet("Request: ", packet);
+						break;
+					case 2:
+						// Start a new WriteThread to handle the request.
+						new WriteThread(packet).start();
+						System.out.println("\nSERVER<ControlThread>: Server received a WRITE request");
+						Log.packet("Request: ", packet);
+						break;
+					default:
+						Log.err("SERVER<ControlThread>: Server got invalid packet, closing.");
+						close();
+					}
+					Log.out("SERVER<ControlThread>: Waiting to receive a packet...");
+				}else {
+					//Do we care about the code???
+					Log.err("SERVER<ControlThread>: Recieved an invalid request.");
+				} 
 			}
 		}
 	}

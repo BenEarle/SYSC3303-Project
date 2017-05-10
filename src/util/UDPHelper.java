@@ -6,6 +6,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 
 /*************************************************************************/
 // This project has a lot of code for sending and receiving UDP packets
@@ -17,6 +18,8 @@ public class UDPHelper {
 	private InetAddress IP;
 	private int port;
 	private boolean closed = true;
+	private DatagramPacket p;
+	private boolean testSender = false;
 
 	public UDPHelper() {
 		this(false);
@@ -24,6 +27,12 @@ public class UDPHelper {
 
 	public UDPHelper(boolean timeout) {
 		setUpSocket(timeout);
+		try {
+			setIP(InetAddress.getLocalHost());
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public UDPHelper(DatagramPacket p) {
@@ -37,6 +46,12 @@ public class UDPHelper {
 
 	public UDPHelper(int socketPort, boolean timeout) {
 		setUpSocket(socketPort, timeout);
+		try {
+			setIP(InetAddress.getLocalHost());
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public UDPHelper(int socketPort, DatagramPacket p) {
@@ -80,23 +95,29 @@ public class UDPHelper {
 	}
 
 	public void sendPacket(byte[] data) {
-		DatagramPacket sPacket = new DatagramPacket(data, data.length, IP, port);
-		Log.packet("Sending Packet", sPacket);
-
+		p = new DatagramPacket(data, data.length, IP, port);
+		Log.packet("Sending Packet", p);
+		System.out.println("Hello" + socket.getLocalAddress());
 		try {
-			socket.send(sPacket);
+			socket.send(p);
 		} catch (IOException e) {
 			Log.err("ERROR Sending packet", e);
 		}
 	}
 
 	public DatagramPacket receivePacket() {
-		DatagramPacket rPacket = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
+		p = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
 
 		try {
-			socket.receive(rPacket);
-			Log.packet("Packet Received", rPacket);
-			return rPacket;
+			socket.receive(p);
+			Log.packet("Packet Received", p);
+			
+			if(testSender && !(p.getAddress() == IP && p.getPort() == port)){
+				//Send error code 5 and continue
+				TFTPErrorHelper.sendError(this, (byte) 5, "Invalid sender. Was expecting a response from: " + IP.toString() + ":" + port);
+			}
+			
+			return p;
 		} catch (SocketTimeoutException ste) {
 			// Nothing here.
 		} catch (SocketException e) {
@@ -111,10 +132,19 @@ public class UDPHelper {
 		return null;
 	}
 
+	public void setTestSender(boolean b){
+		testSender = b;
+	}
+	
+	public DatagramPacket getLastPacket() {
+		return p;
+	}
+	
 	public void close() {
 		if (!closed) {
 			closed = true;
 			socket.close();
 		}
 	}
+
 }

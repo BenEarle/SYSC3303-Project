@@ -15,6 +15,7 @@ public abstract class ClientResponseThread extends Thread {
 	ClientResponseThread(DatagramPacket initialPacket) {
 		udp = new UDPHelper();
 		udp.setReturn(initialPacket);
+		udp.setTestSender(true);
 		unpack(initialPacket);
 	}
 

@@ -2,7 +2,7 @@
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
+
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.util.Scanner;
@@ -10,19 +10,23 @@ import java.util.Scanner;
 import util.FileReader;
 import util.FileWriter;
 import util.Log;
+import util.TFTPErrorHelper;
+import util.UDPHelper;
 import util.Var;
 
 public class Client {
 	private static final String MODE = "netASCII";
 
-	private DatagramSocket socket;
+	private UDPHelper udp;
+
 	private InetSocketAddress addrHost, addrServer;
 	private boolean running;
 	private boolean testMode;
 	Scanner reader;
 
 	public Client(InputStream in) throws SocketException {
-		socket = new DatagramSocket();
+		udp = new UDPHelper();
+
 		addrHost = new InetSocketAddress("localhost", Var.PORT_CLIENT);
 		addrServer = new InetSocketAddress("localhost", Var.PORT_SERVER);
 		reader = new Scanner(in);
@@ -37,80 +41,81 @@ public class Client {
 	// Take input, send request to server, and enter required mode to process
 	// transfer
 	public void run() throws IOException {
-		InetSocketAddress address;
-		DatagramPacket packet = null;
+
 		Log.out("Client: Starting Client");
 		System.out.println(Var.CMDStart);
 		System.out.println("Client: Type 'help' to get a list of available commands.");
-		if (testMode) {
-			address = addrHost;
-		} else {
-			address = addrServer;
-		}
 
 		running = true;
 		while (running) {
+
+			if (testMode) {
+				udp.setIP(addrHost.getAddress());
+				udp.setPort(addrHost.getPort());
+			} else {
+				udp.setIP(addrServer.getAddress());
+				udp.setPort(addrServer.getPort());
+			}
+
 			boolean RRQ = false, WRQ = false;
 			String file = null;
 			String StrIn = getUserInput("Client: ");
+			byte[] data = new byte[Var.BUF_SIZE];
 			// Create and send request according to input
 			switch (StrIn.toLowerCase()) {
-			case("r"):
-			case("read"):
+			case ("r"):
+			case ("read"):
 				file = getUserInput("Filename: ");
-				packet = makePacket(address, Var.READ, file.getBytes(), Var.ZERO, MODE.getBytes(), Var.ZERO);
-				Log.packet("Client: Sending READ", packet);
+				data = makeData(Var.READ, file.getBytes(), Var.ZERO, MODE.getBytes(), Var.ZERO);
 				RRQ = true;
 				break;
-			case("w"):
-			case("write"):
+			case ("w"):
+			case ("write"):
 				file = getUserInput("Filename: ");
-				packet = makePacket(address, Var.WRITE, file.getBytes(), Var.ZERO, MODE.getBytes(),
-						Var.ZERO);
-				Log.packet("Client: Sending WRITE", packet);
+				data = makeData(Var.WRITE, file.getBytes(), Var.ZERO, MODE.getBytes(), Var.ZERO);
 				WRQ = true;
 				break;
-			case("v"):
-			case("verbose"):
-				System.out.print("Client: Verbose mode is now " );
-				if(Log.toggleEnable()) System.out.println("enabled.");
-				else System.out.println("disabled.");
+			case ("v"):
+			case ("verbose"):
+				System.out.print("Client: Verbose mode is now ");
+				if (Log.toggleEnable())
+					System.out.println("enabled.");
+				else
+					System.out.println("disabled.");
 				break;
-			case("test"):
-			case("t"):
+			case ("test"):
+			case ("t"):
 				testMode = !testMode;
-				if (testMode) {
-					address = addrHost;
-				} else {
-					address = addrServer;
-				}
-				System.out.print("Client: Test mode is now " );
-				if(testMode) System.out.println("enabled.");
-				else System.out.println("disabled.");
-				break;	
-			case("s"):
-			case("shutdown"):
-			case("quit"):
-			case("q"):
+				System.out.print("Client: Test mode is now ");
+				if (testMode)
+					System.out.println("enabled.");
+				else
+					System.out.println("disabled.");
+				break;
+			case ("s"):
+			case ("shutdown"):
+			case ("quit"):
+			case ("q"):
 				close();
 				break;
-			case("h"):
-			case("help"):
+			case ("h"):
+			case ("help"):
 				System.out.println("Client: Available commands: read, write, verbose, test, help.");
 				break;
-			default: 
+			default:
 				System.out.println("Client: Unrecognized command, type 'help' for a list of commands.");
 				break;
 			}
-				
-			if(RRQ || WRQ){
+
+			if (RRQ || WRQ) {
 				try {
-					socket.send(packet);
-	
+					udp.sendPacket(data);
 					// Go into appropriate mode to receive message
 					if (RRQ) {
+						Log.packet("Client: Sending READ", udp.getLastPacket());
 						readMode(file);
-					} else if(WRQ) {
+					} else if (WRQ) {
+						Log.packet("Client: Sending WRITE", udp.getLastPacket());
 						writeMode(file);
 					}
 				} catch (SocketException e) {
@@ -128,8 +133,6 @@ public class Client {
 	/*************************************************************************/
 	private void readMode(String fileName) throws IOException {
 
-		InetSocketAddress address = null; // Where all ack packets are sent
-
 		DatagramPacket packet = null; // packet to send and receive data during
 										// transfer
 		boolean lastPacket = false; // flag to indicate transfer is ending
@@ -142,53 +145,50 @@ public class Client {
 		blockNum[1] = 0x01;
 		boolean firstData = true;
 		FileWriter writer = null;
+
 		// Loop until last data packet is received
 		while (!lastPacket) {
 			// Create packet then receive and get info from packet
-			packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
-			socket.receive(packet);
-			if(firstData){
+			packet = udp.receivePacket();
+			if (TFTPErrorHelper.dataPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
+				Log.err("Client: Received invalid data packet.");
+				udp.setTestSender(false);
+				return;
+			}
+			if (firstData) {
 				firstData = false;
+				// Save address to send response to
+				udp.setReturn(packet);
+				udp.setTestSender(true);
 				writer = new FileWriter(Var.CLIENT_ROOT + fileName);
 			}
 			data = packet.getData();
-			Log.packet("Client: Receiving READ DATA", packet);
-			// Save address to send response to
-			address = new InetSocketAddress(packet.getAddress(), packet.getPort());
+			Log.packet("Client: Receiving READ DATA", udp.getLastPacket());
 
-			// Ensure packet is Valid Data packet
-			if (data[0] == Var.DATA[0] && data[1] == Var.DATA[1]) {
-				// Ensure packet has correct block number
-				if (blockNum[0] == data[2] && blockNum[1] == data[3]) {
-					// Get bytes to write to file from packet
-					bytesToWrite = new byte[packet.getLength() - 4];
-					System.arraycopy(data, 4, bytesToWrite, 0, bytesToWrite.length);
+			// Get bytes to write to file from packet
+			bytesToWrite = new byte[packet.getLength() - 4];
+			System.arraycopy(data, 4, bytesToWrite, 0, bytesToWrite.length);
 
-					// Flag as last data packet if not full block size
-					if (bytesToWrite.length != Var.BLOCK_SIZE)
-						lastPacket = true;
+			// Flag as last data packet if not full block size
+			if (bytesToWrite.length != Var.BLOCK_SIZE)
+				lastPacket = true;
 
-					// write the block to the file
-					try {
-						writer.write(bytesToWrite);
-					} catch (IOException e) {
-						Log.err("", e);
-					}
+			// write the block to the file
+			try {
+				writer.write(bytesToWrite);
+			} catch (IOException e) {
+				Log.err("", e);
+			}
 
-					// Send the acknowledge packet
-					packet = makePacket(address, Var.ACK, blockNum);
-					socket.send(packet);
-					blockNum = bytesIncrement(blockNum);
-					Log.packet("Client: Sending READ ACK", packet);
-
-				} else
-					throw new IndexOutOfBoundsException();
-			} else
-				throw new IllegalArgumentException();
+			// Send the acknowledge packet
+			udp.sendPacket(makeData(Var.ACK, blockNum));
+			blockNum = bytesIncrement(blockNum);
+			Log.packet("Client: Sending READ ACK", udp.getLastPacket());
 		}
 		System.out.println("Client: Read Operation Successful");
 		// Close output stream
 		writer.close();
+		udp.setTestSender(false);
 	}
 
 	/*************************************************************************/
@@ -196,7 +196,6 @@ public class Client {
 	/*************************************************************************/
 	private void writeMode(String fileName) throws IOException {
 		// Data for transfer
-		InetSocketAddress address = null; // Where all data packets are sent
 		FileReader reader = new FileReader(Var.CLIENT_ROOT + fileName);
 		// This DataGram is used to receive ack
 		DatagramPacket packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
@@ -207,64 +206,61 @@ public class Client {
 		byte[] blockNum = new byte[2];
 		blockNum[0] = 0x00;
 		blockNum[1] = 0x00;
-
+		boolean firstPacket = true;
 		// Loop until last data packet is sent
 		while (!lastPacket) {
 			// Create packet then receive and get info from packet
-			packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
-			socket.receive(packet);
+			packet = udp.receivePacket();
+
+			if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
+				Log.err("Client: Received invalid ACK packet.");
+				udp.setTestSender(false);
+				return;
+			}
+
+			if (firstPacket) {
+				// Save address to send data to
+				udp.setReturn(packet);
+				udp.setTestSender(true);
+				firstPacket = false;
+			}
 			data = packet.getData();
-			Log.packet("Client: Receiving WRITE ACK", packet);
-			// Save address to send data to
-			address = new InetSocketAddress(packet.getAddress(), packet.getPort());
-			// Ensure packet is ack
-			if (data[1] == Var.ACK[1]) {
-				// Ensure packet has correct index
-				if (data[2] == blockNum[0] && data[3] == blockNum[1]) {
-					// Get data from file and check if length read is less than
-					// full block size
-					try {
-						data = reader.read();
-						if (data.length != Var.BLOCK_SIZE)
-							lastPacket = true;
-						// Exception if no bytes left in file. Send last packet
-						// empty
-					} catch (Exception e) {
-						data = new byte[0]; // Empty Message
-						lastPacket = true;
-					}
-					blockNum = bytesIncrement(blockNum);
+			Log.packet("Client: Receiving WRITE ACK", udp.getLastPacket());
 
-					// Send write data to Server
-					packet = makePacket(address, Var.DATA, blockNum, data);
-					Log.packet("Client: Sending WRITE Data", packet);
-					socket.send(packet);
+			// Get data from file and check if length read is less than
+			// full block size
+			try {
+				data = reader.read();
+				if (data.length != Var.BLOCK_SIZE)
+					lastPacket = true;
+				// Exception if no bytes left in file. Send last packet
+				// empty
+			} catch (Exception e) {
+				data = new byte[0]; // Empty Message
+				lastPacket = true;
+			}
+			blockNum = bytesIncrement(blockNum);
 
-				} else
-					throw new IndexOutOfBoundsException();
-			} else
-				throw new IllegalArgumentException();
+			// Send write data to Server
+			udp.sendPacket(makeData(Var.DATA, blockNum));
+			Log.packet("Client: Sending WRITE Data", udp.getLastPacket());
+
 		}
 
 		// Receive final ACK packet
-		packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
-		socket.receive(packet);
+		packet = udp.receivePacket();
+		if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
+			Log.err("Client: Received invalid ACK packet.");
+			udp.setTestSender(false);
+			return;
+		}
 		data = packet.getData();
-		Log.packet("Client: Receiving FINAL WRITE ACK", packet);
+		Log.packet("Client: Receiving FINAL WRITE ACK", udp.getLastPacket());
 		// Confirm packet is ACK
-		if (data[1] == Var.ACK[1]) {
-			// Confirm block number is correct
-			if (data[2] == blockNum[0] && data[3] == blockNum[1]) {
-
-				System.out.println("Write: Operation Successful");
-
-			} else
-				throw new IndexOutOfBoundsException();
-		} else
-			throw new IllegalArgumentException();
-
+		System.out.println("Write: Operation Successful");
 		// Close file
 		reader.close();
+		udp.setTestSender(false);
 	}
 
 	private byte[] bytesIncrement(byte[] data) {
@@ -290,7 +286,7 @@ public class Client {
 		try {
 			if (reader.hasNextLine()) {
 				s = reader.nextLine();
-				//System.out.println();
+				// System.out.println();
 			}
 		} catch (IllegalStateException e) {
 			if (running) {
@@ -300,7 +296,7 @@ public class Client {
 		return s;
 	}
 
-	private DatagramPacket makePacket(InetSocketAddress sendAddr, byte[]... bytes) {
+	private byte[] makeData(byte[]... bytes) {
 		// Get the required length of the byte array.
 		int length = 0;
 		for (byte[] b : bytes) {
@@ -323,13 +319,13 @@ public class Client {
 
 		// Create a packet from the buffer (using the host address) and return
 		// it.
-		return new DatagramPacket(buffer, buffer.length, sendAddr);
+		return buffer;
 	}
 
 	public void close() {
 		if (running) {
 			running = false;
-			socket.close();
+			udp.close();
 			reader.close();
 		}
 	}

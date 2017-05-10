@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import util.FileWriter;
 import util.Log;
+import util.TFTPErrorHelper;
 import util.Var;
 
 /*************************************************************************/
@@ -36,8 +37,7 @@ public class WriteThread extends ClientResponseThread {
 		byte[] data;
 		byte[] ack = { 0, 4, 0, 0 }; // initial ack message
 		byte[] bytesToWrite = null;
-		int index = 0; // current block of file
-
+		
 		// Open FileWriter
 		FileWriter fw = null;
 		
@@ -61,19 +61,12 @@ public class WriteThread extends ClientResponseThread {
 			}
 			Log.packet("Server<WriteThread>: Received WRITE Data", packet);
 			data = packet.getData();
-			if (data[0] != 0 || data[1] != 3)
-				throw new IllegalArgumentException();
-
-			// Get block number from data and assign to ack message
-			ack[2] = data[2];
-			ack[3] = data[3];
-			index++;
-
-			// Enforce correct packet number
-			// Ack 2 and 3 are a single number
-			if (ack[2] * 256 + ack[3] != index)
-				throw new IllegalArgumentException();
-
+			ack = ackIncrement(ack);
+			if (TFTPErrorHelper.dataPacketChecker(udp, packet, ack[2] * 256 + ack[3]) != null){
+				System.out.println("Server<ReadThread>: Invalid data packet.");
+				super.close();
+				return;
+			}
 			// Make an array with the bytes to write
 			bytesToWrite = new byte[packet.getLength() - 4];
 			System.arraycopy(data, 4, bytesToWrite, 0, bytesToWrite.length);
@@ -101,5 +94,13 @@ public class WriteThread extends ClientResponseThread {
 		System.out.println("Server<WriteThread>: Write completed successfully.");
 		System.out.print("Server<Main>: ");
 	}
-
+	private byte[] ackIncrement(byte[] data) {
+		if (data[3] == 0xff) {
+			data[2]++;
+			data[3] = 0x00;
+		} else {
+			data[3]++;
+		}
+		return data;
+	}
 }
