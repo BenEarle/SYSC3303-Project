@@ -8,7 +8,7 @@ import java.net.DatagramPacket;
 
 public class TFTPErrorHelper {
 
-	public static Integer requestPacketChecker(DatagramPacket p, String mode) {
+	public static Integer requestPacketChecker(UDPHelper u, DatagramPacket p) {
 		/**
 		 * Checks:
 		 * 1) data size is greater than 6
@@ -18,39 +18,49 @@ public class TFTPErrorHelper {
 		 * 5) mode is 'netascii' or 'octet'
 		 * 6) ends in a null byte
 		 */
-		Integer returnError = null;
 		byte[] data = p.getData();
 		String dataString = Log.bString(p.getData());
 		//Check opCode
 		if (data.length < 6) {
-			returnError = 4;
 			//data not long enough
+			sendError(u,(byte) 0x04, "Data packet not long enough");
+			return 4;
 		}
 		
 		if ((data[0] != 0x00) && ((data[1] != 0x01) || (data[2] != 0x02))) {
-			returnError = 4;
 			//Invalid opcode for request
+			sendError(u,(byte) 0x04, "Invalid OP code for Request");
+			return 4;
 		}
 		
 		int endOfFileName = findByteIndex(data,4, 0x00);
 		if (endOfFileName == -1) {
-			returnError = 4;
 			//no null to indicate end of fileName
+			sendError(u,(byte) 0x04, "Missing Null termintor after fileName");
+			return 4;
 		}
 		
 		String fileName = dataString.substring(4, endOfFileName);
 		if (!isAsciiPrintable(fileName)) {
-			returnError = 4;
 			//File name contains non printable characters
+			sendError(u,(byte) 0x04, "FileName contains non printable characters");
+			return 4;
+		}
+		
+		String mode = dataString.substring(endOfFileName + 1).toLowerCase();
+		if (!mode.equals("netascii") || !mode.equals("octet")) {
+			//Mode is incorrect
+			sendError(u,(byte) 0x04, "Mode not an acceptable form");
+			return 4;
 		}
 		
 		byte lastCharacter = data[data.length - 1];
 		if (lastCharacter != 0x00) {
-			returnError = 4;
 			//Packet does not end in null
+			sendError(u,(byte) 0x04, "Packet does not end with null");
+			return 4;
 		}
-		
-		return returnError;
+		return null;
 	}
 	
 	private static int findByteIndex(byte[] b, int startingFrom, int findByte) {
@@ -78,7 +88,7 @@ public class TFTPErrorHelper {
 	          }
 	      }
 	      return true;
-	  }
+	}
 	
 	/**
 	 * checks indivdual characters for readable characters
@@ -87,24 +97,19 @@ public class TFTPErrorHelper {
 	 */
 	private static boolean isAsciiPrintable(char ch) {
 	      return ch >= 32 && ch < 127;
-	  }
-	
-	public static void sendError(DatagramPacket p, byte type, String message) {
-		byte[] data = new byte[Var.BUF_SIZE];
+	}
+		
+	public static void sendError(UDPHelper u, byte type, String message) {
+		byte[] data = new byte[5 + message.length()];
 		data[0] = 0;
 		data[1] = 5;
 		data[2] = 0;
 		data[3] = type;
-		for (int i = 0; i < message.length(); i++) {
-			data[i + 4] = (byte) message.charAt(i);
-		}
+		
+		System.arraycopy(message.getBytes(), 0, data, 4, message.length());
+		
 		// send the packet back to the person who sent us the wrong message
-		UDPHelper udp = new UDPHelper(p);
-		udp.sendPacket(data);
-		if (type != 5) {
-			// quit transfer
-			System.exit(0);
-		}
+		u.sendPacket(data);
 	}
 
 	public static boolean isError(byte[] data) {
