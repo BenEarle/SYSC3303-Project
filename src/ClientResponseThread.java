@@ -1,10 +1,5 @@
-import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
-import util.Log;
-import util.Var;
+import util.UDPHelper;
 
 /*************************************************************************/
 //ClientResponseThread is abstract as it doesn't do anything on it's own. 
@@ -14,14 +9,12 @@ import util.Var;
 /*************************************************************************/
 
 public abstract class ClientResponseThread extends Thread {
-	protected DatagramSocket socket;
+	protected UDPHelper udp;
 	protected String file, mode;
-	protected InetAddress clientIP;
-	protected int clientPort;
 
 	ClientResponseThread(DatagramPacket initialPacket) {
-		unpack(initialPacket);
-		setUpSocket();
+		udp = new UDPHelper();
+		udp.setReturn(initialPacket);
 	}
 
 	/*************************************************************************/
@@ -32,8 +25,6 @@ public abstract class ClientResponseThread extends Thread {
 	/*************************************************************************/
 	
 	protected void unpack(DatagramPacket p) {
-		clientPort = p.getPort();
-		clientIP = p.getAddress();
 		byte[] data = p.getData();
 		// Parse packet confirming the format is correct
 		if (data[0] != 0) // First bit must be 0
@@ -71,37 +62,16 @@ public abstract class ClientResponseThread extends Thread {
 	// for the server components.
 	/*************************************************************************/
 	
-	protected void setUpSocket() {
-		try {
-			socket = new DatagramSocket();
-		} catch (SocketException e) {
-			Log.err("ERROR Starting socket", e);
-		}
-	}
-
 	protected void sendPacket(byte[] data) {
-		DatagramPacket sPacket = new DatagramPacket(data, data.length, clientIP, clientPort);
-		Log.packet("Sending Packet", sPacket);
-		try {
-			socket.send(sPacket);
-		} catch (IOException e) {
-			Log.err("ERROR Sending packet", e);
-		}
+		udp.sendPacket(data);
 	}
 
 	protected DatagramPacket receivePacket() {
-		DatagramPacket rPacket = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
-		try {
-			socket.receive(rPacket);
-		} catch (IOException e) {
-			Log.err("ERROR Receiving packet", e);
-		}
-		Log.packet("Packet Received", rPacket);
-		return rPacket;
+		return udp.receivePacket();
 	}
 
 	protected void close() {
-		socket.close();
+		udp.close();
 	}
 
 }

@@ -6,6 +6,11 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 
+/*************************************************************************/
+// This project has a lot of code for sending and receiving UDP packets
+// UDPHelper is used to keep all of that code in one place.
+/*************************************************************************/
+
 public class UDPHelper {
 	private DatagramSocket socket;
 	private InetAddress IP;
@@ -67,5 +72,9 @@ public class UDPHelper {
 		}
 		Log.packet("Packet Received", rPacket);
 		return rPacket;
+	}
+	
+	public void close() {
+		socket.close();
 	}
 }
