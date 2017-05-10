@@ -97,7 +97,6 @@ public class UDPHelper {
 	public void sendPacket(byte[] data) {
 		p = new DatagramPacket(data, data.length, IP, port);
 		Log.packet("Sending Packet", p);
-		System.out.println("Hello" + socket.getLocalAddress());
 		try {
 			socket.send(p);
 		} catch (IOException e) {
