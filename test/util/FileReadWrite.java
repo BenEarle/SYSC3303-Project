@@ -70,7 +70,7 @@ public class FileReadWrite {
 	}
 
 	@Test
-	public void test1() throws IOException {
+	public void testBytes() throws IOException {
 		final String filename = DIR1 + FILENAME;
 		deleteFile(filename);
 		
@@ -100,7 +100,7 @@ public class FileReadWrite {
 	}
 
 	@Test
-	public void test2() throws IOException {
+	public void testData() throws IOException {
 		final String filename = DIR1 + DIR2 + FILENAME;
 		deleteFile(filename);
 		
@@ -130,7 +130,7 @@ public class FileReadWrite {
 	}
 
 	@Test
-	public void test3() throws IOException {
+	public void testOffset() throws IOException {
 		final String filename = DIR1 + DIR2 + FILENAME;
 		deleteFile(filename);
 		
@@ -168,6 +168,24 @@ public class FileReadWrite {
 		while (bytes.length == Var.BLOCK_SIZE + offset && i++ < ITERATIONS * 1000);
 		
 		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void testAbort() throws IOException {
+		final String filename = DIR1 + DIR2 + FILENAME;
+		deleteFile(filename);
+		
+		w = new FileWriter(filename);
+		w.write("test".getBytes());
+		assertTrue(new File(filename).exists());
+		w.abort();
+		assertFalse(new File(filename).exists());
+		
+		createFile(filename);
+		r = new FileReader(filename);
+		assertTrue(new File(filename).exists());
+		r.abort();
+		assertFalse(new File(filename).exists());
 	}
 
 }
