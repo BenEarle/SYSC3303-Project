@@ -93,12 +93,24 @@ public class FileReader {
 	}
 
 	/**
+	 * Abort and delete the file.
+	 * 
+	 * @throws IOException
+	 */
+	public void abort() throws IOException {
+		close();
+		file.delete();
+	}
+
+	/**
 	 * Close the file reader.
 	 * 
 	 * @throws IOException
 	 */
 	public void close() throws IOException {
-		in.close();
-		closed = true;
+		if (!closed) {
+			in.close();
+			closed = true;
+		}
 	}
 }

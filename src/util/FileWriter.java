@@ -77,12 +77,24 @@ public class FileWriter {
 	}
 
 	/**
+	 * Abort and delete the file.
+	 * 
+	 * @throws IOException
+	 */
+	public void abort() throws IOException {
+		close();
+		file.delete();
+	}
+
+	/**
 	 * Close the file writer.
 	 * 
 	 * @throws IOException
 	 */
 	public void close() throws IOException {
-		out.close();
-		closed = true;
+		if (!closed) {
+			out.close();
+			closed = true;
+		}
 	}
 }
