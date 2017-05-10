@@ -132,7 +132,7 @@ public class TFTPErrorHelper {
 			return 4;
 		}
 
-		if (data[0] != 0x00 && data[1] != 0x03) {
+		if (data[0] != 0x00 || data[1] != 0x03) {
 			// wrong op code
 			sendError(u, (byte) 0x04, "Invalid data op code");
 			return 4;
