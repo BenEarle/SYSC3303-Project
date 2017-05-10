@@ -18,12 +18,12 @@ public abstract class ClientResponseThread extends Thread {
 	}
 
 	/*************************************************************************/
-	// ClientResponseThread is abstract as it doesn't do anything on it's own. 
-	// Read/WriteThread extend this class and both implement run(). 
-	// This class handle the variables and common methods for threads that 
+	// ClientResponseThread is abstract as it doesn't do anything on it's own.
+	// Read/WriteThread extend this class and both implement run().
+	// This class handle the variables and common methods for threads that
 	// handle responses on the server.
 	/*************************************************************************/
-	
+
 	protected void unpack(DatagramPacket p) {
 		byte[] data = p.getData();
 		// Parse packet confirming the format is correct
@@ -41,7 +41,7 @@ public abstract class ClientResponseThread extends Thread {
 			i++;
 		}
 		// If we didn't find a 0 it means that the string is wrong
-		if (i == data.length) 
+		if (i == data.length)
 			throw new IllegalArgumentException();
 		// Increment i again to skip over the null char
 		i++;
@@ -58,10 +58,10 @@ public abstract class ClientResponseThread extends Thread {
 	}
 
 	/*************************************************************************/
-	// The following methods reduce repeated code by handling the networking 
+	// The following methods reduce repeated code by handling the networking
 	// for the server components.
 	/*************************************************************************/
-	
+
 	protected void sendPacket(byte[] data) {
 		udp.sendPacket(data);
 	}

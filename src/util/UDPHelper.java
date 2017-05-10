@@ -20,16 +20,26 @@ public class UDPHelper {
 		setUpSocket();
 	}
 
-	public UDPHelper(int port) {
-		setUpSocket(port);
+	public UDPHelper(DatagramPacket p) {
+		this();
+		setReturn(p);
+	}
+
+	public UDPHelper(int socketPort) {
+		setUpSocket(socketPort);
+	}
+
+	public UDPHelper(int socketPort, DatagramPacket p) {
+		this(socketPort);
+		setReturn(p);
 	}
 
 	public void setIP(InetAddress IP) {
 		this.IP = IP;
 	}
 
-	public void setPort(int port) {
-		this.port = port;
+	public void setPort(int socketPort) {
+		this.port = socketPort;
 	}
 
 	public void setReturn(DatagramPacket p) {
@@ -73,7 +83,7 @@ public class UDPHelper {
 		Log.packet("Packet Received", rPacket);
 		return rPacket;
 	}
-	
+
 	public void close() {
 		socket.close();
 	}
