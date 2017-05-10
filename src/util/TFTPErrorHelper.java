@@ -132,7 +132,7 @@ public class TFTPErrorHelper {
 			return 4;
 		}
 
-		if (data[0] != 0x00 || data[1] != 0x03) {
+		if (data[0] != Var.DATA[0] || data[1] != Var.DATA[1]) {
 			// wrong op code
 			sendError(u, (byte) 0x04, "Invalid data op code");
 			return 4;
@@ -165,7 +165,8 @@ public class TFTPErrorHelper {
 			sendError(u, (byte) 0x04, "Ack packet wrong size");
 			return 4;
 		}
-		if (data[0] != 0x00 && data[1] != 0x04) {
+		
+		if (data[0] != Var.ACK[0] || data[1] != Var.ACK[1]) {
 			//wrong op code
 			sendError(u, (byte) 0x04, "Invalid ACK op code");
 			return 4;
