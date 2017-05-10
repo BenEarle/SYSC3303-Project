@@ -16,47 +16,65 @@ public class TFTPErrorHelper {
 		 * null byte
 		 */
 		byte[] data = p.getData();
-		String dataString = Log.bString(p.getData());
-		// Check opCode
-		if (data.length < 6) {
-			// data not long enough
+		int length = p.getLength();
+		int i = 2;
+		
+		// Check opCode.
+		if (length < 2) {
+			// Data not long enough.
 			sendError(u, (byte) 0x04, "Data packet not long enough");
 			return 4;
 		}
 
-		if ((data[0] != 0x00) && ((data[1] != 0x01) || (data[2] != 0x02))) {
-			// Invalid opcode for request
-			sendError(u, (byte) 0x04, "Invalid OP code for Request");
+		// Check the READ/WRITE code is correct.
+		if (!(data[0] == Var.READ[0] && data[1] == Var.READ[1]) && !(data[0] == Var.WRITE[0] && data[1] == Var.WRITE[1])) {
+			// Invalid opcode for request.
+			sendError(u, (byte) 0x04, "Invalid OP code for request");
+			return 4;
+		}
+		
+		// Capture the filename, if the buffer is overrun the packet is invalid.
+		do {
+			if (i >= length) {
+				sendError(u, (byte) 0x04, "Missing Null terminator after filename");
+				return 4;
+			}
+		} while (data[i++] != 0);
+		String filename = new String(data, 2, i - 3);
+		
+		if (filename.length() == 0) {
+			// The filename is missing.
+			sendError(u, (byte) 0x04, "Filename missing");
 			return 4;
 		}
 
-		int endOfFileName = findByteIndex(data, 3, 0x00);
-		if (endOfFileName == -1) {
-			// no null to indicate end of fileName
-			sendError(u, (byte) 0x04, "Missing Null termintor after fileName");
+		if (!isAsciiPrintable(filename)) {
+			// The filename contains bad characters.
+			sendError(u, (byte) 0x04, "Filename contains non printable characters");
 			return 4;
 		}
-
-		String fileName = dataString.substring(2, endOfFileName);
-		if (!isAsciiPrintable(fileName)) {
-			// File name contains non printable characters
-			sendError(u, (byte) 0x04, "FileName contains non printable characters");
-			return 4;
-		}
-
-		String mode = dataString.substring(endOfFileName + 1, dataString.length() - 1).toLowerCase();
-		if (!mode.equals("netascii") && !mode.equals("octet")) {
-			// Mode is incorrect
+		
+		// Capture the mode, if the buffer is overrun the packet is invalid.
+		int start = i;
+		do {
+			if (i >= length) {
+				if (i == start) {
+					sendError(u, (byte) 0x04, "Mode missing");
+				} else {
+					sendError(u, (byte) 0x04, "Packet does not end with null");
+				}
+				return 4;
+			}
+		} while (data[i++] != 0);
+		String mode = new String(data, start, i - start - 1);
+		
+		// Check the NETASCII/OCTET mode is correct.
+		if (!mode.toLowerCase().equals("netascii") && !mode.toLowerCase().equals("octet")) {
 			sendError(u, (byte) 0x04, "Mode not an acceptable form");
 			return 4;
 		}
-
-		byte lastCharacter = data[data.length - 1];
-		if (lastCharacter != 0x00) {
-			// Packet does not end in null
-			sendError(u, (byte) 0x04, "Packet does not end with null");
-			return 4;
-		}
+		
+		// Packet format is correct.
 		return null;
 	}
 
@@ -96,7 +114,6 @@ public class TFTPErrorHelper {
 	 * @return
 	 */
 	private static boolean isAsciiPrintable(char ch) {
-		System.out.println(ch);
 		return ch >= 32 && ch < 127;
 	}
 

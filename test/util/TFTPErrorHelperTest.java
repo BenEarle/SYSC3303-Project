@@ -32,20 +32,33 @@ public class TFTPErrorHelperTest {
 	}
 
 	@Test
-	public void testZero() {
-		check(null, "", makePacket(Var.WRITE, "test".getBytes(), Var.ZERO, "octet".getBytes(), Var.ZERO));
-		check(null, "", makePacket(Var.READ, "a".getBytes(), Var.ZERO, "NetAscii".getBytes(), Var.ZERO));
-		check(null, "", makePacket(Var.WRITE, "a".getBytes(), Var.ZERO, "OCTET".getBytes(), Var.ZERO));
+	public void testRequestPacketChecker() {
+		requestPacketChecker(null, "", makePacket(Var.WRITE, "test".getBytes(), Var.ZERO, "octet".getBytes(), Var.ZERO));
+		requestPacketChecker(null, "", makePacket(Var.READ, "a".getBytes(), Var.ZERO, "NetAscii".getBytes(), Var.ZERO));
+		requestPacketChecker(null, "", makePacket(Var.WRITE, "a".getBytes(), Var.ZERO, "OCTET".getBytes(), Var.ZERO));
 		
-		check(4, "Data packet not long enough", makePacket(Var.ZERO));
-		check(4, "Data packet not long enough", makePacket(Var.READ, "".getBytes(), Var.ZERO, "a".getBytes(), Var.ZERO));
-		check(4, "Packet does not end with null", makePacket(Var.READ, "test".getBytes(), Var.ZERO, "octeta".getBytes()));
-		check(4, "Mode not an acceptable form", makePacket(Var.READ, "a".getBytes(), Var.ZERO, "a".getBytes(), Var.ZERO));
+		requestPacketChecker(4, "Data packet not long enough", makePacket(Var.ZERO));
+		
+		requestPacketChecker(4, "Invalid OP code for request", makePacket(new byte[]{2,3}));
+		requestPacketChecker(4, "Invalid OP code for request", makePacket(new byte[]{0,3}));
+		
+		requestPacketChecker(4, "Filename missing", makePacket(Var.READ, Var.ZERO, "a".getBytes(), Var.ZERO));
+		
+		requestPacketChecker(4, "Missing Null terminator after filename", makePacket(Var.READ, "test".getBytes()));
+		requestPacketChecker(4, "Missing Null terminator after filename", makePacket(Var.READ));
+
+		requestPacketChecker(4, "Mode missing", makePacket(Var.READ, "testing".getBytes(), Var.ZERO));
+		
+		requestPacketChecker(4, "Mode not an acceptable form", makePacket(Var.READ, "a".getBytes(), Var.ZERO, Var.ZERO));
+		requestPacketChecker(4, "Mode not an acceptable form", makePacket(Var.READ, "a".getBytes(), Var.ZERO, "a".getBytes(), Var.ZERO));
+		requestPacketChecker(4, "Mode not an acceptable form", makePacket(Var.READ, "a".getBytes(), Var.ZERO, "octete".getBytes(), Var.ZERO));
+		
+		requestPacketChecker(4, "Packet does not end with null", makePacket(Var.READ, "test".getBytes(), Var.ZERO, "octet".getBytes()));
 	}
 
-	public void check(Integer expectedError, String expectedMsg, DatagramPacket p) {
-		System.out.println(Log.bString(p.getData()));
-		System.out.println(Log.bBytes(p.getData()));
+	public void requestPacketChecker(Integer expectedError, String expectedMsg, DatagramPacket p) {
+		//System.out.println(Log.bString(p.getData()));
+		//System.out.println(Log.bBytes(p.getData()));
 		Integer actual = TFTPErrorHelper.requestPacketChecker(u, p);
 
 		if (actual != null) {
