@@ -100,6 +100,13 @@ public class TFTPErrorHelper {
 	}
 	
 	public static Integer dataPacketChecker(UDPHelper u, DatagramPacket p, int expectedBlock) {
+		/**
+		 * Checks:
+		 * 1) data size is greater than 5
+		 * 2) opcode matches expected opcode of 03
+		 * 3) block number matches expected
+		 * 4) length isn't greater than 516
+		 */
 		byte[] data = p.getData();
 		if (data.length < 5) {
 			// data too small
@@ -128,6 +135,12 @@ public class TFTPErrorHelper {
 	}
 	
 	public static Integer ackPacketChecker(UDPHelper u, DatagramPacket p, int expectedBlock) {
+		/**
+		 * Checks:
+		 * 1) data size is 4
+		 * 2) opcode matches expected opcode of 04
+		 * 3) block number matches expected
+		 */
 		byte[] data = p.getData();
 		if (data.length != 4) {
 			// data too small
