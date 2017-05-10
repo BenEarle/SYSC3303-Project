@@ -115,7 +115,6 @@ public class UDPHelper {
 		if (!closed) {
 			closed = true;
 			socket.close();
-			System.out.println("closed!!!");
 		}
 	}
 }

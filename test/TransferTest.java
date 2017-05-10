@@ -142,7 +142,7 @@ public class TransferTest {
 		stop();
 		
 		// Make sure the files match.
-		assertTrue(fileServer.exists());
+		assertTrue("File copied to server does not exist", fileServer.exists());
 		assertEquals(Log.bString(Files.readAllBytes(fileClient.toPath())), Log.bString(Files.readAllBytes(fileServer.toPath())));
 	}
 	
@@ -169,24 +169,28 @@ public class TransferTest {
 		stop();
 
 		// Make sure the files match.
-		assertTrue(fileClient.exists());
+		assertTrue("File copied to client does not exist", fileClient.exists());
 		assertEquals(Log.bString(Files.readAllBytes(fileClient.toPath())), Log.bString(Files.readAllBytes(fileServer.toPath())));
 	}
 
 	@Test
 	public void testFiles() throws Exception {
+		final int INTERATIONS = 10;
 		File folder = new File("src/testFile");
 		Log.enable(false);
 
 		// Run test on each file in the test directory.
-		for (File f : folder.listFiles()) {
-			if (f.isFile()) {
-				String filename = f.getName();
-				System.out.println("\n---------------------\nTesting '" + filename + "'\n---------------------\n");
-				testWriteFile(filename);
-				runServer(null);
-				testReadFile(filename);
-				runServer(null);
+		for (int i = 0; i < INTERATIONS; i++) {
+			for (File f : folder.listFiles()) {
+				if (f.isFile()) {
+					String filename = f.getName();
+					System.out.println("\n---------------------\nTesting '" + filename + "'\n---------------------\n");
+					testWriteFile(filename);
+					System.out.println("----a----");
+					runServer(null);
+					testReadFile(filename);
+					runServer(null);
+				}
 			}
 		}
 		Thread.sleep(50);
