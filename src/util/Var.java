@@ -24,4 +24,5 @@ public class Var {
 
 	public static final byte[] ACK_READ  = new byte[] { 0, 3, 0, 1 };
 	public static final byte[] ACK_WRITE = new byte[] { 0, 4, 0, 0 };
+	public static final String CMDStart = "Team #1 SYSC3303 Project Commandline [Iteration 2]";
 }

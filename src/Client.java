@@ -40,7 +40,7 @@ public class Client {
 		InetSocketAddress address;
 		DatagramPacket packet = null;
 		Log.out("Client: Starting Client");
-		System.out.println("Team #1 SYSC3303 Client Commandline [Iteration 1]");
+		System.out.println(Var.CMDStart);
 		System.out.println("Client: Type 'help' to get a list of available commands.");
 		if (testMode) {
 			address = addrHost;

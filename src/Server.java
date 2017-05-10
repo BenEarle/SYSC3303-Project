@@ -1,6 +1,7 @@
 import java.io.InputStream;
 import java.util.Scanner;
 import util.Log;
+import util.Var;
 
 /*************************************************************************/
 // This class is the main class for the server. When run it will open a 
@@ -21,7 +22,7 @@ public class Server {
 	public void run() {
 		Log.out("Server<Main>: Starting Server");
 		Log.out("Server<Main>: starting up control thread...");
-		System.out.println("Team #1 SYSC3303 Client Commandline [Iteration 1]");
+		System.out.println(Var.CMDStart);
 		System.out.println("Server<Main>: Type 'help' to get a list of available commands.");
 		ct = new ControlThread();
 		ct.start();
