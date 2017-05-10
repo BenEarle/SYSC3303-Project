@@ -101,6 +101,13 @@ public class TFTPErrorHelper {
 	}
 
 	public static Integer dataPacketChecker(UDPHelper u, DatagramPacket p, int expectedBlock) {
+		/**
+		 * Checks:
+		 * 1) data size is greater than 5
+		 * 2) opcode matches expected opcode of 03
+		 * 3) block number matches expected
+		 * 4) length isn't greater than 516
+		 */
 		byte[] data = p.getData();
 		if (data.length < 5) {
 			// data too small
@@ -123,6 +130,34 @@ public class TFTPErrorHelper {
 		if (data.length > 516) {
 			// Too long of packet
 			sendError(u, (byte) 0x04, "Data packet is too large");
+			return 4;
+		}
+		return null;
+	}
+	
+	public static Integer ackPacketChecker(UDPHelper u, DatagramPacket p, int expectedBlock) {
+		/**
+		 * Checks:
+		 * 1) data size is 4
+		 * 2) opcode matches expected opcode of 04
+		 * 3) block number matches expected
+		 */
+		byte[] data = p.getData();
+		if (data.length != 4) {
+			// data too small
+			sendError(u, (byte) 0x04, "Ack packet wrong size");
+			return 4;
+		}
+		if (data[0] != 0x00 && data[1] != 0x04) {
+			//wrong op code
+			sendError(u, (byte) 0x04, "Invalid ACK op code");
+			return 4;
+		}
+		
+		int blockNum = data[2] * 256 + data[3];
+		if(blockNum != expectedBlock) {
+			//Got wrong block
+			sendError(u, (byte) 0x04, "ACK wrong block number");
 			return 4;
 		}
 		return null;
