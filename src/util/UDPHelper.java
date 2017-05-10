@@ -16,6 +16,7 @@ public class UDPHelper {
 	private DatagramSocket socket;
 	private InetAddress IP;
 	private int port;
+	private boolean closed = true;
 
 	public UDPHelper() {
 		this(false);
@@ -61,6 +62,7 @@ public class UDPHelper {
 			socket = new DatagramSocket();
 			if (timeout)
 				socket.setSoTimeout(Var.TIMEOUT);
+			closed = false;
 		} catch (SocketException e) {
 			Log.err("ERROR Starting socket", e);
 		}
@@ -71,6 +73,7 @@ public class UDPHelper {
 			socket = new DatagramSocket(port);
 			if (timeout)
 				socket.setSoTimeout(Var.TIMEOUT);
+			closed = false;
 		} catch (SocketException e) {
 			Log.err("ERROR Starting socket", e);
 		}
@@ -79,6 +82,7 @@ public class UDPHelper {
 	public void sendPacket(byte[] data) {
 		DatagramPacket sPacket = new DatagramPacket(data, data.length, IP, port);
 		Log.packet("Sending Packet", sPacket);
+
 		try {
 			socket.send(sPacket);
 		} catch (IOException e) {
@@ -88,18 +92,30 @@ public class UDPHelper {
 
 	public DatagramPacket receivePacket() {
 		DatagramPacket rPacket = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
+
 		try {
 			socket.receive(rPacket);
+			Log.packet("Packet Received", rPacket);
+			return rPacket;
 		} catch (SocketTimeoutException ste) {
-			return null;
+			// Nothing here.
+		} catch (SocketException e) {
+			// If the socket should be closed this is fine.
+			if (!closed || !e.getMessage().equals("socket closed")) {
+				Log.err("ERROR Receiving packet", e);
+			}
 		} catch (IOException e) {
 			Log.err("ERROR Receiving packet", e);
 		}
-		Log.packet("Packet Received", rPacket);
-		return rPacket;
+
+		return null;
 	}
 
 	public void close() {
-		socket.close();
+		if (!closed) {
+			closed = true;
+			socket.close();
+			System.out.println("closed!!!");
+		}
 	}
 }
