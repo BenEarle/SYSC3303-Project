@@ -10,15 +10,18 @@ public class TFTPErrorHelper {
 
 	public static Integer requestPacketChecker(UDPHelper u, DatagramPacket p) {
 		/**
-		 * Checks: 1) data size is greater than 6 2) opcode matches expected
-		 * opcode of 01 or 02 3) null byte follows filename 4) filename is
-		 * readable characters 5) mode is 'netascii' or 'octet' 6) ends in a
-		 * null byte
+		 * Checks:
+		 * 1) data size is greater than 6
+		 * 2) opcode matches expected opcode of 01 or 02
+		 * 3) null byte follows filename
+		 * 4) filename is readable characters
+		 * 5) mode is 'netascii' or 'octet'
+		 * 6) ends in a null byte
 		 */
 		byte[] data = p.getData();
 		int length = p.getLength();
 		int i = 2;
-		
+
 		// Check opCode.
 		if (length < 2) {
 			// Data not long enough.
@@ -27,12 +30,13 @@ public class TFTPErrorHelper {
 		}
 
 		// Check the READ/WRITE code is correct.
-		if (!(data[0] == Var.READ[0] && data[1] == Var.READ[1]) && !(data[0] == Var.WRITE[0] && data[1] == Var.WRITE[1])) {
+		if (!(data[0] == Var.READ[0] && data[1] == Var.READ[1])
+				&& !(data[0] == Var.WRITE[0] && data[1] == Var.WRITE[1])) {
 			// Invalid opcode for request.
 			sendError(u, (byte) 0x04, "Invalid OP code for request");
 			return 4;
 		}
-		
+
 		// Capture the filename, if the buffer is overrun the packet is invalid.
 		do {
 			if (i >= length) {
@@ -41,7 +45,7 @@ public class TFTPErrorHelper {
 			}
 		} while (data[i++] != 0);
 		String filename = new String(data, 2, i - 3);
-		
+
 		if (filename.length() == 0) {
 			// The filename is missing.
 			sendError(u, (byte) 0x04, "Filename missing");
@@ -53,7 +57,7 @@ public class TFTPErrorHelper {
 			sendError(u, (byte) 0x04, "Filename contains non printable characters");
 			return 4;
 		}
-		
+
 		// Capture the mode, if the buffer is overrun the packet is invalid.
 		int start = i;
 		do {
@@ -67,13 +71,13 @@ public class TFTPErrorHelper {
 			}
 		} while (data[i++] != 0);
 		String mode = new String(data, start, i - start - 1);
-		
+
 		// Check the NETASCII/OCTET mode is correct.
 		if (!mode.toLowerCase().equals("netascii") && !mode.toLowerCase().equals("octet")) {
 			sendError(u, (byte) 0x04, "Mode not an acceptable form");
 			return 4;
 		}
-		
+
 		// Packet format is correct.
 		return null;
 	}
@@ -126,7 +130,9 @@ public class TFTPErrorHelper {
 		 * 4) length isn't greater than 516
 		 */
 		byte[] data = p.getData();
-		if (data.length < 5) {
+		int length = p.getLength();
+
+		if (length < 5) {
 			// data too small
 			sendError(u, (byte) 0x04, "Data packet too small");
 			return 4;
@@ -160,21 +166,23 @@ public class TFTPErrorHelper {
 		 * 3) block number matches expected
 		 */
 		byte[] data = p.getData();
-		if (data.length != 4) {
+		int length = p.getLength();
+
+		if (length != 4) {
 			// data too small
 			sendError(u, (byte) 0x04, "Ack packet wrong size");
 			return 4;
 		}
-		
+
 		if (data[0] != Var.ACK[0] || data[1] != Var.ACK[1]) {
-			//wrong op code
+			// wrong op code
 			sendError(u, (byte) 0x04, "Invalid ACK op code");
 			return 4;
 		}
-		
+
 		int blockNum = data[2] * 256 + data[3];
-		if(blockNum != expectedBlock) {
-			//Got wrong block
+		if (blockNum != expectedBlock) {
+			// Got wrong block
 			sendError(u, (byte) 0x04, "ACK wrong block number");
 			return 4;
 		}

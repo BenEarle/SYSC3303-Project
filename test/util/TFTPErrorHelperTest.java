@@ -99,7 +99,7 @@ public class TFTPErrorHelperTest {
 
 		bytes = new byte[Var.BUF_SIZE - 3];
 		r.nextBytes(bytes);
-		dataPacketChecker(4, "Data packet is too large", 25, makePacket(Var.DATA, toByte(25), bytes));
+		dataPacketChecker(4, "Data packet is too large", 25, makePacket(Var.BUF_SIZE + 1, Var.DATA, toByte(25), bytes));
 	}
 
 	public void dataPacketChecker(Integer expectedError, String expectedMsg, int expectedBlock, DatagramPacket p) {
@@ -121,7 +121,7 @@ public class TFTPErrorHelperTest {
 	}
 
 	@Test
-	public void testAckPacketChecker() {		
+	public void testAckPacketChecker() {
 		// GOOD
 		ackPacketChecker(null, "", 25, makePacket(Var.ACK, toByte(25)));
 		ackPacketChecker(null, "", 8034, makePacket(Var.ACK, toByte(8034)));
@@ -155,6 +155,10 @@ public class TFTPErrorHelperTest {
 	}
 	
 	private DatagramPacket makePacket(byte[]... bytes) {
+		return makePacket(Var.BUF_SIZE, bytes);
+	}
+	
+	private DatagramPacket makePacket(int size, byte[]... bytes) {
 		// Get the required length of the byte array.
 		int length = 0;
 		for (byte[] b : bytes) {
@@ -166,7 +170,7 @@ public class TFTPErrorHelperTest {
 		}
 		
 		// Create the buffer to hold the full array.
-		byte[] buffer = new byte[length];
+		byte[] buffer = new byte[size];
 		
 		// Copy each byte array into the buffer.
 		int i = 0;
@@ -176,7 +180,7 @@ public class TFTPErrorHelperTest {
 		}
 		
 		// Create a packet from the buffer (using the host address) and return it.
-		return new DatagramPacket(buffer, buffer.length);
+		return new DatagramPacket(buffer, length);
 	}
 
 	public static final byte[] toByte(int value) {
