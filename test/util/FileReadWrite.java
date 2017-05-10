@@ -48,9 +48,10 @@ public class FileReadWrite {
 
 	@Test
 	public void testFilename() throws IOException {
-		createFile(FILENAME);
-		w = new FileWriter(FILENAME);
-		r = new FileReader(FILENAME);
+		String filename = DIR1 + FILENAME;
+		createFile(filename);
+		w = new FileWriter(filename);
+		r = new FileReader(filename);
 		
 		assertEquals(FILENAME, r.getFilename());
 		assertEquals(FILENAME, w.getFilename());
@@ -122,6 +123,47 @@ public class FileReadWrite {
 		do {
 			bytes = r.read();
 			actual += Log.bString(bytes);
+		}
+		while (bytes.length == Var.BLOCK_SIZE && i++ < ITERATIONS * 1000);
+		
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void test3() throws IOException {
+		final String filename = DIR1 + DIR2 + FILENAME;
+		deleteFile(filename);
+		
+		w = new FileWriter(filename);
+		Random rand = new Random();
+		String expected = "";
+		byte[] bytes, out;
+		
+		for (int i = 0; i < ITERATIONS; i++) {
+			int size = rand.nextInt(1000), offset;
+			if (size == 0) {
+				offset = 0;
+			} else {
+				offset = rand.nextInt(size);
+			}
+			bytes = new byte[size];
+			rand.nextBytes(bytes);
+			w.write(bytes, offset);
+			out = new byte[size - offset];
+			System.arraycopy(bytes, offset, out, 0, size - offset);
+			expected += Log.bString(out);
+		}
+		w.close();
+
+		r = new FileReader(filename);
+		String actual = "";
+		int i = 0, offset;
+		do {
+			offset = rand.nextInt(100);
+			bytes = r.read(offset);
+			out = new byte[bytes.length - offset];
+			System.arraycopy(bytes, offset, out, 0, bytes.length - offset);
+			actual += Log.bString(out);
 		}
 		while (bytes.length == Var.BLOCK_SIZE && i++ < ITERATIONS * 1000);
 		

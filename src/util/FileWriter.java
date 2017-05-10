@@ -26,10 +26,14 @@ public class FileWriter {
 	 */
 	public FileWriter(String filename) throws IOException {
 		file = new File(filename);
+
+		// Make the directories and file if they don't exist.
 		if (file.getParentFile() != null) {
 			file.getParentFile().mkdirs();
 		}
 		file.createNewFile();
+
+		// Open a stream to the file.
 		out = new BufferedOutputStream(new FileOutputStream(file));
 		closed = false;
 	}
@@ -53,19 +57,22 @@ public class FileWriter {
 		if (closed)
 			throw new IOException("File has already been closed.");
 
+		// Write out the data.
 		out.write(data);
 	}
 
 	/**
-	 * Write a byte buffer into the file, using an offset on the array.
+	 * Write a byte buffer into the file, starting from the offset.
 	 * 
 	 * @param data
+	 * @param offset
 	 * @throws IOException
 	 */
 	public void write(byte[] data, int offset) throws IOException {
 		if (closed)
 			throw new IOException("File has already been closed.");
 
+		// Write out the data from the given offset.
 		out.write(data, offset, data.length - offset);
 	}
 
