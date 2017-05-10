@@ -98,7 +98,35 @@ public class TFTPErrorHelper {
 	private static boolean isAsciiPrintable(char ch) {
 	      return ch >= 32 && ch < 127;
 	}
+	
+	public static Integer dataPacketChecker(UDPHelper u, DatagramPacket p, int expectedBlock) {
+		byte[] data = p.getData();
+		if (data.length < 5) {
+			// data too small
+			sendError(u, (byte) 0x04, "Data packet too small");
+			return 4;
+		}
 		
+		if (data[0] != 0x00 && data[1] != 0x03) {
+			//wrong op code
+			sendError(u, (byte) 0x04, "Invalid data op code");
+			return 4;
+		}
+		
+		int blockNum = data[2] * 256 + data[3];
+		if(blockNum != expectedBlock) {
+			//Got wrong block
+			sendError(u, (byte) 0x04, "Recv wrong block number");
+			return 4;
+		}
+		if (data.length > 516) {
+			//Too long of packet
+			sendError(u, (byte) 0x04, "Data packet is too large");
+			return 4;
+		}
+		return null;
+	}
+	
 	public static void sendError(UDPHelper u, byte type, String message) {
 		byte[] data = new byte[5 + message.length()];
 		data[0] = 0;
