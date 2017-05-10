@@ -1,13 +1,10 @@
 
-//import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
-import java.util.ArrayList;
-//import java.util.Arrays;
 import java.util.Scanner;
 
 import util.FileReader;
