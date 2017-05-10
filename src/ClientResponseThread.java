@@ -15,6 +15,7 @@ public abstract class ClientResponseThread extends Thread {
 	ClientResponseThread(DatagramPacket initialPacket) {
 		udp = new UDPHelper();
 		udp.setReturn(initialPacket);
+		unpack(initialPacket);
 	}
 
 	/*************************************************************************/
@@ -26,11 +27,6 @@ public abstract class ClientResponseThread extends Thread {
 
 	protected void unpack(DatagramPacket p) {
 		byte[] data = p.getData();
-		// Parse packet confirming the format is correct
-		if (data[0] != 0) // First bit must be 0
-			throw new IllegalArgumentException();
-		if (data[1] != 1 && data[1] != 2) // Second bit must either be a 1 or 2
-			throw new IllegalArgumentException();
 		int i = 2;
 		file = "";
 		// Loop through reading the file name
@@ -40,9 +36,6 @@ public abstract class ClientResponseThread extends Thread {
 			file += (char) data[i];
 			i++;
 		}
-		// If we didn't find a 0 it means that the string is wrong
-		if (i == data.length)
-			throw new IllegalArgumentException();
 		// Increment i again to skip over the null char
 		i++;
 		// Read the mode from the packet.
@@ -53,8 +46,6 @@ public abstract class ClientResponseThread extends Thread {
 			mode += (char) data[i];
 			i++;
 		}
-		if (mode.length() < 1 || file.length() < 1)
-			throw new IllegalArgumentException();
 	}
 
 	/*************************************************************************/
