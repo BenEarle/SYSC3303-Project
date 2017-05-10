@@ -78,12 +78,12 @@ public class FileReader {
 			throw new IOException("File has already been closed.");
 
 		// Read into the buffer using the offset.
-		byte[] buf = new byte[Var.BLOCK_SIZE];
-		int bytesRead = in.read(buf, offset, Var.BLOCK_SIZE - offset);
+		byte[] buf = new byte[Var.BLOCK_SIZE + offset];
+		int bytesRead = in.read(buf, offset, Var.BLOCK_SIZE);
 
 		// If the bytesRead is not filling the buffer,
 		// create a new buffer cutting to the right size.
-		if (bytesRead < Var.BLOCK_SIZE - offset) {
+		if (bytesRead < Var.BLOCK_SIZE) {
 			byte[] data = new byte[bytesRead + offset];
 			System.arraycopy(buf, 0, data, 0, bytesRead + offset);
 			return data;
