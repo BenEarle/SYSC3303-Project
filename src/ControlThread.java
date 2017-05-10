@@ -1,10 +1,6 @@
-import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-
 import util.Log;
+import util.UDPHelper;
 import util.Var;
 
 /*************************************************************************/
@@ -15,37 +11,21 @@ import util.Var;
 /*************************************************************************/
 
 public class ControlThread extends Thread {
-	private DatagramSocket socRecv;
-	private boolean running, timeout;
+	private UDPHelper udp;
+	private boolean running;
 
 	public ControlThread() {
-		try {
-			socRecv = new DatagramSocket(Var.PORT_SERVER);
-			socRecv.setSoTimeout(Var.TIMEOUT);
-		} catch (SocketException e) {
-			Log.err("The server was unable to bind to port " + Var.PORT_SERVER + ".", e);
-			System.exit(1);
-		}
+		udp = new UDPHelper(69, true);
 	}
 	
 	public void run() {
 		running = true;
 		Log.out("SERVER<ControlThread>: Waiting to receive a packet...");
 		while (running) {
-			timeout = false;
 			// Wait to get a packet.
-			DatagramPacket packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
-			try {
-				socRecv.receive(packet);
-			} catch (SocketTimeoutException ste) {
-				timeout = true;
-			} catch (IOException e) {
-				if (!running && e.getMessage().equals("socket closed")) {
-					break;
-				}
-				Log.err("SERVER<ControlThread>: ERROR", e);
-			} 
-			if (!timeout){
+			DatagramPacket packet = udp.receivePacket();
+			
+			if (packet != null){
 				Log.packet("SERVER<ControlThread>: Server Receive", packet);
 				int res = readPacket(packet);
 				switch (res) {
@@ -98,7 +78,7 @@ public class ControlThread extends Thread {
 		if (running) {
 			Log.out("SERVER<ControlThread>: Closed control thread.");
 			running = false;
-			socRecv.close();
+			udp.close();
 		}
 	}
 

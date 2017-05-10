@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 
 /*************************************************************************/
 // This project has a lot of code for sending and receiving UDP packets
@@ -17,7 +18,11 @@ public class UDPHelper {
 	private int port;
 
 	public UDPHelper() {
-		setUpSocket();
+		this(false);
+	}
+
+	public UDPHelper(boolean timeout) {
+		setUpSocket(timeout);
 	}
 
 	public UDPHelper(DatagramPacket p) {
@@ -26,7 +31,11 @@ public class UDPHelper {
 	}
 
 	public UDPHelper(int socketPort) {
-		setUpSocket(socketPort);
+		this(socketPort, false);
+	}
+
+	public UDPHelper(int socketPort, boolean timeout) {
+		setUpSocket(socketPort, timeout);
 	}
 
 	public UDPHelper(int socketPort, DatagramPacket p) {
@@ -47,17 +56,21 @@ public class UDPHelper {
 		IP = p.getAddress();
 	}
 
-	private void setUpSocket() {
+	private void setUpSocket(boolean timeout) {
 		try {
 			socket = new DatagramSocket();
+			if (timeout)
+				socket.setSoTimeout(Var.TIMEOUT);
 		} catch (SocketException e) {
 			Log.err("ERROR Starting socket", e);
 		}
 	}
 
-	private void setUpSocket(int port) {
+	private void setUpSocket(int port, boolean timeout) {
 		try {
 			socket = new DatagramSocket(port);
+			if (timeout)
+				socket.setSoTimeout(Var.TIMEOUT);
 		} catch (SocketException e) {
 			Log.err("ERROR Starting socket", e);
 		}
@@ -77,6 +90,8 @@ public class UDPHelper {
 		DatagramPacket rPacket = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
 		try {
 			socket.receive(rPacket);
+		} catch (SocketTimeoutException ste) {
+			return null;
 		} catch (IOException e) {
 			Log.err("ERROR Receiving packet", e);
 		}
