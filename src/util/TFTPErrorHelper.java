@@ -26,4 +26,17 @@ public class TFTPErrorHelper {
 		}
 	}
 
+	public static boolean isError(byte[] data) {
+		return (data[1] == 5);
+	}
+	
+	public static void unPackError(DatagramPacket p){
+		byte[] data = p.getData();
+		byte[] message = new byte[Var.BLOCK_SIZE];
+		for (int i = 4; i < data.length; i++) {
+			message[i - 4] = data[i];
+		}
+		Log.err("Error packet type " + data[3] + " received.");
+		Log.err(message.toString());
+	}
 }
