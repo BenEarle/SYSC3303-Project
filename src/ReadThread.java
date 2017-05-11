@@ -21,7 +21,12 @@ public class ReadThread extends ClientResponseThread {
 	/*
 	 * Algorithm for Reading from a file:
 	 * 
-	 * Receive RRQ Open Socket and File do Read data from file Send data Receive
+	 * Receive RRQ
+	 * Open Socket and File
+	 * do
+	 *  Read data from file
+	 *  Send data
+	 *  Receive
 	 * ack while(data.len == 512)
 	 */
 
@@ -44,32 +49,31 @@ public class ReadThread extends ClientResponseThread {
 		blockNum[1] = 0x01;
 
 		boolean lastPacket = false; // flag to indicate if last packet is sent
-		byte[] data = null; // data from file
-		byte[] msg = null; // bytes in message to send
+		byte[] data; // data from file
 
 		// Get data from file
 		try {
-			data = fr.read();
-			// Check if length read is less than full block size
-			if (data.length != Var.BLOCK_SIZE)
+			data = fr.read(4);
+
+			// Check if end of file has been reached.
+			if (fr.isClosed()) {
 				lastPacket = true;
+			}
 		} catch (Exception e) {
-			data = new byte[0]; // Empty Message
+			Log.err("ERROR Reading file", e);
+			data = new byte[4]; // Empty Message.
 			lastPacket = true;
 		}
 
-		// Build message from data
-		msg = new byte[4 + data.length];
-		msg[0] = Var.DATA[0];
-		msg[1] = Var.DATA[1];
-		msg[2] = blockNum[0];
-		msg[3] = blockNum[1];
-		for (int i = 0; i < data.length; i++)
-			msg[i + 4] = data[i]; // Copy data into message
+		// Add OPCode to data.
+		data[0] = Var.DATA[0];
+		data[1] = Var.DATA[1];
+		data[2] = blockNum[0];
+		data[3] = blockNum[1];
 
 		// Send first data packet
 		Log.out("Server<ReadThread>: Sending Initial READ Data");
-		super.sendPacket(msg);
+		super.sendPacket(data);
 
 		// Loop until all packets are sent
 		while (!lastPacket) {
@@ -77,34 +81,32 @@ public class ReadThread extends ClientResponseThread {
 			Log.out("Server<ReadThread>: Receiving ACK Data");
 			packet = super.receivePacket();
 			if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) == null) {
-				// Get data from file and check if length read is less than
-				// full block size
+				// Get data from file
 				try {
-					data = fr.read();
-					if (data.length != Var.BLOCK_SIZE)
+					data = fr.read(4);
+
+					// Check if end of file has been reached.
+					if (fr.isClosed()) {
 						lastPacket = true;
-					// Exception if no bytes left in file. Send last packet
-					// empty
+					}
 				} catch (Exception e) {
-					data = new byte[0]; // Empty Message
+					Log.err("ERROR Reading file", e);
+					data = new byte[4]; // Empty Message.
 					lastPacket = true;
 				}
 
 				// Increment Block Number
 				blockNum = bytesIncrement(blockNum);
 
-				// Build message from data
-				msg = new byte[4 + data.length];
-				msg[0] = Var.DATA[0];
-				msg[1] = Var.DATA[1];
-				msg[2] = blockNum[0];
-				msg[3] = blockNum[1];
-				for (int i = 0; i < data.length; i++)
-					msg[i + 4] = data[i]; // Copy data into message
+				// Add OPCode to data.
+				data[0] = Var.DATA[0];
+				data[1] = Var.DATA[1];
+				data[2] = blockNum[0];
+				data[3] = blockNum[1];
 
 				// Send Packet
 				Log.out("Server<ReadThread>: Sending READ Data");
-				super.sendPacket(msg);
+				super.sendPacket(data);
 
 			} else {
 				System.out.println("Server<ReadThread>: Invalid ACK packet.");
@@ -121,7 +123,7 @@ public class ReadThread extends ClientResponseThread {
 			super.close();
 			return;
 		}
-		
+
 		// Close file
 		try {
 			fr.close();

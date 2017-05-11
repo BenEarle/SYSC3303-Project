@@ -52,32 +52,32 @@ public class FileReader {
 	}
 
 	/**
-	 * Read BLOCK_SIZE bytes into a byte buffer, starting from the offset.
+	 * Read BLOCK_SIZE bytes into a byte buffer, with start position.
 	 * 
 	 * @param offset
 	 * @return
 	 * @throws IOException
 	 */
-	public synchronized byte[] read(int offset) throws IOException {
+	public synchronized byte[] read(int start) throws IOException {
 		if (closed)
 			throw new IOException("File has already been closed.");
 
 		// Read into the buffer using the offset.
-		byte[] buf = new byte[Var.BLOCK_SIZE + offset];
-		int bytesRead = in.read(buf, offset, Var.BLOCK_SIZE);
+		byte[] buf = new byte[Var.BLOCK_SIZE + start];
+		int bytesRead = in.read(buf, start, Var.BLOCK_SIZE);
 
 		// If end of file is reached, return an empty array.
 		if (bytesRead == -1) {
 			close();
-			return new byte[offset];
+			return new byte[start];
 		}
 
 		// If the bytesRead is not filling the buffer,
 		// create a new buffer cutting to the right size.
 		if (bytesRead < Var.BLOCK_SIZE) {
 			close();
-			byte[] data = new byte[bytesRead + offset];
-			System.arraycopy(buf, 0, data, 0, bytesRead + offset);
+			byte[] data = new byte[bytesRead + start];
+			System.arraycopy(buf, 0, data, 0, bytesRead + start);
 			return data;
 		}
 
