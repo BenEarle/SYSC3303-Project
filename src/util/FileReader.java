@@ -48,22 +48,7 @@ public class FileReader {
 	 * @throws IOException
 	 */
 	public synchronized byte[] read() throws IOException {
-		if (closed)
-			throw new IOException("File has already been closed.");
-
-		// Read into the buffer.
-		byte[] buf = new byte[Var.BLOCK_SIZE];
-		int bytesRead = in.read(buf);
-
-		// If the bytesRead is not filling the buffer,
-		// create a new buffer with the correct size.
-		if (bytesRead < Var.BLOCK_SIZE) {
-			byte[] data = new byte[bytesRead];
-			System.arraycopy(buf, 0, data, 0, bytesRead);
-			return data;
-		} else {
-			return buf;
-		}
+		return read(0);
 	}
 
 	/**
@@ -81,15 +66,31 @@ public class FileReader {
 		byte[] buf = new byte[Var.BLOCK_SIZE + offset];
 		int bytesRead = in.read(buf, offset, Var.BLOCK_SIZE);
 
+		// If end of file is reached, return an empty array.
+		if (bytesRead == -1) {
+			close();
+			return new byte[offset];
+		}
+
 		// If the bytesRead is not filling the buffer,
 		// create a new buffer cutting to the right size.
 		if (bytesRead < Var.BLOCK_SIZE) {
+			close();
 			byte[] data = new byte[bytesRead + offset];
 			System.arraycopy(buf, 0, data, 0, bytesRead + offset);
 			return data;
-		} else {
-			return buf;
 		}
+
+		return buf;
+	}
+
+	/**
+	 * If the file has been closed.
+	 * 
+	 * @return
+	 */
+	public boolean isClosed() {
+		return closed;
 	}
 
 	/**

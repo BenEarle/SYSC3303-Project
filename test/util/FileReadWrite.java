@@ -124,7 +124,7 @@ public class FileReadWrite {
 			bytes = r.read();
 			actual += Log.bString(bytes);
 		}
-		while (bytes.length == Var.BLOCK_SIZE && i++ < ITERATIONS * 1000);
+		while (!r.isClosed() && i++ < ITERATIONS * 1000);
 		
 		assertEquals(expected, actual);
 	}
@@ -165,7 +165,7 @@ public class FileReadWrite {
 			System.arraycopy(bytes, offset, out, 0, bytes.length - offset);
 			actual += Log.bString(out);
 		}
-		while (bytes.length == Var.BLOCK_SIZE + offset && i++ < ITERATIONS * 1000);
+		while (!r.isClosed() && i++ < ITERATIONS * 1000);
 		
 		assertEquals(expected, actual);
 	}

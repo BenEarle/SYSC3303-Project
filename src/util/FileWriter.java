@@ -54,11 +54,7 @@ public class FileWriter {
 	 * @throws IOException
 	 */
 	public synchronized void write(byte[] data) throws IOException {
-		if (closed)
-			throw new IOException("File has already been closed.");
-
-		// Write out the data.
-		out.write(data);
+		write(data, 0);
 	}
 
 	/**
@@ -74,6 +70,15 @@ public class FileWriter {
 
 		// Write out the data from the given offset.
 		out.write(data, offset, data.length - offset);
+	}
+
+	/**
+	 * If the file has been closed.
+	 * 
+	 * @return
+	 */
+	public boolean isClosed() {
+		return closed;
 	}
 
 	/**
