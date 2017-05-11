@@ -132,7 +132,7 @@ public class TFTPErrorHelper {
 		byte[] data = p.getData();
 		int length = p.getLength();
 
-		if (length < 5) {
+		if (length < 4) {
 			// data too small
 			sendError(u, (byte) 0x04, "Data packet too small");
 			return 4;

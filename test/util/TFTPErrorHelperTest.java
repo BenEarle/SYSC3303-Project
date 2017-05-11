@@ -83,6 +83,7 @@ public class TFTPErrorHelperTest {
 		Random r = new Random();
 		
 		// GOOD
+		dataPacketChecker(null, "", 25, makePacket(Var.DATA, toByte(25)));
 		dataPacketChecker(null, "", 25, makePacket(Var.DATA, toByte(25), "data".getBytes()));
 		dataPacketChecker(null, "", 8034, makePacket(Var.DATA, toByte(8034), "data".getBytes()));
 		bytes = new byte[Var.BUF_SIZE - 4];
