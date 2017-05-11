@@ -112,10 +112,10 @@ public class Client {
 					udp.sendPacket(data);
 					// Go into appropriate mode to receive message
 					if (RRQ) {
-						Log.packet("Client: Sending READ", udp.getLastPacket());
+						//Log.packet("Client: Sending READ", udp.getLastPacket());
 						readMode(file);
 					} else if (WRQ) {
-						Log.packet("Client: Sending WRITE", udp.getLastPacket());
+						//Log.packet("Client: Sending WRITE", udp.getLastPacket());
 						writeMode(file);
 					}
 				} catch (SocketException e) {
@@ -163,7 +163,7 @@ public class Client {
 				writer = new FileWriter(Var.CLIENT_ROOT + fileName);
 			}
 			data = packet.getData();
-			Log.packet("Client: Receiving READ DATA", udp.getLastPacket());
+			//Log.packet("Client: Receiving READ DATA", udp.getLastPacket());
 
 			// Get bytes to write to file from packet
 			bytesToWrite = new byte[packet.getLength() - 4];
@@ -183,7 +183,7 @@ public class Client {
 			// Send the acknowledge packet
 			udp.sendPacket(makeData(Var.ACK, blockNum));
 			blockNum = bytesIncrement(blockNum);
-			Log.packet("Client: Sending READ ACK", udp.getLastPacket());
+			//Log.packet("Client: Sending READ ACK", udp.getLastPacket());
 		}
 		System.out.println("Client: Read Operation Successful");
 		// Close output stream
@@ -225,25 +225,31 @@ public class Client {
 				firstPacket = false;
 			}
 			data = packet.getData();
-			Log.packet("Client: Receiving WRITE ACK", udp.getLastPacket());
+//			Log.packet("Client: Receiving WRITE ACK", udp.getLastPacket());
 
 			// Get data from file and check if length read is less than
 			// full block size
 			try {
-				data = reader.read();
-				if (data.length != Var.BLOCK_SIZE)
+				data = reader.read(4);
+				
+				if (reader.isClosed()) {
 					lastPacket = true;
-				// Exception if no bytes left in file. Send last packet
-				// empty
+				}
 			} catch (Exception e) {
 				data = new byte[0]; // Empty Message
 				lastPacket = true;
 			}
 			blockNum = bytesIncrement(blockNum);
 
+			// Add OPCode to data.
+			data[0] = Var.DATA[0];
+			data[1] = Var.DATA[1];
+			data[2] = blockNum[0];
+			data[3] = blockNum[1];
+
 			// Send write data to Server
-			udp.sendPacket(makeData(Var.DATA, blockNum));
-			Log.packet("Client: Sending WRITE Data", udp.getLastPacket());
+			udp.sendPacket(data);
+			//Log.packet("Client: Sending WRITE Data", udp.getLastPacket());
 
 		}
 
@@ -255,7 +261,7 @@ public class Client {
 			return;
 		}
 		data = packet.getData();
-		Log.packet("Client: Receiving FINAL WRITE ACK", udp.getLastPacket());
+		//Log.packet("Client: Receiving FINAL WRITE ACK", udp.getLastPacket());
 		// Confirm packet is ACK
 		System.out.println("Write: Operation Successful");
 		// Close file

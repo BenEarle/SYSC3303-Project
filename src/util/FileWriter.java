@@ -54,26 +54,43 @@ public class FileWriter {
 	 * @throws IOException
 	 */
 	public synchronized void write(byte[] data) throws IOException {
-		if (closed)
-			throw new IOException("File has already been closed.");
-
-		// Write out the data.
-		out.write(data);
+		write(data, 0, data.length);
 	}
 
 	/**
-	 * Write a byte buffer into the file, starting from the offset.
+	 * Write a byte buffer into the file, with start position.
 	 * 
 	 * @param data
-	 * @param offset
+	 * @param start
 	 * @throws IOException
 	 */
-	public void write(byte[] data, int offset) throws IOException {
+	public void write(byte[] data, int start) throws IOException {
+		write(data, start, data.length);
+	}
+
+	/**
+	 * Write a byte buffer into the file, with start and end positions.
+	 * 
+	 * @param data
+	 * @param start
+	 * @param end
+	 * @throws IOException
+	 */
+	public void write(byte[] data, int start, int end) throws IOException {
 		if (closed)
 			throw new IOException("File has already been closed.");
 
 		// Write out the data from the given offset.
-		out.write(data, offset, data.length - offset);
+		out.write(data, start, end - start);
+	}
+
+	/**
+	 * If the file has been closed.
+	 * 
+	 * @return
+	 */
+	public boolean isClosed() {
+		return closed;
 	}
 
 	/**

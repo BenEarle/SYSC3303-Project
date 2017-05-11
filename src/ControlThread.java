@@ -27,20 +27,20 @@ public class ControlThread extends Thread {
 			DatagramPacket packet = udp.receivePacket();
 			if (packet != null){
 				if (TFTPErrorHelper.requestPacketChecker(udp, packet) == null){				
-					Log.packet("SERVER<ControlThread>: Server Receive", packet);
+					//Log.packet("SERVER<ControlThread>: Server Receive", packet);
 					int res = readPacket(packet);
 					switch (res) {
 					case 1:
 						// Start a new ReadThread to handle the request.
 						new ReadThread(packet).start();
 						System.out.println("\nSERVER<ControlThread>: Server received a READ request. ");
-						Log.packet("Request: ", packet);
+						//Log.packet("Request: ", packet);
 						break;
 					case 2:
 						// Start a new WriteThread to handle the request.
 						new WriteThread(packet).start();
 						System.out.println("\nSERVER<ControlThread>: Server received a WRITE request");
-						Log.packet("Request: ", packet);
+						//Log.packet("Request: ", packet);
 						break;
 					default:
 						Log.err("SERVER<ControlThread>: Server got invalid packet, closing.");

@@ -32,56 +32,51 @@ public class WriteThread extends ClientResponseThread {
 	 * while(data.len == 512) socket.close()
 	 * filewriter.close()
 	 */
+	
 	public void run() {
 		DatagramPacket packet;
 		byte[] data;
-		byte[] ack = { 0, 4, 0, 0 }; // initial ack message
-		byte[] bytesToWrite = null;
-		
+		byte[] ack = Var.ACK_WRITE.clone(); // initial ack message
+
 		// Open FileWriter
 		FileWriter fw = null;
-		
+
 		// Send initial Acknowledge
-		Log.out("Server<WriteThread>: Sending Initial ACK" + ack.toString());
 		super.sendPacket(ack);
 		boolean firstData = true;
 		// Loop until all packets are received
 		do {
 			// receive packet
 			packet = super.receivePacket();
-			if(firstData){
+			if (firstData) {
 				firstData = false;
 				try {
 					fw = new FileWriter(Var.SERVER_ROOT + file);
 				} catch (IOException e) {
-					Log.err("ERROR Starting file writer",e);
+					Log.err("ERROR Starting file writer", e);
 					super.close();
 					return;
 				}
 			}
-			Log.packet("Server<WriteThread>: Received WRITE Data", packet);
+
 			data = packet.getData();
 			ack = ackIncrement(ack);
-			if (TFTPErrorHelper.dataPacketChecker(udp, packet, ack[2] * 256 + ack[3]) != null){
+			if (TFTPErrorHelper.dataPacketChecker(udp, packet, ack[2] * 256 + ack[3]) != null) {
 				System.out.println("Server<ReadThread>: Invalid data packet.");
 				super.close();
 				return;
 			}
-			// Make an array with the bytes to write
-			bytesToWrite = new byte[packet.getLength() - 4];
-			System.arraycopy(data, 4, bytesToWrite, 0, bytesToWrite.length);
 
 			// Write the block to the file
 			try {
-				fw.write(bytesToWrite);
+				fw.write(data, 4, packet.getLength());
 			} catch (IOException e) {
 				Log.err("ERROR writing to file", e);
 			}
 
 			// Send the acknowledge
-			Log.out("Server<WriteThread>: Sending WRITE ACK" + ack.toString());
 			super.sendPacket(ack);
-		} while (bytesToWrite.length == Var.BLOCK_SIZE);
+		} while (packet.getLength() == Var.BUF_SIZE);
 
 		// Close input stream
 		try {
@@ -94,6 +89,7 @@ public class WriteThread extends ClientResponseThread {
 		System.out.println("Server<WriteThread>: Write completed successfully.");
 		System.out.print("Server<Main>: ");
 	}
+
 	private byte[] ackIncrement(byte[] data) {
 		if (data[3] == 0xff) {
 			data[2]++;

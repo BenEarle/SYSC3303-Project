@@ -186,7 +186,6 @@ public class TransferTest {
 					String filename = f.getName();
 					System.out.println("\n---------------------\nTesting '" + filename + "'\n---------------------\n");
 					testWriteFile(filename);
-					System.out.println("----a----");
 					runServer(null);
 					testReadFile(filename);
 					runServer(null);
