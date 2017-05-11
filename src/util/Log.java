@@ -93,17 +93,17 @@ public class Log {
 			sendString = "\n" + s +  ":\n" + 
 					 "\tIP\t\t" + packet.getAddress().toString() + "\n" +
 					 "\tport\t\t" + packet.getPort() + "\n" +
-					 "\tlength\t\t" + (packet.getLength() - 4 ) + "\n" + 
+					 "\tlength\t\t" + packet.getLength() + "\n" + 
 					 "\tType\t\t" + type + "\n" +
 					 "\tBlock #\t\t" + (packet.getData()[2] * 256 + packet.getData()[3]) + "";
 		} else if (type.equals("ERROR")){
 			sendString = "\n" + s +  ":\n" + 
 					 "\tIP\t\t" + packet.getAddress().toString() + "\n" +
 					 "\tport\t\t" + packet.getPort() + "\n" +
-					 "\tlength\t\t" + (packet.getLength() - 4 ) + "\n" + 
+					 "\tlength\t\t" + packet.getLength() + "\n" + 
 					 "\tType\t\t" + type + "\n" +
 					 "\tError Code\t" + packet.getData()[2] + packet.getData()[3] + "\n" + 	
-			 		 "\tError Message\t" + new String(data).substring(4).trim();			
+			 		 "\tError Message\t" + bString(data).substring(4).trim();			
 			
 		} else{
 			sendString = "Packet print not yet implemented ";
