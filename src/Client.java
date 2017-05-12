@@ -150,40 +150,42 @@ public class Client {
 		while (!lastPacket) {
 			// Create packet then receive and get info from packet
 			packet = udp.receivePacket();
-			if (TFTPErrorHelper.dataPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
-				Log.err("Client: Received invalid data packet.");
-				udp.setTestSender(false);
-				return;
+			if (packet != null) {
+				if (TFTPErrorHelper.dataPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
+					Log.err("Client: Received invalid data packet.");
+					udp.setTestSender(false);
+					return;
+				}
+				if (firstData) {
+					firstData = false;
+					// Save address to send response to
+					udp.setReturn(packet);
+					udp.setTestSender(true);
+					writer = new FileWriter(Var.CLIENT_ROOT + fileName);
+				}
+				data = packet.getData();
+				//Log.packet("Client: Receiving READ DATA", udp.getLastPacket());
+	
+				// Get bytes to write to file from packet
+				bytesToWrite = new byte[packet.getLength() - 4];
+				System.arraycopy(data, 4, bytesToWrite, 0, bytesToWrite.length);
+	
+				// Flag as last data packet if not full block size
+				if (bytesToWrite.length != Var.BLOCK_SIZE)
+					lastPacket = true;
+	
+				// write the block to the file
+				try {
+					writer.write(bytesToWrite);
+				} catch (IOException e) {
+					Log.err("", e);
+				}
+	
+				// Send the acknowledge packet
+				udp.sendPacket(makeData(Var.ACK, blockNum));
+				blockNum = bytesIncrement(blockNum);
+				//Log.packet("Client: Sending READ ACK", udp.getLastPacket());
 			}
-			if (firstData) {
-				firstData = false;
-				// Save address to send response to
-				udp.setReturn(packet);
-				udp.setTestSender(true);
-				writer = new FileWriter(Var.CLIENT_ROOT + fileName);
-			}
-			data = packet.getData();
-			//Log.packet("Client: Receiving READ DATA", udp.getLastPacket());
-
-			// Get bytes to write to file from packet
-			bytesToWrite = new byte[packet.getLength() - 4];
-			System.arraycopy(data, 4, bytesToWrite, 0, bytesToWrite.length);
-
-			// Flag as last data packet if not full block size
-			if (bytesToWrite.length != Var.BLOCK_SIZE)
-				lastPacket = true;
-
-			// write the block to the file
-			try {
-				writer.write(bytesToWrite);
-			} catch (IOException e) {
-				Log.err("", e);
-			}
-
-			// Send the acknowledge packet
-			udp.sendPacket(makeData(Var.ACK, blockNum));
-			blockNum = bytesIncrement(blockNum);
-			//Log.packet("Client: Sending READ ACK", udp.getLastPacket());
 		}
 		System.out.println("Client: Read Operation Successful");
 		// Close output stream
@@ -211,46 +213,47 @@ public class Client {
 		while (!lastPacket) {
 			// Create packet then receive and get info from packet
 			packet = udp.receivePacket();
-
-			if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
-				Log.err("Client: Received invalid ACK packet.");
-				udp.setTestSender(false);
-				return;
-			}
-
-			if (firstPacket) {
-				// Save address to send data to
-				udp.setReturn(packet);
-				udp.setTestSender(true);
-				firstPacket = false;
-			}
-			data = packet.getData();
-//			Log.packet("Client: Receiving WRITE ACK", udp.getLastPacket());
-
-			// Get data from file and check if length read is less than
-			// full block size
-			try {
-				data = reader.read(4);
-				
-				if (reader.isClosed()) {
+			if (packet != null) {
+				if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
+					Log.err("Client: Received invalid ACK packet.");
+					udp.setTestSender(false);
+					return;
+				}
+	
+				if (firstPacket) {
+					// Save address to send data to
+					udp.setReturn(packet);
+					udp.setTestSender(true);
+					firstPacket = false;
+				}
+				data = packet.getData();
+	//			Log.packet("Client: Receiving WRITE ACK", udp.getLastPacket());
+	
+				// Get data from file and check if length read is less than
+				// full block size
+				try {
+					data = reader.read(4);
+					
+					if (reader.isClosed()) {
+						lastPacket = true;
+					}
+				} catch (Exception e) {
+					data = new byte[0]; // Empty Message
 					lastPacket = true;
 				}
-			} catch (Exception e) {
-				data = new byte[0]; // Empty Message
-				lastPacket = true;
+				blockNum = bytesIncrement(blockNum);
+	
+				// Add OPCode to data.
+				data[0] = Var.DATA[0];
+				data[1] = Var.DATA[1];
+				data[2] = blockNum[0];
+				data[3] = blockNum[1];
+	
+				// Send write data to Server
+				udp.sendPacket(data);
+				//Log.packet("Client: Sending WRITE Data", udp.getLastPacket());
+	
 			}
-			blockNum = bytesIncrement(blockNum);
-
-			// Add OPCode to data.
-			data[0] = Var.DATA[0];
-			data[1] = Var.DATA[1];
-			data[2] = blockNum[0];
-			data[3] = blockNum[1];
-
-			// Send write data to Server
-			udp.sendPacket(data);
-			//Log.packet("Client: Sending WRITE Data", udp.getLastPacket());
-
 		}
 
 		// Receive final ACK packet
