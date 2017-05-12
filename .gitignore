@@ -2,3 +2,4 @@
 /temp/
 /src/testFile/s_*
 /src/testFile/server/c_*
+*.db
