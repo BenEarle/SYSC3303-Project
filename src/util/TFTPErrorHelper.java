@@ -128,7 +128,7 @@ public class TFTPErrorHelper {
 			sendError(u, (byte) 0x04, "Data packet too small");
 			return 4;
 		}
-		if (length >= 516) {
+		if (length > 516) {
 			// Too long of packet
 			sendError(u, (byte) 0x04, "Data packet is too large");
 			return 4;
