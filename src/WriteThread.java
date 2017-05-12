@@ -45,7 +45,7 @@ public class WriteThread extends ClientResponseThread {
 		super.sendPacket(ack);
 		boolean firstData = true;
 		// Loop until all packets are received
-		do {
+		while(true) {
 			// receive packet
 			packet = super.receivePacket();
 			if (packet != null) {
@@ -74,11 +74,14 @@ public class WriteThread extends ClientResponseThread {
 				} catch (IOException e) {
 					Log.err("ERROR writing to file", e);
 				}
-	
+				
 				// Send the acknowledge
 				super.sendPacket(ack);
+				if (packet.getLength() != Var.BUF_SIZE) {
+					break;
+				}
 			}
-		} while (packet.getLength() == Var.BUF_SIZE);
+		}
 
 		// Close input stream
 		try {
