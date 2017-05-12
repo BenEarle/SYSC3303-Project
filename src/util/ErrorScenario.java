@@ -20,7 +20,7 @@ public class ErrorScenario {
 	public static final int DATA_PACKET  = 3;
 	public static final int ACK_PACKET   = 4;
 
-	public static final String[] FAULT   = {"OPCODE","MODE","NULL","BLOCK","SIZE","SOURCE"};
+	public static final String[] FAULT   = {"NONE","OPCODE","MODE","NULL","BLOCK","SIZE","SOURCE"};
 	public static final int OPCODE_FAULT = 1;
 	public static final int MODE_FAULT   = 2;
 	public static final int NULL_FAULT   = 3;

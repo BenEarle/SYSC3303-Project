@@ -45,44 +45,44 @@ public class ErrorSimulator {
 		byte[] data = packet.getData();
 		// Sabotage a Read packet
 		if       ( data[1]==Var.READ[1] && err.getPacketType()==ErrorScenario.READ_PACKET){
-			packet = err.Sabotage(packet);
 			Log.out(
 				"ErrorSimulatorChannel: READ Packet sabotaged with "
-				+ErrorScenario.FAULT[err.getFaultType()-1]
+				+ErrorScenario.FAULT[err.getFaultType()]
 				+" Fault (CODE: "+err.getErrorCode()+")"
 			);
+			packet = err.Sabotage(packet);
 			return packet;
 		}
 		// Sabotage a Write packet
 		if( data[1]==Var.WRITE[1]  && err.getPacketType()==ErrorScenario.WRITE_PACKET){
-			packet = err.Sabotage(packet);
 			Log.out(
 				"ErrorSimulatorChannel: WRITE Packet sabotaged with "
-				+ErrorScenario.FAULT[err.getFaultType()-1]
+				+ErrorScenario.FAULT[err.getFaultType()]
 				+" Fault (CODE: "+err.getErrorCode()+")"
 			);
+			packet = err.Sabotage(packet);
 			return packet;
 		}
 		// Sabotage a Data packet
 		if( data[1] == Var.DATA[1] && err.getPacketType()==ErrorScenario.DATA_PACKET 
 										  && (data[2]*256+data[3]) == err.getBlockNum()){
-			packet = err.Sabotage(packet);
 			Log.out(
 				"ErrorSimulatorChannel: DATA Packet #"+err.getBlockNum()+" sabotaged with "
-				+ErrorScenario.FAULT[err.getFaultType()-1]
+				+ErrorScenario.FAULT[err.getFaultType()]
 				+" Fault (CODE: "+err.getErrorCode()+")"
 			);
+			packet = err.Sabotage(packet);
 			return packet;
 		} 
 		// Sabotage an ACK packet
 		if( data[1] == Var.ACK[1]  && err.getPacketType()==ErrorScenario.ACK_PACKET  
 									 	  && (data[2]*256+data[3]) == err.getBlockNum()){
-			packet = err.Sabotage(packet);
 			Log.out(
 				"ErrorSimulatorChannel: ACK Packet #"+err.getBlockNum()+" sabotaged with "
-				+ErrorScenario.FAULT[err.getFaultType()-1]
+				+ErrorScenario.FAULT[err.getFaultType()]
 				+" Fault (CODE: "+err.getErrorCode()+")"
 			);
+			packet = err.Sabotage(packet);
 			return packet;
 		}
 		return packet;
