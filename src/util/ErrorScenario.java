@@ -150,10 +150,9 @@ public class ErrorScenario {
 				);
 				tempSocket.send(errorPacket);
 				Log.packet("INVALID SOCKET SOURCE: Sending Packet", errorPacket);
-				Thread.sleep(100);
-				//tempSocket.receive(errorPacket);
-				//errorPacket = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
-				//Log.packet("INVALID SOCKET SOURCE: Receiving Packet", errorPacket);
+				errorPacket = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
+				tempSocket.receive(errorPacket);
+				Log.packet("INVALID SOCKET SOURCE: Receiving Packet", errorPacket);
 				tempSocket.close();
 			} catch(Exception e){
 				e.printStackTrace();

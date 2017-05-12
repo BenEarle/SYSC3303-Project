@@ -26,7 +26,7 @@ public class ErrorSimulator {
 	
 	public ErrorSimulator() throws SocketException {
 		socket = new DatagramSocket(Var.PORT_CLIENT);
-		err    = new ErrorScenario();
+		err    = null;
 	}
 	
 	private void display(DatagramPacket packet){
@@ -135,7 +135,7 @@ public class ErrorSimulator {
 			// Parse Packet from Client
 			data = packet.getData();
 			//Check if last DATA packet
-			if (data[0] == Var.DATA[0] && data[1] == Var.DATA[1] && packet.getLength() <= 516) {
+			if (data[0] == Var.DATA[0] && data[1] == Var.DATA[1] && packet.getLength() < 516) {
 				Log.out("ErrorSimulatorChannel: Received Last DATA Packet in Transfer");
 				lastData = true;
 			//Check for last ACK packet
@@ -143,6 +143,8 @@ public class ErrorSimulator {
 				Log.out("ErrorSimulatorChannel: Received Last ACK Packet in Transfer");
 				lastAck = true;
 			}
+			// Update Address
+			packet.setSocketAddress(addrServer);
 			// Check whether or not to sabotage
 			packet = checkSabotage(packet);
 			//Check for Error packet
@@ -151,7 +153,6 @@ public class ErrorSimulator {
 			}
 			
 			// Send socket to Server
-			packet.setSocketAddress(addrServer);
 			socServer.send(packet);
 			Log.packet("ErrorSimulatorChannel: ErrorSim -> Server", packet);
 			display(packet);
@@ -173,7 +174,7 @@ public class ErrorSimulator {
 			// Parse Packet from Server
 			data = packet.getData();
 			//Check if last DATA packet
-			if (data[0] == Var.DATA[0] && data[1] == Var.DATA[1] && packet.getLength() <= 516) {
+			if (data[0] == Var.DATA[0] && data[1] == Var.DATA[1] && packet.getLength() < 516) {
 				Log.out("ErrorSimulatorChannel: Received Last DATA Packet in Transfer");
 				lastData = true;
 			//Check for last ACK packet
@@ -181,6 +182,8 @@ public class ErrorSimulator {
 				Log.out("ErrorSimulatorChannel: Received Last ACK Packet in Transfer");
 				lastAck = true;
 			}
+			// Update Address
+			packet.setSocketAddress(addrClient);
 			// Check whether or not to sabotage
 			packet = checkSabotage(packet);
 			//Check for Error packet
@@ -189,7 +192,6 @@ public class ErrorSimulator {
 			}
 						
 			// Send socket to Client
-			packet.setSocketAddress(addrClient);
 			socClient.send(packet);
 			Log.packet("ErrorSimulatorChannel: ErrorSim -> Client", packet);
 			display(packet);
@@ -205,6 +207,7 @@ public class ErrorSimulator {
 	public void run() throws IOException {
 		running = true;
 		while (running) {
+			err = new ErrorScenario();
 			Log.out("Running new channel");
 			runChannel();
 		}
