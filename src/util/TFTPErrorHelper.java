@@ -82,15 +82,6 @@ public class TFTPErrorHelper {
 		return null;
 	}
 
-	private static int findByteIndex(byte[] b, int startingFrom, int findByte) {
-		for (int i = startingFrom; i < b.length; i++) {
-			if (b[i] == 0x00) {
-				return i;
-			}
-		}
-		return -1;
-	}
-
 	/**
 	 * Checks that all characters in string is ascii printable
 	 * 

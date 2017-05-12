@@ -115,6 +115,8 @@ public class UDPHelper {
 				//Send error code 5 and continue
 				TFTPErrorHelper.sendError(this, (byte) 5, "Invalid sender. Was expecting a response from: " + IP.toString() + ":" + port);
 				return null;
+			} else {
+				port = p.getPort();
 			}
 			
 			return p;
