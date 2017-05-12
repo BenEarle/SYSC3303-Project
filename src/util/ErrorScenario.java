@@ -20,12 +20,13 @@ public class ErrorScenario {
 	public static final int DATA_PACKET  = 3;
 	public static final int ACK_PACKET   = 4;
 
-	public static final String[] FAULT   = {"OPCODE","MODE","NULL","BLOCK","SIZE"};
+	public static final String[] FAULT   = {"OPCODE","MODE","NULL","BLOCK","SIZE","SOURCE"};
 	public static final int OPCODE_FAULT = 1;
 	public static final int MODE_FAULT   = 2;
 	public static final int NULL_FAULT   = 3;
 	public static final int BLOCK_FAULT  = 4;
 	public static final int SIZE_FAULT   = 5;
+	public static final int SOURCE_FAULT = 6;
 	
 	/*************************************************************************/
 	// Instance Variables
@@ -121,13 +122,13 @@ public class ErrorScenario {
 				if(faultType==OPCODE_FAULT){
 					data[0] = (byte)0xFF;
 					data[1] = (byte)0xFF;
-					packet.setData(data);
+					packet.setData(data,0,packet.getLength());
 				//-------------------------------------------------
 				// Set Block Num to 0xFFFF
 				} else if(faultType==BLOCK_FAULT){
 					data[2] = (byte)0xFF;
 					data[3] = (byte)0xFF;
-					packet.setData(data);
+					packet.setData(data,0,packet.getLength());
 				//-------------------------------------------------
 				// Make a packet larger by 100 bytes and fill with 0xFFs
 				} else if(faultType==SIZE_FAULT){
@@ -145,9 +146,14 @@ public class ErrorScenario {
 			try{
 				DatagramSocket tempSocket  = new DatagramSocket();
 				DatagramPacket errorPacket = new DatagramPacket(
-					packet.getData(), packet.getData().length, packet.getAddress(), packet.getPort()
+					packet.getData(), packet.getLength(), packet.getAddress(), packet.getPort()
 				);
 				tempSocket.send(errorPacket);
+				Log.packet("INVALID SOCKET SOURCE: Sending Packet", errorPacket);
+				Thread.sleep(100);
+				//tempSocket.receive(errorPacket);
+				//errorPacket = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
+				//Log.packet("INVALID SOCKET SOURCE: Receiving Packet", errorPacket);
 				tempSocket.close();
 			} catch(Exception e){
 				e.printStackTrace();
@@ -291,20 +297,7 @@ public class ErrorScenario {
 				        default: Log.out("ERROR - Invalid Entry"); break;
 					}
 				}
-			} else if( packetType == ACK_PACKET){
-				while(faultType == UNDEFINED){
-					Log.out(
-						"Select a Fault Case to Test:\n"
-					  + " 1) opcode\n"
-					  + " 2) block"
-					);
-					switch(scanner.nextLine().trim()){
-						case "1": faultType = OPCODE_FAULT; break;
-						case "2": faultType = BLOCK_FAULT;  break;
-				        default: Log.out("ERROR - Invalid Entry"); break;
-					}
-				}
-			}  else if( packetType == DATA_PACKET){
+			} else if( packetType == ACK_PACKET || packetType == DATA_PACKET){
 				while(faultType == UNDEFINED){
 					Log.out(
 						"Select a Fault Case to Test:\n"
@@ -323,7 +316,7 @@ public class ErrorScenario {
 		//-------------------------------------------------
 		// Unknown Transfer ID Error
 		} else if(errorCode == 5){
-			faultType = IRRELEVANT;
+			faultType = SOURCE_FAULT;
 		//-------------------------------------------------
 		// File Already Exists Error
 		} else if(errorCode == 6) {

@@ -43,40 +43,44 @@ public class ErrorSimulator {
 	
 	private DatagramPacket checkSabotage(DatagramPacket packet){
 		byte[] data = packet.getData();
+		// Sabotage a Read packet
 		if       ( data[1]==Var.READ[1] && err.getPacketType()==ErrorScenario.READ_PACKET){
 			packet = err.Sabotage(packet);
 			Log.out(
 				"ErrorSimulatorChannel: READ Packet sabotaged with "
-				//+ErrorScenario.FAULT[err.getFaultType()-1]
-				+" Fault (CODE: "+err.getErrorCode()+")"
-			);
-			return packet;
-		} 
-		if( data[1]==Var.WRITE[1]  && err.getPacketType()==ErrorScenario.WRITE_PACKET){
-			packet = err.Sabotage(packet);
-			Log.out(
-				"ErrorSimulatorChannel: WRITE Packet sabotaged with "
-				//+ErrorScenario.FAULT[err.getFaultType()-1]
+				+ErrorScenario.FAULT[err.getFaultType()-1]
 				+" Fault (CODE: "+err.getErrorCode()+")"
 			);
 			return packet;
 		}
+		// Sabotage a Write packet
+		if( data[1]==Var.WRITE[1]  && err.getPacketType()==ErrorScenario.WRITE_PACKET){
+			packet = err.Sabotage(packet);
+			Log.out(
+				"ErrorSimulatorChannel: WRITE Packet sabotaged with "
+				+ErrorScenario.FAULT[err.getFaultType()-1]
+				+" Fault (CODE: "+err.getErrorCode()+")"
+			);
+			return packet;
+		}
+		// Sabotage a Data packet
 		if( data[1] == Var.DATA[1] && err.getPacketType()==ErrorScenario.DATA_PACKET 
 										  && (data[2]*256+data[3]) == err.getBlockNum()){
 			packet = err.Sabotage(packet);
 			Log.out(
-				"ErrorSimulatorChannel: DATA Packet #"+err.getBlockNum()+"sabotaged with "
-				//+ErrorScenario.FAULT[err.getFaultType()-1]
+				"ErrorSimulatorChannel: DATA Packet #"+err.getBlockNum()+" sabotaged with "
+				+ErrorScenario.FAULT[err.getFaultType()-1]
 				+" Fault (CODE: "+err.getErrorCode()+")"
 			);
 			return packet;
 		} 
+		// Sabotage an ACK packet
 		if( data[1] == Var.ACK[1]  && err.getPacketType()==ErrorScenario.ACK_PACKET  
 									 	  && (data[2]*256+data[3]) == err.getBlockNum()){
 			packet = err.Sabotage(packet);
 			Log.out(
 				"ErrorSimulatorChannel: ACK Packet #"+err.getBlockNum()+" sabotaged with "
-				//+ErrorScenario.FAULT[err.getFaultType()-1]
+				+ErrorScenario.FAULT[err.getFaultType()-1]
 				+" Fault (CODE: "+err.getErrorCode()+")"
 			);
 			return packet;
@@ -131,7 +135,7 @@ public class ErrorSimulator {
 			// Parse Packet from Client
 			data = packet.getData();
 			//Check if last DATA packet
-			if (data[0] == Var.DATA[0] && data[1] == Var.DATA[1] && packet.getLength() != 516) {
+			if (data[0] == Var.DATA[0] && data[1] == Var.DATA[1] && packet.getLength() <= 516) {
 				Log.out("ErrorSimulatorChannel: Received Last DATA Packet in Transfer");
 				lastData = true;
 			//Check for last ACK packet
@@ -142,7 +146,7 @@ public class ErrorSimulator {
 			// Check whether or not to sabotage
 			packet = checkSabotage(packet);
 			//Check for Error packet
-			if (data[0] == Var.ERROR[0] && data[1] == Var.ERROR[1]) {
+			if (data[0] == Var.ERROR[0] && data[1] == Var.ERROR[1] && data[3] == 4) {
 				error = true;
 			}
 			
@@ -169,7 +173,7 @@ public class ErrorSimulator {
 			// Parse Packet from Server
 			data = packet.getData();
 			//Check if last DATA packet
-			if (data[0] == Var.DATA[0] && data[1] == Var.DATA[1] && packet.getLength() != 516) {
+			if (data[0] == Var.DATA[0] && data[1] == Var.DATA[1] && packet.getLength() <= 516) {
 				Log.out("ErrorSimulatorChannel: Received Last DATA Packet in Transfer");
 				lastData = true;
 			//Check for last ACK packet
@@ -180,7 +184,7 @@ public class ErrorSimulator {
 			// Check whether or not to sabotage
 			packet = checkSabotage(packet);
 			//Check for Error packet
-			if (data[0] == Var.ERROR[0] && data[1] == Var.ERROR[1]) {
+			if (data[0] == Var.ERROR[0] && data[1] == Var.ERROR[1] && data[3] == 4) {
 				error = true;
 			}
 						
