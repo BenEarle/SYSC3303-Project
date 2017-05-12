@@ -219,12 +219,14 @@ public class ErrorScenario {
 		} else if(errorCode == 4){
 			while(packetType == UNDEFINED){
 				Log.out(
-					"Select an Message Type to  Error Case to Test:\n"
+					"Select a Message Type to Test:\n"
 				  + " 1) RRQ\n"
 				  + " 2) WRQ\n"
 				  + " 3) DATA\n"
 				  + " 4) ACK"
 				);
+
+				scanner = new Scanner(System.in);
 				switch(scanner.next().trim()){
 					case "1": packetType = READ_PACKET;  break;
 					case "2": packetType = WRITE_PACKET; break;
@@ -238,10 +240,11 @@ public class ErrorScenario {
 		} else if(errorCode == 5){
 			while(packetType == UNDEFINED){
 				Log.out(
-					"Select an Message Type to  Error Case to Test:\n"
+					"Select a Message Type to Test:\n"
 				  + " 1) DATA\n"
 				  + " 2) ACK"
 				);
+				scanner = new Scanner(System.in);
 				switch(scanner.nextLine().trim()){
 					case "1": packetType = DATA_PACKET;  break;
 					case "2": packetType = ACK_PACKET;   break;
@@ -289,6 +292,8 @@ public class ErrorScenario {
 					  + " 2) mode\n"
 					  + " 3) null"
 					);
+
+					scanner = new Scanner(System.in);
 					switch(scanner.nextLine().trim()){
 						case "1": faultType = OPCODE_FAULT; break;
 						case "2": faultType = MODE_FAULT;   break;
@@ -304,6 +309,7 @@ public class ErrorScenario {
 					  + " 2) block\n"
 					  + " 3) size"
 					);
+					scanner = new Scanner(System.in);
 					switch(scanner.nextLine().trim()){
 						case "1": faultType = OPCODE_FAULT; break;
 						case "2": faultType = BLOCK_FAULT;  break;

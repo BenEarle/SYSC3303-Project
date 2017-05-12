@@ -266,7 +266,7 @@ public class Client {
 		data = packet.getData();
 		//Log.packet("Client: Receiving FINAL WRITE ACK", udp.getLastPacket());
 		// Confirm packet is ACK
-		System.out.println("Write: Operation Successful");
+		System.out.println("Client: Write operation successful.");
 		// Close file
 		reader.close();
 		udp.setTestSender(false);

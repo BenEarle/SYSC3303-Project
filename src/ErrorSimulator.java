@@ -32,7 +32,8 @@ public class ErrorSimulator {
 	private void display(DatagramPacket packet){
 		for(int i=0; i<packet.getLength(); i++){
 			System.out.print(packet.getData()[i]+", ");
-		}System.out.print("\n");
+		} 
+		System.out.print("\n");
 	}
 	
 	/*************************************************************************/
