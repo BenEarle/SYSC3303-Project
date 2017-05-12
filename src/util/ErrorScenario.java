@@ -133,7 +133,7 @@ public class ErrorScenario {
 				} else if(faultType==SIZE_FAULT){
 					byte[] newData = new byte[Var.BLOCK_SIZE+100];
 					// Copy existing bytes
-					for(int i=0; i<newData.length; i++) newData[i] = data[i];
+					for(int i=0; i<data.length; i++) newData[i] = data[i];
 					// Copy new bytes
 					for(int i=data.length; i<newData.length; i++) newData[i] = (byte)0xFF;
 					packet.setData(newData);

@@ -30,7 +30,7 @@ public class ErrorSimulator {
 	}
 	
 	private void display(DatagramPacket packet){
-		for(int i=0; i<packet.getData().length; i++){
+		for(int i=0; i<packet.getLength(); i++){
 			System.out.print(packet.getData()[i]+", ");
 		}System.out.print("\n");
 	}
@@ -46,16 +46,18 @@ public class ErrorSimulator {
 		if       ( data[1]==Var.READ[1] && err.getPacketType()==ErrorScenario.READ_PACKET){
 			packet = err.Sabotage(packet);
 			Log.out(
-				"ErrorSimulatorChannel: READ Packet sabotaged with "+err.getFaultType()
-				+" (CODE: "+err.getErrorCode()+")"
+				"ErrorSimulatorChannel: READ Packet sabotaged with "
+				//+ErrorScenario.FAULT[err.getFaultType()-1]
+				+" Fault (CODE: "+err.getErrorCode()+")"
 			);
 			return packet;
 		} 
 		if( data[1]==Var.WRITE[1]  && err.getPacketType()==ErrorScenario.WRITE_PACKET){
 			packet = err.Sabotage(packet);
 			Log.out(
-				"ErrorSimulatorChannel: WRITE Packet sabotaged with "+err.getFaultType()
-				+" (CODE: "+err.getErrorCode()+")"
+				"ErrorSimulatorChannel: WRITE Packet sabotaged with "
+				//+ErrorScenario.FAULT[err.getFaultType()-1]
+				+" Fault (CODE: "+err.getErrorCode()+")"
 			);
 			return packet;
 		}
@@ -63,8 +65,9 @@ public class ErrorSimulator {
 										  && (data[2]*256+data[3]) == err.getBlockNum()){
 			packet = err.Sabotage(packet);
 			Log.out(
-				"ErrorSimulatorChannel: DATA Packet #"+err.getBlockNum()+"sabotaged with "+err.getFaultType()
-				+" (CODE: "+err.getErrorCode()+")"
+				"ErrorSimulatorChannel: DATA Packet #"+err.getBlockNum()+"sabotaged with "
+				//+ErrorScenario.FAULT[err.getFaultType()-1]
+				+" Fault (CODE: "+err.getErrorCode()+")"
 			);
 			return packet;
 		} 
@@ -72,8 +75,9 @@ public class ErrorSimulator {
 									 	  && (data[2]*256+data[3]) == err.getBlockNum()){
 			packet = err.Sabotage(packet);
 			Log.out(
-				"ErrorSimulatorChannel: ACK Packet #"+err.getBlockNum()+"sabotaged with "+err.getFaultType()
-				+" (CODE: "+err.getErrorCode()+")"
+				"ErrorSimulatorChannel: ACK Packet #"+err.getBlockNum()+" sabotaged with "
+				//+ErrorScenario.FAULT[err.getFaultType()-1]
+				+" Fault (CODE: "+err.getErrorCode()+")"
 			);
 			return packet;
 		}
@@ -97,7 +101,7 @@ public class ErrorSimulator {
 		SocketAddress addrServer = SERVER_ADDRESS;//new InetSocketAddress("localhost", Var.PORT_SERVER);
 		
 		// Packet used to transfer between client and server
-		DatagramPacket packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
+		DatagramPacket packet = null;
 		
 		// Data and Flags used in transfer
 		byte[] data;
@@ -111,6 +115,7 @@ public class ErrorSimulator {
 		running = true;
 		while (running) {
 			// Receive packet from Client
+			packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
 			if(!initiated) socket.receive(packet); // Receive on Well-Known port socket
 			else        socClient.receive(packet); // Receive on Channel-Dedicated port socket
 			
@@ -153,6 +158,7 @@ public class ErrorSimulator {
 			//-----------------------------------------
 			
 			// Receive back from Server
+			packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
 			socServer.receive(packet);
 			Log.packet("ErrorSimulatorChannel: Server -> ErrorSim", packet);
 			display(packet);
@@ -195,6 +201,7 @@ public class ErrorSimulator {
 	public void run() throws IOException {
 		running = true;
 		while (running) {
+			Log.out("Running new channel");
 			runChannel();
 		}
 	}
