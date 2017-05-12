@@ -123,27 +123,25 @@ public class TFTPErrorHelper {
 		byte[] data = p.getData();
 		int length = p.getLength();
 
-		if (length < 4) {
+		if (length < 4 ) {
 			// data too small
 			sendError(u, (byte) 0x04, "Data packet too small");
 			return 4;
 		}
-
+		if (length >= 516) {
+			// Too long of packet
+			sendError(u, (byte) 0x04, "Data packet is too large");
+			return 4;
+		}
 		if (data[0] != Var.DATA[0] || data[1] != Var.DATA[1]) {
 			// wrong op code
 			sendError(u, (byte) 0x04, "Invalid data op code");
 			return 4;
 		}
-
 		int blockNum = data[2] * 256 + data[3];
 		if (blockNum != expectedBlock) {
 			// Got wrong block
 			sendError(u, (byte) 0x04, "Recv wrong block number");
-			return 4;
-		}
-		if (data.length > 516) {
-			// Too long of packet
-			sendError(u, (byte) 0x04, "Data packet is too large");
 			return 4;
 		}
 		return null;
