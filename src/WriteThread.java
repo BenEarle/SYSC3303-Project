@@ -48,34 +48,36 @@ public class WriteThread extends ClientResponseThread {
 		do {
 			// receive packet
 			packet = super.receivePacket();
-			if (firstData) {
-				firstData = false;
-				try {
-					fw = new FileWriter(Var.SERVER_ROOT + file);
-				} catch (IOException e) {
-					Log.err("ERROR Starting file writer", e);
+			if (packet != null) {
+				if (firstData) {
+					firstData = false;
+					try {
+						fw = new FileWriter(Var.SERVER_ROOT + file);
+					} catch (IOException e) {
+						Log.err("ERROR Starting file writer", e);
+						super.close();
+						return;
+					}
+				}
+	
+				data = packet.getData();
+				ack = ackIncrement(ack);
+				if (TFTPErrorHelper.dataPacketChecker(udp, packet, ack[2] * 256 + ack[3]) != null) {
+					System.out.println("Server<ReadThread>: Invalid data packet.");
 					super.close();
 					return;
 				}
+	
+				// Write the block to the file
+				try {
+					fw.write(data, 4, packet.getLength());
+				} catch (IOException e) {
+					Log.err("ERROR writing to file", e);
+				}
+	
+				// Send the acknowledge
+				super.sendPacket(ack);
 			}
-
-			data = packet.getData();
-			ack = ackIncrement(ack);
-			if (TFTPErrorHelper.dataPacketChecker(udp, packet, ack[2] * 256 + ack[3]) != null) {
-				System.out.println("Server<ReadThread>: Invalid data packet.");
-				super.close();
-				return;
-			}
-
-			// Write the block to the file
-			try {
-				fw.write(data, 4, packet.getLength());
-			} catch (IOException e) {
-				Log.err("ERROR writing to file", e);
-			}
-
-			// Send the acknowledge
-			super.sendPacket(ack);
 		} while (packet.getLength() == Var.BUF_SIZE);
 
 		// Close input stream

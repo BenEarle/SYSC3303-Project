@@ -80,38 +80,40 @@ public class ReadThread extends ClientResponseThread {
 			// Receive packet
 			Log.out("Server<ReadThread>: Receiving ACK Data");
 			packet = super.receivePacket();
-			if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) == null) {
-				// Get data from file
-				try {
-					data = fr.read(4);
-
-					// Check if end of file has been reached.
-					if (fr.isClosed()) {
+			if (packet != null) {
+				if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) == null) {
+					// Get data from file
+					try {
+						data = fr.read(4);
+	
+						// Check if end of file has been reached.
+						if (fr.isClosed()) {
+							lastPacket = true;
+						}
+					} catch (Exception e) {
+						Log.err("ERROR Reading file", e);
+						data = new byte[4]; // Empty Message.
 						lastPacket = true;
 					}
-				} catch (Exception e) {
-					Log.err("ERROR Reading file", e);
-					data = new byte[4]; // Empty Message.
-					lastPacket = true;
+	
+					// Increment Block Number
+					blockNum = bytesIncrement(blockNum);
+	
+					// Add OPCode to data.
+					data[0] = Var.DATA[0];
+					data[1] = Var.DATA[1];
+					data[2] = blockNum[0];
+					data[3] = blockNum[1];
+	
+					// Send Packet
+					Log.out("Server<ReadThread>: Sending READ Data");
+					super.sendPacket(data);
+	
+				} else {
+					System.out.println("Server<ReadThread>: Invalid ACK packet.");
+					super.close();
+					return;
 				}
-
-				// Increment Block Number
-				blockNum = bytesIncrement(blockNum);
-
-				// Add OPCode to data.
-				data[0] = Var.DATA[0];
-				data[1] = Var.DATA[1];
-				data[2] = blockNum[0];
-				data[3] = blockNum[1];
-
-				// Send Packet
-				Log.out("Server<ReadThread>: Sending READ Data");
-				super.sendPacket(data);
-
-			} else {
-				System.out.println("Server<ReadThread>: Invalid ACK packet.");
-				super.close();
-				return;
 			}
 		}
 
