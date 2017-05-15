@@ -13,7 +13,7 @@
 # Responsibilities
 -----------------------------------------------------------------------------------------------------------
   Ben Croskery     -> Slacked Off
-  Ben Earle        -> Slacked Off
+  Ben Earle        -> UML Sequence diagrams, UDP helper class and replacing all old udp code, client code
   Dillon Verhaeghe -> Slacked Off
   Patrick Perron   -> Error Sim interface, sabotaging packets with Error Sim, Debugging
   Shane Corrigan   -> Slacked Off 
