@@ -12,11 +12,11 @@
 ===========================================================================================================
 # Responsibilities
 -----------------------------------------------------------------------------------------------------------
-  Ben Croskery     -> Slacked Off
+  Ben Croskery     -> unit testing, terminate incompleted files in bad transfers, testing of packet checking
   Ben Earle        -> UML Sequence diagrams, UDP helper class and replacing all old udp code, client code
-  Dillon Verhaeghe -> Slacked Off
+  Dillon Verhaeghe -> Created packet checking methods for various packet types, fixed bugs
   Patrick Perron   -> Error Sim interface, sabotaging packets with Error Sim, Debugging
-  Shane Corrigan   -> Slacked Off 
+  Shane Corrigan   -> Updated client to use UDPHelper, UML class, client debugging 
   
 ===========================================================================================================
 # Files
@@ -60,6 +60,7 @@
   * c_bee.png, s_bee.png ------- Picture of bee in png format
   * c_bee.txt, s_bee.txt ------- Script to "Bee Movie" stored as ASCII characters
   * c_jpg.jpg, s_jpg.jpg ------- Basic jpg file stored as binary
+  * 50mb.zip-------------------- Large file to test wrap around of block numbers
   
  **NOTE: s_* and c_* convention for test files is used to indicate if file originally existed in 
  **      client root folder or server root folder. Client files in /src/testFile/, Server files 
