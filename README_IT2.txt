@@ -15,7 +15,7 @@
   Ben Croskery     -> Slacked Off
   Ben Earle        -> Slacked Off
   Dillon Verhaeghe -> Slacked Off
-  Patrick Perron   -> Error Sim interface and sabotaging packets
+  Patrick Perron   -> Error Sim interface, sabotaging packets with Error Sim, Debugging
   Shane Corrigan   -> Slacked Off 
   
 ===========================================================================================================
@@ -33,19 +33,25 @@
   * ClientResponseThread.java - Abstract class with shared code for read/write threads
  ----------------------------------------------------------------------------------------------------------
  Util Classes:
-  * util/Var.java ------------- Contains shared Constants
+  * util/ErrorScenario.java --- Describes an error case to test for ErrorSimulator
   * util/Var.java ------------- Contains shared Constants
   * util/Log.java ------------- Contains methods for controlling logging to console
   * util/FileReader.java ------ Class to handle writing bytes to a file
   * util/FileWriter.java ------ Class to handle readinh bytes from a file
+  * util/TFTPErrorHelper.java - Static class that checks packets for specific errors
+  * util/UDPHelper.java ------- Class to faciliate UDP send and receive operations
  ----------------------------------------------------------------------------------------------------------
  Diagrams:
+
+***CHANGE***
   * Diagrams/Iteration1/IT1 RRQ Connection.png------ Use Case Map for read requests connection cycle
   * Diagrams/Iteration1/IT1 WRQ Connection.png------ Use Case Map for write requests connection cycle
   * Diagrams/Iteration1/IT1 RRQ Data Transfer.png--- Use Case Map for read requests data transfer cycle
   * Diagrams/Iteration1/IT1 WRQ Data Transfer.png--- Use Case Map for write requests data transfer cycle
   * Diagrams/Iteration1/UML_default.PNG ------------ UML Class diagram for main classes
   * Diagrams/Iteration1/UML_util.PNG --------------- UML Class diagram for util classes
+*****
+
  ----------------------------------------------------------------------------------------------------------
  Test Files:
   * c_0.txt, s_0.txt ----------- Empty file
@@ -66,6 +72,7 @@
           - For VERBOSE mode: enter 'v' or 'verbose' to toggle verbose after startup, OR pass 'v' as
             an initial argument
       2) (OPTIONAL) Compile and run ErrorSimulator.java
+	  - Select desired error(4,5) or no error mode(0).
       3) Compile and run Client.java
           - For VERBOSE mode: enter 'v' or 'verbose' to toggle verbose after startup, OR pass 'v' as
             an initial argument
@@ -83,6 +90,11 @@
       2) Enter a file name found in the server root from Test Files mentioned above.
             -File should be written as s_* to indicate it is in server root (i.e. s_0.txt, s_jpg.jpg)
       3) In /src/testFile/, an identical copy of file should be found 
+ ----------------------------------------------------------------------------------------------------------
+ Example Error Test:
+      1) Run Error Simulator
+      2) Pick desired error scenario specification using command line interface
+      3) Run a read or write request to trigger specified error case
  ----------------------------------------------------------------------------------------------------------
  Quitting:
       1) Enter 'S' on client console
