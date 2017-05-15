@@ -106,7 +106,11 @@ public class Log {
 			 		 "\tError Message\t" + bString(data).substring(4).trim();			
 			
 		} else{
-			sendString = "Packet print not yet implemented ";
+			sendString = "\n" + s +  ":\n" + 
+					 "\tIP\t\t" + packet.getAddress().toString() + "\n" +
+					 "\tport\t\t" + packet.getPort() + "\n" +
+					 "\tlength\t\t" + packet.getLength() + "\n" + 
+					 "\tType\t\tNot Defined";
 		}
 		out(sendString);
 	}
