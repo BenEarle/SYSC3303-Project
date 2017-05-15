@@ -175,7 +175,7 @@ public class TransferTest {
 
 	@Test
 	public void testFiles() throws Exception {
-		final int INTERATIONS = 10;
+		final int INTERATIONS = 1;
 		File folder = new File("src/testFile");
 		Log.enable(false);
 
