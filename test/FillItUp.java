@@ -1,6 +1,8 @@
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.channels.FileLock;
 import java.util.Random;
 
 import util.*;
@@ -9,8 +11,10 @@ public class FillItUp {
 	private static final int BLOCK_SIZE = 1024*1024 * 10;
 
 	public static void main(String[] args) throws IOException {
-		//makeGiant("temp/GIANT", 50);
+//		makeGiant("temp/GIANT", 50);
 		fillMyDrive(6);
+//		lockIt(Var.SERVER_ROOT + "s_1221.txt");
+//		lockIt(Var.CLIENT_ROOT + "c_1221.txt");
 	}
 	
 	public static void fillMyDrive(int remaining) throws IOException {
@@ -42,6 +46,22 @@ public class FillItUp {
 		fw.write(b);
 		
 		fw.close();
+	}
+	
+	public static void lockIt(String filename) throws IOException {
+		FileOutputStream in = new FileOutputStream(filename);
+		try {
+		    FileLock lock = in.getChannel().lock();
+		    try {
+				Thread.sleep(100000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	        lock.release();
+		} finally {
+		    in.close();
+		}
 	}
 
 }
