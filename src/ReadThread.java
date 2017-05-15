@@ -1,6 +1,8 @@
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.nio.file.AccessDeniedException;
+
 import util.FileReader;
 import util.Log;
 import util.TFTPErrorHelper;
@@ -35,11 +37,18 @@ public class ReadThread extends ClientResponseThread {
 		FileReader fr = null;
 		try {
 			fr = new FileReader(Var.SERVER_ROOT + file);
-		} catch (FileNotFoundException e) {
-			// There is potential here to send a file not found error back to
-			// the client.
-			Log.err("ERROR Starting file reader", e);
-			super.close();
+		} catch (AccessDeniedException e){
+			TFTPErrorHelper.sendError(udp, (byte) 2, "Access denied for " + file + ".");
+			return;
+//		} catch (FileNotFoundException e) {
+//			// There is potential here to send a file not found error back to
+//			// the client.
+//			TFTPErrorHelper.sendError(udp, (byte) 1, ("File " +  file + " not found."));
+//			super.close(); 
+//			return;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 			return;
 		}
 
@@ -83,6 +92,8 @@ public class ReadThread extends ClientResponseThread {
 			if (packet != null) {
 				if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) == null) {
 					// Get data from file
+					if (packet.getData()[1] == 5)
+						TFTPErrorHelper.unPackError(packet);
 					try {
 						data = fr.read(4);
 	
@@ -110,7 +121,8 @@ public class ReadThread extends ClientResponseThread {
 					super.sendPacket(data);
 	
 				} else {
-					System.out.println("Server<ReadThread>: Invalid ACK packet.");
+					//System.out.println("Server<ReadThread>: Invalid ACK packet.");
+					
 					super.close();
 					return;
 				}
@@ -121,6 +133,8 @@ public class ReadThread extends ClientResponseThread {
 		Log.out("Server<ReadThread>: Receiving Final ACK Data");
 		packet = super.receivePacket();
 		if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
+			if (packet.getData()[1] == 5)
+				TFTPErrorHelper.unPackError(packet);
 			System.out.println("Server<ReadThread>: Invalid ACK packet.");
 			super.close();
 			return;

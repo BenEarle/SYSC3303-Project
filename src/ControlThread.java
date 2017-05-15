@@ -49,7 +49,8 @@ public class ControlThread extends Thread {
 					Log.out("SERVER<ControlThread>: Waiting to receive a packet...");
 				}else {
 					//Do we care about the code???
-					Log.err("SERVER<ControlThread>: Recieved an invalid request.");
+					if (packet.getData()[1] == 5)
+						TFTPErrorHelper.unPackError(packet);
 				} 
 			}
 		}

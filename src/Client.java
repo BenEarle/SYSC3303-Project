@@ -1,10 +1,12 @@
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.DatagramPacket;
 
 import java.net.InetSocketAddress;
 import java.net.SocketException;
+import java.nio.file.AccessDeniedException;
 import java.util.Scanner;
 
 import util.FileReader;
@@ -112,10 +114,12 @@ public class Client {
 					udp.sendPacket(data);
 					// Go into appropriate mode to receive message
 					if (RRQ) {
-						//Log.packet("Client: Sending READ", udp.getLastPacket());
+						// Log.packet("Client: Sending READ",
+						// udp.getLastPacket());
 						readMode(file);
 					} else if (WRQ) {
-						//Log.packet("Client: Sending WRITE", udp.getLastPacket());
+						// Log.packet("Client: Sending WRITE",
+						// udp.getLastPacket());
 						writeMode(file);
 					}
 				} catch (SocketException e) {
@@ -152,9 +156,11 @@ public class Client {
 			packet = udp.receivePacket();
 			if (packet != null) {
 				if (TFTPErrorHelper.dataPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
-					if(packet.getData()[1] == 5) TFTPErrorHelper.unPackError(packet);
+					if (packet.getData()[1] == 5)
+						TFTPErrorHelper.unPackError(packet);
 					udp.setTestSender(false);
-					if(writer != null) writer.abort();
+					if (writer != null)
+						writer.abort();
 					return;
 				}
 				if (firstData) {
@@ -165,27 +171,28 @@ public class Client {
 					writer = new FileWriter(Var.CLIENT_ROOT + fileName);
 				}
 				data = packet.getData();
-				//Log.packet("Client: Receiving READ DATA", udp.getLastPacket());
-	
+				// Log.packet("Client: Receiving READ DATA",
+				// udp.getLastPacket());
+
 				// Get bytes to write to file from packet
 				bytesToWrite = new byte[packet.getLength() - 4];
 				System.arraycopy(data, 4, bytesToWrite, 0, bytesToWrite.length);
-	
+
 				// Flag as last data packet if not full block size
 				if (bytesToWrite.length != Var.BLOCK_SIZE)
 					lastPacket = true;
-	
+
 				// write the block to the file
 				try {
 					writer.write(bytesToWrite);
 				} catch (IOException e) {
 					Log.err("", e);
 				}
-	
+
 				// Send the acknowledge packet
 				udp.sendPacket(makeData(Var.ACK, blockNum));
 				blockNum = bytesIncrement(blockNum);
-				//Log.packet("Client: Sending READ ACK", udp.getLastPacket());
+				// Log.packet("Client: Sending READ ACK", udp.getLastPacket());
 			}
 		}
 		System.out.println("Client: Read Operation Successful");
@@ -199,7 +206,17 @@ public class Client {
 	/*************************************************************************/
 	private void writeMode(String fileName) throws IOException {
 		// Data for transfer
-		FileReader reader = new FileReader(Var.CLIENT_ROOT + fileName);
+		FileReader reader = null;
+		try {
+			reader = new FileReader(Var.CLIENT_ROOT + fileName);
+		} catch (FileNotFoundException e) {
+			TFTPErrorHelper.sendError(udp, (byte) 1, "File " + fileName + " not found.");
+			return;
+		} catch (AccessDeniedException e){
+			TFTPErrorHelper.sendError(udp, (byte) 2, "Access denied for " + fileName + ".");
+			return;
+		}
+
 		// This DataGram is used to receive ack
 		DatagramPacket packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
 		boolean lastPacket = false; // flag to indicate transfer is ending
@@ -216,11 +233,12 @@ public class Client {
 			packet = udp.receivePacket();
 			if (packet != null) {
 				if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
-					if(packet.getData()[1] == 5) TFTPErrorHelper.unPackError(packet);
+					if (packet.getData()[1] == 5)
+						TFTPErrorHelper.unPackError(packet);
 					udp.setTestSender(false);
 					return;
 				}
-	
+
 				if (firstPacket) {
 					// Save address to send data to
 					udp.setReturn(packet);
@@ -228,13 +246,14 @@ public class Client {
 					firstPacket = false;
 				}
 				data = packet.getData();
-	//			Log.packet("Client: Receiving WRITE ACK", udp.getLastPacket());
-	
+				// Log.packet("Client: Receiving WRITE ACK",
+				// udp.getLastPacket());
+
 				// Get data from file and check if length read is less than
 				// full block size
 				try {
 					data = reader.read(4);
-					
+
 					if (reader.isClosed()) {
 						lastPacket = true;
 					}
@@ -243,29 +262,31 @@ public class Client {
 					lastPacket = true;
 				}
 				blockNum = bytesIncrement(blockNum);
-	
+
 				// Add OPCode to data.
 				data[0] = Var.DATA[0];
 				data[1] = Var.DATA[1];
 				data[2] = blockNum[0];
 				data[3] = blockNum[1];
-	
+
 				// Send write data to Server
 				udp.sendPacket(data);
-				//Log.packet("Client: Sending WRITE Data", udp.getLastPacket());
-	
+				// Log.packet("Client: Sending WRITE Data",
+				// udp.getLastPacket());
+
 			}
 		}
 
 		// Receive final ACK packet
 		packet = udp.receivePacket();
 		if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
-			if(packet.getData()[1] == 5) TFTPErrorHelper.unPackError(packet);
+			if (packet.getData()[1] == 5)
+				TFTPErrorHelper.unPackError(packet);
 			udp.setTestSender(false);
 			return;
 		}
 		data = packet.getData();
-		//Log.packet("Client: Receiving FINAL WRITE ACK", udp.getLastPacket());
+		// Log.packet("Client: Receiving FINAL WRITE ACK", udp.getLastPacket());
 		// Confirm packet is ACK
 		System.out.println("Client: Write operation successful.");
 		// Close file

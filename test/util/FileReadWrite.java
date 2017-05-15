@@ -66,6 +66,9 @@ public class FileReadWrite {
 			fail("FileNotFoundException did not fire.");
 		} catch (FileNotFoundException e) {
 			assertEquals("thisfiledoesnotexist.zip.txt (The system cannot find the file specified)", e.getMessage());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 

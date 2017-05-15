@@ -4,6 +4,8 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
+import java.nio.file.Files;
 
 /*************************************************************************/
 // This class is used by both the client and the server to write byte 
@@ -26,7 +28,9 @@ public class FileWriter {
 	 */
 	public FileWriter(String filename) throws IOException {
 		file = new File(filename);
-
+		if (!Files.isWritable(file.toPath())){
+			throw new AccessDeniedException("");
+		}
 		// Make the directories and file if they don't exist.
 		if (file.getParentFile() != null) {
 			file.getParentFile().mkdirs();
@@ -82,6 +86,11 @@ public class FileWriter {
 
 		// Write out the data from the given offset.
 		out.write(data, start, end - start);
+		try{
+			out.flush();
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
