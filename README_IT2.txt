@@ -95,6 +95,8 @@
       1) Run Error Simulator
       2) Pick desired error scenario specification using command line interface
       3) Run a read or write request to trigger specified error case
+	*NOTE: Error Type 5 cannot be tested on the first ack or data packet. Enter a value greater than 1
+	       when prompted
  ----------------------------------------------------------------------------------------------------------
  Quitting:
       1) Enter 'S' on client console
