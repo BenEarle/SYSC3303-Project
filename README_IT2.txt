@@ -42,15 +42,14 @@
   * util/UDPHelper.java ------- Class to faciliate UDP send and receive operations
  ----------------------------------------------------------------------------------------------------------
  Diagrams:
-
-***CHANGE***
-  * Diagrams/Iteration1/IT1 RRQ Connection.png------ Use Case Map for read requests connection cycle
-  * Diagrams/Iteration1/IT1 WRQ Connection.png------ Use Case Map for write requests connection cycle
-  * Diagrams/Iteration1/IT1 RRQ Data Transfer.png--- Use Case Map for read requests data transfer cycle
-  * Diagrams/Iteration1/IT1 WRQ Data Transfer.png--- Use Case Map for write requests data transfer cycle
-  * Diagrams/Iteration1/UML_default.PNG ------------ UML Class diagram for main classes
-  * Diagrams/Iteration1/UML_util.PNG --------------- UML Class diagram for util classes
-*****
+  * Diagrams/Iteration2/IT2_Bad_RRQ.png	
+  * Diagrams/Iteration2/IT2_Bad_WRQ.png	
+  * Diagrams/Iteration2/IT2_Client_Receives_Bad_ACK.png		
+  * Diagrams/Iteration2/IT2_Client_Receives_Bad_Data.png	
+  * Diagrams/Iteration2/IT2_Client_Receives_Packet_From_Unkown_Sender.png
+  * Diagrams/Iteration2/IT2_Server_Receives_Bad_ACK.png
+  * Diagrams/Iteration2/IT2_Server_Receives_Bad_DATA.png
+  * Diagrams/Iteration2/IT2_Server_Receives_Packet_From_Unkown_Sender.png
 
  ----------------------------------------------------------------------------------------------------------
  Test Files:
