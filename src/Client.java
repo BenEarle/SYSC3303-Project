@@ -273,7 +273,7 @@ public class Client {
 	}
 
 	private byte[] bytesIncrement(byte[] data) {
-		if (data[1] == 0xff) {
+		if (data[1] == -1) {
 			data[0]++;
 			data[1] = 0x00;
 		} else {

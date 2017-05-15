@@ -96,7 +96,7 @@ public class WriteThread extends ClientResponseThread {
 	}
 
 	private byte[] ackIncrement(byte[] data) {
-		if (data[3] == 0xff) {
+		if (data[3] == -1) {
 			data[2]++;
 			data[3] = 0x00;
 		} else {

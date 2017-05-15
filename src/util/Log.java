@@ -95,7 +95,7 @@ public class Log {
 					 "\tport\t\t" + packet.getPort() + "\n" +
 					 "\tlength\t\t" + packet.getLength() + "\n" + 
 					 "\tType\t\t" + type + "\n" +
-					 "\tBlock #\t\t" + (packet.getData()[2] * 256 + packet.getData()[3]) + "";
+					 "\tBlock #\t\t" +  (Byte.toUnsignedInt(packet.getData()[2]) * 256 + Byte.toUnsignedInt(packet.getData()[3])) + "";
 		} else if (type.equals("ERROR")){
 			sendString = "\n" + s +  ":\n" + 
 					 "\tIP\t\t" + packet.getAddress().toString() + "\n" +
