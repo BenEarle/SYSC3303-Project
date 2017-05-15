@@ -174,6 +174,7 @@ public class ErrorScenario {
 		while(errorType == UNDEFINED){
 			Log.out(
 				"Select a TFTP Error Code to Test:\n"
+			  + " 0) None\n"
 			  + " 1) File not Found\n"
 			  + " 2) Access Violation\n"
 			  + " 3) Disk full or allocation exceeded\n"
@@ -182,6 +183,7 @@ public class ErrorScenario {
 			  + " 6) No such user"
 			);
 			switch(scanner.next().trim()){
+				case "0": errorType = 0; break;
 				case "1": errorType = 1; break;
 				case "2": errorType = 2; break;
 				case "3": errorType = 3; break;
@@ -200,8 +202,12 @@ public class ErrorScenario {
 	public int promptPacketType(int errorCode){
 		int packetType = UNDEFINED;
 		//-------------------------------------------------
+		// No Error
+		if (errorCode == 0) {
+			packetType = IRRELEVANT;
+		//-------------------------------------------------
 		// File not Found Error
-		if       (errorCode == 1) {
+		} else if (errorCode == 1) {
 			packetType = UNDEFINED;
 			//TODO in later Iteration
 		//-------------------------------------------------
@@ -266,9 +272,13 @@ public class ErrorScenario {
 	/*************************************************************************/
 	public int promptFault(int errorCode, int packetType){
 		int faultType = UNDEFINED;
+		//-------------------------------------------------
+		// No Error
+		if (errorCode == 0) {
+			faultType = IRRELEVANT;
 		///-------------------------------------------------
 		// File not Found Error
-		if       (errorCode == 1) {
+		} else if (errorCode == 1) {
 			faultType = UNDEFINED;
 			//TODO in later Iteration
 		//-------------------------------------------------
@@ -337,9 +347,13 @@ public class ErrorScenario {
 	/*************************************************************************/
 	public int promptBlockNum(int errorCode, int packetType){
 		int blockNum = UNDEFINED;	
+		//-------------------------------------------------
+		// No Error
+		if (errorCode == 0) {
+			blockNum = IRRELEVANT;
 		///-------------------------------------------------
 		// File not Found Error
-		if       (errorCode == 1) {
+		} else if       (errorCode == 1) {
 			blockNum = UNDEFINED;
 			//TODO in later Iteration
 		//-------------------------------------------------
