@@ -154,6 +154,7 @@ public class Client {
 				if (TFTPErrorHelper.dataPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
 					Log.err("Client: Received invalid data packet.");
 					udp.setTestSender(false);
+					if(writer != null) writer.abort();
 					return;
 				}
 				if (firstData) {
