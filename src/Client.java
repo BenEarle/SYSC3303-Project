@@ -152,7 +152,7 @@ public class Client {
 			packet = udp.receivePacket();
 			if (packet != null) {
 				if (TFTPErrorHelper.dataPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
-					Log.err("Client: Received invalid data packet.");
+					if(packet.getData()[1] == 5) TFTPErrorHelper.unPackError(packet);
 					udp.setTestSender(false);
 					if(writer != null) writer.abort();
 					return;
@@ -216,7 +216,7 @@ public class Client {
 			packet = udp.receivePacket();
 			if (packet != null) {
 				if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
-					Log.err("Client: Received invalid ACK packet.");
+					if(packet.getData()[1] == 5) TFTPErrorHelper.unPackError(packet);
 					udp.setTestSender(false);
 					return;
 				}
@@ -260,7 +260,7 @@ public class Client {
 		// Receive final ACK packet
 		packet = udp.receivePacket();
 		if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
-			Log.err("Client: Received invalid ACK packet.");
+			if(packet.getData()[1] == 5) TFTPErrorHelper.unPackError(packet);
 			udp.setTestSender(false);
 			return;
 		}

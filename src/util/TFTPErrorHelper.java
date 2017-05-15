@@ -191,9 +191,9 @@ public class TFTPErrorHelper {
 		data[1] = 5;
 		data[2] = 0;
 		data[3] = type;
-
+		
 		System.arraycopy(message.getBytes(), 0, data, 4, message.length());
-
+		Log.err(Log.bString(data).trim());
 		// send the packet back to the person who sent us the wrong message
 		u.sendPacket(data);
 	}
@@ -205,10 +205,10 @@ public class TFTPErrorHelper {
 	public static void unPackError(DatagramPacket p) {
 		byte[] data = p.getData();
 		byte[] message = new byte[Var.BLOCK_SIZE];
+		Log.err("Error packet type " + data[3] + " received.");
 		for (int i = 4; i < data.length; i++) {
 			message[i - 4] = data[i];
 		}
-		Log.err("Error packet type " + data[3] + " received.");
-		Log.err(message.toString());
+		Log.err(Log.bString(message, message.length).trim());
 	}
 }
