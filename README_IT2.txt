@@ -1,7 +1,7 @@
 ===========================================================================================================
 # SYSC3303 : Project - Iteration #2
 -----------------------------------------------------------------------------------------------------------
-# 16/05/15
+# 16/05/17
 # Group #1:
   Ben Croskery      (100973306)
   Ben Earle         (100970237)
@@ -72,7 +72,7 @@
           - For VERBOSE mode: enter 'v' or 'verbose' to toggle verbose after startup, OR pass 'v' as
             an initial argument
       2) (OPTIONAL) Compile and run ErrorSimulator.java
-	  - Select desired error(4,5) or no error mode(0).
+	      - Select desired error(4,5) or no error mode(0).
       3) Compile and run Client.java
           - For VERBOSE mode: enter 'v' or 'verbose' to toggle verbose after startup, OR pass 'v' as
             an initial argument
@@ -109,5 +109,5 @@
       https://github.com/BenEarle/SYSC3303-Project
       
 ===========================================================================================================
-  HAVE FUN!!!!
+  HAVE A GOOD DAY!!!!
 ===========================================================================================================
