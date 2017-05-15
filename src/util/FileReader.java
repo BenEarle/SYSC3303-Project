@@ -1,6 +1,5 @@
 package util;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -15,7 +14,7 @@ import java.nio.file.Files;
 
 public class FileReader {
 	private File file;
-	private BufferedInputStream in;
+	private FileInputStream in;
 	private boolean closed;
 
 	/**
@@ -28,11 +27,14 @@ public class FileReader {
 	 */
 	public FileReader(String filename) throws IOException {
 		file = new File(filename);
+		if(!Files.exists(file.toPath())){
+			throw new FileNotFoundException("");
+		}
 		if (!Files.isReadable(file.toPath())){
 			throw new AccessDeniedException("");
 		}
 		// Open a stream to the file.
-		in = new BufferedInputStream(new FileInputStream(file));
+		in = new FileInputStream(file);
 		closed = false;
 	}
 

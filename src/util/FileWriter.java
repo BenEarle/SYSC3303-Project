@@ -1,6 +1,5 @@
 package util;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -15,7 +14,7 @@ import java.nio.file.Files;
 
 public class FileWriter {
 	private File file;
-	private BufferedOutputStream out;
+	private FileOutputStream out;
 	private boolean closed;
 
 	/**
@@ -28,9 +27,6 @@ public class FileWriter {
 	 */
 	public FileWriter(String filename) throws IOException {
 		file = new File(filename);
-		if (!Files.isWritable(file.toPath())){
-			throw new AccessDeniedException("");
-		}
 		// Make the directories and file if they don't exist.
 		if (file.getParentFile() != null) {
 			file.getParentFile().mkdirs();
@@ -38,7 +34,7 @@ public class FileWriter {
 		file.createNewFile();
 
 		// Open a stream to the file.
-		out = new BufferedOutputStream(new FileOutputStream(file));
+		out = new FileOutputStream(file);
 		closed = false;
 	}
 
@@ -86,11 +82,8 @@ public class FileWriter {
 
 		// Write out the data from the given offset.
 		out.write(data, start, end - start);
-		try{
-			out.flush();
-		} catch(IOException e) {
-			e.printStackTrace();
-		}
+		out.flush();
+		
 	}
 
 	/**

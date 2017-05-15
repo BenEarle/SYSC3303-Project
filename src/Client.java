@@ -186,7 +186,11 @@ public class Client {
 				try {
 					writer.write(bytesToWrite);
 				} catch (IOException e) {
-					Log.err("", e);
+				//	System.out.println(e.getMessage());
+					if(e.getMessage().equals("There is not enough space on the disk"))
+						TFTPErrorHelper.sendError(udp, (byte) 3, "Disk full, cannot complete opperation.");
+					writer.abort();
+					return;
 				}
 
 				// Send the acknowledge packet

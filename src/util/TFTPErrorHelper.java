@@ -194,6 +194,7 @@ public class TFTPErrorHelper {
 		
 		System.arraycopy(message.getBytes(), 0, data, 4, message.length());
 		Log.err(Log.bString(data).trim());
+		System.out.print("Server<main>: ");
 		// send the packet back to the person who sent us the wrong message
 		u.sendPacket(data);
 	}

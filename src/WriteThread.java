@@ -79,7 +79,14 @@ public class WriteThread extends ClientResponseThread {
 				try {
 					fw.write(data, 4, packet.getLength());
 				} catch (IOException e) {
-					Log.err("ERROR writing to file", e);
+					if(e.getMessage().equals("There is not enough space on the disk"))
+						TFTPErrorHelper.sendError(udp, (byte) 3, "Disk full, cannot complete opperation.");
+					try {
+						fw.abort();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+					return;
 				}
 				
 				// Send the acknowledge

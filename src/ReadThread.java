@@ -40,12 +40,12 @@ public class ReadThread extends ClientResponseThread {
 		} catch (AccessDeniedException e){
 			TFTPErrorHelper.sendError(udp, (byte) 2, "Access denied for " + file + ".");
 			return;
-//		} catch (FileNotFoundException e) {
-//			// There is potential here to send a file not found error back to
-//			// the client.
-//			TFTPErrorHelper.sendError(udp, (byte) 1, ("File " +  file + " not found."));
-//			super.close(); 
-//			return;
+		} catch (FileNotFoundException e) {
+			// There is potential here to send a file not found error back to
+			// the client.
+			TFTPErrorHelper.sendError(udp, (byte) 1, ("File " +  file + " not found."));
+			super.close(); 
+			return;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
