@@ -21,7 +21,9 @@ public class TFTPErrorHelper {
 		byte[] data = p.getData();
 		int length = p.getLength();
 		int i = 2;
-
+		if(data[1]==5){
+			return 4;
+		}
 		// Check opCode.
 		if (length < 2) {
 			// Data not long enough.
@@ -122,7 +124,9 @@ public class TFTPErrorHelper {
 		 */
 		byte[] data = p.getData();
 		int length = p.getLength();
-
+		if(data[1]==5){
+			return 4;
+		}
 		if (length < 4 ) {
 			// data too small
 			sendError(u, (byte) 0x04, "Data packet too small");
@@ -135,6 +139,7 @@ public class TFTPErrorHelper {
 		}
 		if (data[0] != Var.DATA[0] || data[1] != Var.DATA[1]) {
 			// wrong op code
+			
 			sendError(u, (byte) 0x04, "Invalid data op code");
 			return 4;
 		}
@@ -156,7 +161,9 @@ public class TFTPErrorHelper {
 		 */
 		byte[] data = p.getData();
 		int length = p.getLength();
-
+		if(data[1]==5){
+			return 4;
+		}
 		if (length != 4) {
 			// data too small
 			sendError(u, (byte) 0x04, "Ack packet wrong size");
