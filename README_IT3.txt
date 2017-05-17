@@ -13,10 +13,10 @@
 # Responsibilities
 -----------------------------------------------------------------------------------------------------------
   Ben Croskery     -> Testing and utility scripts.
-  Ben Earle        -> Typed for group programing 
-  Dillon Verhaeghe -> Research and design for err code 1
-  Patrick Perron   -> Research and design for err code 2
-  Shane Corrigan   -> Research and design for err code 3
+  Ben Earle        -> Typed for group programing for err code 1, 2, and 3
+  Dillon Verhaeghe -> Research and design for err code 1, 2, and 3
+  Patrick Perron   -> Research and design for err code 1, 2, and 3
+  Shane Corrigan   -> Research and design for err code 1, 2, and 3
   
 ===========================================================================================================
 # Decisions
@@ -116,5 +116,5 @@
       https://github.com/BenEarle/SYSC3303-Project
       *Note: GitHub project is private - if you would like access, please let us know.  
 ===========================================================================================================
-  HAVE A GOOD DAY!!!!
+  GL HF!!!!
 ===========================================================================================================
