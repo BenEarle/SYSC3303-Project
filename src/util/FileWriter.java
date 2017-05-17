@@ -31,7 +31,6 @@ public class FileWriter {
 		if (file.getParentFile() != null) {
 			file.getParentFile().mkdirs();
 		}
-		System.out.println("AYYY = " + file.canRead());
 		file.createNewFile();
 
 		// Open a stream to the file.
