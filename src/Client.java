@@ -66,13 +66,11 @@ public class Client {
 			case ("r"):
 			case ("read"):
 				file = getUserInput("Filename: ");
-				data = makeData(Var.READ, file.getBytes(), Var.ZERO, MODE.getBytes(), Var.ZERO);
 				RRQ = true;
 				break;
 			case ("w"):
 			case ("write"):
 				file = getUserInput("Filename: ");
-				data = makeData(Var.WRITE, file.getBytes(), Var.ZERO, MODE.getBytes(), Var.ZERO);
 				WRQ = true;
 				break;
 			case ("v"):
@@ -109,7 +107,7 @@ public class Client {
 
 			if (RRQ || WRQ) {
 				try {
-					udp.sendPacket(data);
+					
 					// Go into appropriate mode to receive message
 					if (RRQ) {
 						// Log.packet("Client: Sending READ",
@@ -147,7 +145,20 @@ public class Client {
 		blockNum[1] = 0x01;
 		boolean firstData = true;
 		FileWriter writer = null;
-
+		
+		try {
+			writer = new FileWriter(Var.CLIENT_ROOT + fileName);
+		} catch (IOException e) {
+			if (e.getMessage().equals("File already exists")) {
+				Log.err("File already exists.");
+				udp.setTestSender(false);
+				return;
+			}
+			throw e;
+		}
+		data = makeData(Var.READ, fileName.getBytes(), Var.ZERO, MODE.getBytes(), Var.ZERO);
+		udp.sendPacket(data);
+		
 		// Loop until last data packet is received
 		while (!lastPacket) {
 			// Create packet then receive and get info from packet
@@ -166,16 +177,6 @@ public class Client {
 					// Save address to send response to
 					udp.setReturn(packet);
 					udp.setTestSender(true);
-					try {
-						writer = new FileWriter(Var.CLIENT_ROOT + fileName);
-					} catch (IOException e) {
-						if (e.getMessage().equals("File already exists")) {
-							TFTPErrorHelper.sendError(udp, (byte) 6, "File already exists.");
-							udp.setTestSender(false);
-							return;
-						}
-						throw e;
-					}
 				}
 				data = packet.getData();
 				// Log.packet("Client: Receiving READ DATA",
@@ -221,11 +222,10 @@ public class Client {
 		try {
 			reader = new FileReader(Var.CLIENT_ROOT + fileName);
 		} catch (IOException e){
-			System.out.println("TEST: " + e.getMessage());
 			if (e.getMessage().contains("Access is denied"))
-				TFTPErrorHelper.sendError(udp, (byte) 2, "Access denied for " + fileName + ".");
+				Log.err("Access denied for " + fileName + ".");
 			else 
-				TFTPErrorHelper.sendError(udp, (byte) 1, "File " + fileName + " not found.");
+				Log.err("File " + fileName + " not found.");
 			return;
 		}
 
@@ -239,6 +239,9 @@ public class Client {
 		blockNum[0] = 0x00;
 		blockNum[1] = 0x00;
 		boolean firstPacket = true;
+		data = makeData(Var.WRITE, fileName.getBytes(), Var.ZERO, MODE.getBytes(), Var.ZERO);
+		udp.sendPacket(data);
+		
 		// Loop until last data packet is sent
 		while (!lastPacket) {
 			// Create packet then receive and get info from packet
