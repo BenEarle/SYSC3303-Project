@@ -39,7 +39,6 @@ public class ReadThread extends ClientResponseThread {
 		try {
 			fr = new FileReader(Var.SERVER_ROOT + file);
 		} catch (IOException e) {
-			System.out.println("TEST: " + e.getMessage());
 			if (e.getMessage().contains("Access is denied"))
 				TFTPErrorHelper.sendError(udp, (byte) 2, "Access denied for " + file + ".");
 			else	
