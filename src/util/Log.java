@@ -6,6 +6,8 @@ import java.net.DatagramPacket;
 
 public class Log {
 	private static boolean enabled = true;
+	private static boolean saveLog = false;
+	private static String logged;
 	
 	/**
 	 * Enable/disable all logging.
@@ -13,6 +15,21 @@ public class Log {
 	 */
 	public static void enable(boolean e) {
 		enabled = e;
+	}
+	
+	/**
+	 * Enable/disable saving the log to a string.
+	 * @param e
+	 */
+	public static void saveLog(boolean e) {
+		saveLog = e;
+		logged = "";
+	}
+	
+	public static String getLog() {
+		String ret = logged;
+		logged = "";
+		return ret;
 	}
 	
 	public static boolean toggleEnable(){
@@ -28,6 +45,8 @@ public class Log {
 		if (!enabled) return;
 		
 		System.out.println(s);
+		
+		if (saveLog) logged += s + "\n";
 	}
 	
 	/**
@@ -36,6 +55,8 @@ public class Log {
 	 */
 	public static void err(String s) {		
 		System.err.println(s);
+		
+		if (saveLog) logged += s + "\n";
 	}
 	
 	/**
