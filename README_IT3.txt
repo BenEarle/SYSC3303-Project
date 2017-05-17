@@ -12,11 +12,11 @@
 ===========================================================================================================
 # Responsibilities
 -----------------------------------------------------------------------------------------------------------
-  Ben Croskery     -> 
-  Ben Earle        -> 
-  Dillon Verhaeghe -> 
-  Patrick Perron   -> 
-  Shane Corrigan   -> 
+  Ben Croskery     -> Testing and utility scripts.
+  Ben Earle        -> Typed for group programing 
+  Dillon Verhaeghe -> Research and design for err code 1
+  Patrick Perron   -> Research and design for err code 2
+  Shane Corrigan   -> Research and design for err code 3
   
 ===========================================================================================================
 # Decisions
