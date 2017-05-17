@@ -23,8 +23,8 @@
 -----------------------------------------------------------------------------------------------------------
   * We chose to delete files if there was an error in the transfer. We did not want half complete files
     to exist on the client or server.
-  * We chose to allow the client and server to overwrite files if they chose to. This means that our
-    TFTP client and Server will not be sending error code 6.
+  * We chose to NOT allow the client and server to overwrite files if they chose to. This means that our
+    TFTP client and Server will be sending error code 6 if a file already exists on the server in a WRQ.
 ===========================================================================================================
 # Files
 -----------------------------------------------------------------------------------------------------------
@@ -49,14 +49,11 @@
   * util/UDPHelper.java ------- Class to faciliate UDP send and receive operations
  ----------------------------------------------------------------------------------------------------------
  Diagrams:
-  * Diagrams/Iteration2/IT2_Bad_RRQ.png	
-  * Diagrams/Iteration2/IT2_Bad_WRQ.png	
-  * Diagrams/Iteration2/IT2_Client_Receives_Bad_ACK.png		
-  * Diagrams/Iteration2/IT2_Client_Receives_Bad_Data.png	
-  * Diagrams/Iteration2/IT2_Client_Receives_Packet_From_Unkown_Sender.png
-  * Diagrams/Iteration2/IT2_Server_Receives_Bad_ACK.png
-  * Diagrams/Iteration2/IT2_Server_Receives_Bad_DATA.png
-  * Diagrams/Iteration2/IT2_Server_Receives_Packet_From_Unkown_Sender.png
+  * Diagrams/Iteration3/IT3_RRQ_Code1
+  * Diagrams/Iteration3/IT3_RRQ_Code2
+  * Diagrams/Iteration3/IT3_RRQ_Code3
+  * Diagrams/Iteration3/IT3_WRQ_Code3
+  * Diagrams/Iteration3/IT3_WRQ_Code6
 
  ----------------------------------------------------------------------------------------------------------
  Test Files:
@@ -99,11 +96,7 @@
       3) In /src/testFile/, an identical copy of file should be found 
  ----------------------------------------------------------------------------------------------------------
  Example Error Test:
-      1) Run Error Simulator
-      2) Pick desired error scenario specification using command line interface
-      3) Run a read or write request to trigger specified error case
-	*NOTE: Error Type 5 cannot be tested on the first ack or data packet. Enter a value greater than 1
-	       when prompted
+      1) Pass a file that does not exist, that has invalid permissions, or that is too big.
  ----------------------------------------------------------------------------------------------------------
  Quitting:
       1) Enter 'S' on client console
