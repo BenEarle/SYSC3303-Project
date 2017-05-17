@@ -30,6 +30,7 @@ public class FileReader {
 		if(!Files.exists(file.toPath())){
 			throw new FileNotFoundException("");
 		}
+		System.out.println("BYYY = " + file.canRead());
 		if (!Files.isReadable(file.toPath())){
 			throw new AccessDeniedException("");
 		}

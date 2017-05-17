@@ -195,4 +195,111 @@ public class TransferTest {
 		Thread.sleep(50);
 	}
 
+	@Test
+	public void testConcurrent() throws Exception {
+		String filename = "50mb.zip";
+		
+		// Set test roots and build files to be used.
+		Var.CLIENT_ROOT = "src/testFile/";
+		Var.SERVER_ROOT = "temp/";
+		File fileClient = new File(Var.CLIENT_ROOT + filename);
+		File fileServer = new File(Var.SERVER_ROOT + filename);
+		if (fileServer.exists()) {
+			fileServer.delete();
+		}
+
+		Log.enable(false);
+		// Run the client with the given file, then close the server.
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					runClient(
+							"W\n" + 
+							filename + "\n" + 
+							"S\n");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
+		runClient(
+				"W\n" + 
+				filename + "\n" + 
+				"S\n");
+		stop();
+		
+		// Make sure the files match.
+		assertTrue("File copied to server does not exist", fileServer.exists());
+		assertEquals(Log.bString(Files.readAllBytes(fileClient.toPath())), Log.bString(Files.readAllBytes(fileServer.toPath())));
+	}
+	
+	@Test
+	public void testOutOfSpace() throws Exception {
+		String filename = "c_jpg.jpg";
+
+		// Set test roots and build files to be used.
+		Var.CLIENT_ROOT = "src/testFile/";
+		Var.SERVER_ROOT = "temp/";
+		File fileClient = new File(Var.CLIENT_ROOT + filename);
+		File fileServer = new File(Var.SERVER_ROOT + filename);
+		if (fileServer.exists()) {
+			fileServer.delete();
+		}
+		
+		FillItUp.fillMyDrive(1);
+
+		Log.enable(false);
+		Log.saveLog(true);
+		// Run the client with the given file, then close the server.
+		runClient(
+				"W\n" + 
+				filename + "\n" + 
+				"S\n");
+		stop();
+		
+		FillItUp.fillMyDrive(-1);
+		
+		String log = Log.getLog();
+		
+		// Make sure the files match.
+		assertFalse("There was an exception in the log", log.contains("Exception"));
+		assertTrue("Disk full error was not found in log", log.contains("Disk full, cannot complete opperation."));
+		assertTrue("packet type 3 not received in log", log.contains("Error packet type 3 received."));
+		assertFalse("File copied to server exists", fileServer.exists());
+	}
+	
+	@Test
+	public void testLocked() throws Exception {
+		String filename = "c_jpg.jpg";
+
+		// Set test roots and build files to be used.
+		Var.CLIENT_ROOT = "temp/";
+		Var.SERVER_ROOT = "src/testFile/";
+		File fileClient = new File(Var.CLIENT_ROOT + filename);
+		File fileServer = new File(Var.SERVER_ROOT + filename);
+		if (fileClient.exists()) {
+			fileClient.delete();
+		}
+		
+		FillItUp.lockIt(Var.SERVER_ROOT + filename);
+
+		Log.enable(false);
+		Log.saveLog(true);
+		// Run the client with the given file, then close the server.
+		runClient(
+				"R\n" + 
+				filename + "\n" + 
+				"S\n");
+		stop();
+		
+		FillItUp.unlock();
+		
+		String log = Log.getLog();
+		
+		// Make sure the files match.
+		assertFalse("There was an exception in the log", log.contains("Exception"));
+		assertFalse("File copied to client exists", fileClient.exists());
+	}
+
 }

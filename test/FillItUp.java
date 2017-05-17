@@ -19,6 +19,14 @@ public class FillItUp {
 	
 	public static void fillMyDrive(int remaining) throws IOException {
 		File massive = new File("temp/MASSIVE");
+		
+		if (remaining == -1) {
+			if (massive.exists()) {
+				massive.delete();
+			}
+			return;
+		}
+		
 		if (massive.exists()) {
 			massive.delete();
 		} else {
@@ -48,19 +56,26 @@ public class FillItUp {
 		fw.close();
 	}
 	
+	private static FileOutputStream in;
+	private static FileLock lock;
 	public static void lockIt(String filename) throws IOException {
-		FileOutputStream in = new FileOutputStream(filename);
-		try {
-		    FileLock lock = in.getChannel().lock();
-		    try {
-				Thread.sleep(100000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+		if (in != null && lock != null) {
+			unlock();
+		}
+		
+		in = new FileOutputStream(filename);
+	    lock = in.getChannel().lock();
+	}
+	
+	public static void unlock() throws IOException {
+		if (in != null && lock != null) {
+	        try {
+				lock.release();
+				lock = null;
+			} finally {
+			    in.close();
+			    in = null;
 			}
-	        lock.release();
-		} finally {
-		    in.close();
 		}
 	}
 
