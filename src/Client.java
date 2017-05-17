@@ -156,7 +156,7 @@ public class Client {
 			packet = udp.receivePacket();
 			if (packet != null) {
 				if (TFTPErrorHelper.dataPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
-					if (packet.getData()[1] == 5)
+					if (TFTPErrorHelper.isError(packet.getData()))
 						TFTPErrorHelper.unPackError(packet);
 					udp.setTestSender(false);
 					if (writer != null)
@@ -168,7 +168,16 @@ public class Client {
 					// Save address to send response to
 					udp.setReturn(packet);
 					udp.setTestSender(true);
-					writer = new FileWriter(Var.CLIENT_ROOT + fileName);
+					try {
+						writer = new FileWriter(Var.CLIENT_ROOT + fileName);
+					} catch (IOException e) {
+						if (e.getMessage().equals("File already exists")) {
+							TFTPErrorHelper.sendError(udp, (byte) 6, "File already exists.");
+							udp.setTestSender(false);
+							return;
+						}
+						throw e;
+					}
 				}
 				data = packet.getData();
 				// Log.packet("Client: Receiving READ DATA",
@@ -237,7 +246,7 @@ public class Client {
 			packet = udp.receivePacket();
 			if (packet != null) {
 				if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
-					if (packet.getData()[1] == 5)
+					if (TFTPErrorHelper.isError(packet.getData()))
 						TFTPErrorHelper.unPackError(packet);
 					udp.setTestSender(false);
 					return;
@@ -284,7 +293,7 @@ public class Client {
 		// Receive final ACK packet
 		packet = udp.receivePacket();
 		if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
-			if (packet.getData()[1] == 5)
+			if (TFTPErrorHelper.isError(packet.getData()))
 				TFTPErrorHelper.unPackError(packet);
 			udp.setTestSender(false);
 			return;

@@ -3,8 +3,6 @@ package util;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.AccessDeniedException;
-import java.nio.file.Files;
 
 /*************************************************************************/
 // This class is used by both the client and the server to write byte 
@@ -27,7 +25,10 @@ public class FileWriter {
 	 */
 	public FileWriter(String filename) throws IOException {
 		file = new File(filename);
-		// Make the directories and file if they don't exist.
+		if (file.exists()) {
+			throw new IOException("File already exists");
+		}
+		// Make the directories and file.
 		if (file.getParentFile() != null) {
 			file.getParentFile().mkdirs();
 		}

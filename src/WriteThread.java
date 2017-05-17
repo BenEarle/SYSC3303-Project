@@ -54,7 +54,11 @@ public class WriteThread extends ClientResponseThread {
 					try {
 						fw = new FileWriter(Var.SERVER_ROOT + file);
 					} catch (IOException e) {
-						Log.err("ERROR Starting file writer", e);
+						if (e.getMessage().equals("File already exists")) {
+							TFTPErrorHelper.sendError(udp, (byte) 6, "File already exists.");
+						} else {
+							Log.err("ERROR Starting file writer", e);
+						}
 						super.close();
 						return;
 					}
@@ -64,8 +68,9 @@ public class WriteThread extends ClientResponseThread {
 				ack = ackIncrement(ack);
 				if (TFTPErrorHelper.dataPacketChecker(udp, packet, ack[2] * 256 + ack[3]) != null) {
 					//System.out.println("Server<ReadThread>: Invalid data packet.");
-					if(packet.getData()[1] == 5) TFTPErrorHelper.unPackError(packet);
-					if(fw != null)
+					if (TFTPErrorHelper.isError(packet.getData()))
+						TFTPErrorHelper.unPackError(packet);
+					if (fw != null)
 						try {
 							fw.abort();
 						} catch (IOException e) {
@@ -79,7 +84,7 @@ public class WriteThread extends ClientResponseThread {
 				try {
 					fw.write(data, 4, packet.getLength());
 				} catch (IOException e) {
-					if(e.getMessage().equals("There is not enough space on the disk"))
+					if (e.getMessage().equals("There is not enough space on the disk"))
 						TFTPErrorHelper.sendError(udp, (byte) 3, "Disk full, cannot complete opperation.");
 					try {
 						fw.abort();

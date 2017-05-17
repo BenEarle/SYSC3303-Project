@@ -21,7 +21,7 @@ public class TFTPErrorHelper {
 		byte[] data = p.getData();
 		int length = p.getLength();
 		int i = 2;
-		if(data[1]==5){
+		if (isError(data)) {
 			return 4;
 		}
 		// Check opCode.
@@ -124,10 +124,10 @@ public class TFTPErrorHelper {
 		 */
 		byte[] data = p.getData();
 		int length = p.getLength();
-		if(data[1]==5){
+		if (isError(data)) {
 			return 4;
 		}
-		if (length < 4 ) {
+		if (length < 4) {
 			// data too small
 			sendError(u, (byte) 0x04, "Data packet too small");
 			return 4;
@@ -161,7 +161,7 @@ public class TFTPErrorHelper {
 		 */
 		byte[] data = p.getData();
 		int length = p.getLength();
-		if(data[1]==5){
+		if (isError(data)) {
 			return 4;
 		}
 		if (length != 4) {
@@ -194,13 +194,12 @@ public class TFTPErrorHelper {
 		
 		System.arraycopy(message.getBytes(), 0, data, 4, message.length());
 		Log.err(Log.bString(data).trim());
-		System.out.print("Server<main>: ");
 		// send the packet back to the person who sent us the wrong message
 		u.sendPacket(data);
 	}
 
 	public static boolean isError(byte[] data) {
-		return (data[1] == 5);
+		return (data[0] == Var.ERROR[0] && data[1] == Var.ERROR[1]);
 	}
 
 	public static void unPackError(DatagramPacket p) {
