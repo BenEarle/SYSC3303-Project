@@ -23,8 +23,8 @@
 -----------------------------------------------------------------------------------------------------------
   * We chose to delete files if there was an error in the transfer. We did not want half complete files
     to exist on the client or server.
-  * We chose to NOT allow the client and server to overwrite files if they chose to. This means that our
-    TFTP client and Server will be sending error code 6 if a file already exists on the server in a WRQ.
+  * We chose to NOT allow the client and server to overwrite files. This means that our TFTP client and
+    Server will be sending error code 6 if a file already exists on the server in a WRQ.
 ===========================================================================================================
 # Files
 -----------------------------------------------------------------------------------------------------------
