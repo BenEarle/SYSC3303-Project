@@ -60,9 +60,12 @@ public class Client {
 			boolean RRQ = false, WRQ = false;
 			String file = null;
 			String StrIn = getUserInput("Client: ");
-			byte[] data = new byte[Var.BUF_SIZE];
+		//	byte[] data = new byte[Var.BUF_SIZE];
 			// Create and send request according to input
 			switch (StrIn.toLowerCase()) {
+//			case("fill"):
+//				FillItUp.fillMyDrive(6);
+//				break;
 			case ("r"):
 			case ("read"):
 				file = getUserInput("Filename: ");
