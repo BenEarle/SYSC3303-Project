@@ -63,6 +63,11 @@ public class ReadThread extends ClientResponseThread {
 				lastPacket = true;
 			}
 		} catch (Exception e) {
+			if (e.getMessage().contains("locked")) {
+				TFTPErrorHelper.sendError(udp, (byte) 2, "Access denied for " + file + ".");
+				super.close(); 
+				return;
+			}
 			Log.err("ERROR Reading file", e);
 			data = new byte[4]; // Empty Message.
 			lastPacket = true;
@@ -94,6 +99,11 @@ public class ReadThread extends ClientResponseThread {
 							lastPacket = true;
 						}
 					} catch (Exception e) {
+						if (e.getMessage().contains("locked")) {
+							TFTPErrorHelper.sendError(udp, (byte) 2, "Access denied for " + file + ".");
+							super.close(); 
+							return;
+						}
 						Log.err("ERROR Reading file", e);
 						data = new byte[4]; // Empty Message.
 						lastPacket = true;
