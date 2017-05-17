@@ -149,7 +149,7 @@ public class ErrorSimulator {
 			// Check whether or not to sabotage
 			packet = checkSabotage(packet);
 			//Check for Error packet
-			if (data[0] == Var.ERROR[0] && data[1] == Var.ERROR[1] && data[3] == 4) {
+			if (data[0] == Var.ERROR[0] && data[1] == Var.ERROR[1] && data[3] != 5) {
 				error = true;
 			}
 			
@@ -188,7 +188,7 @@ public class ErrorSimulator {
 			// Check whether or not to sabotage
 			packet = checkSabotage(packet);
 			//Check for Error packet
-			if (data[0] == Var.ERROR[0] && data[1] == Var.ERROR[1] && data[3] == 4) {
+			if (data[0] == Var.ERROR[0] && data[1] == Var.ERROR[1] && data[3] != 5) {
 				error = true;
 			}
 						

@@ -3,3 +3,4 @@
 /src/testFile/s_*
 /src/testFile/server/c_*
 *.db
+src/testFile/server/s_NoPermissions.txt

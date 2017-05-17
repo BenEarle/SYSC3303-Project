@@ -1,12 +1,10 @@
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.DatagramPacket;
 
 import java.net.InetSocketAddress;
 import java.net.SocketException;
-import java.nio.file.AccessDeniedException;
 import java.util.Scanner;
 
 import util.FileReader;
@@ -222,11 +220,12 @@ public class Client {
 		FileReader reader = null;
 		try {
 			reader = new FileReader(Var.CLIENT_ROOT + fileName);
-		} catch (FileNotFoundException e) {
-			TFTPErrorHelper.sendError(udp, (byte) 1, "File " + fileName + " not found.");
-			return;
-		} catch (AccessDeniedException e){
-			TFTPErrorHelper.sendError(udp, (byte) 2, "Access denied for " + fileName + ".");
+		} catch (IOException e){
+			System.out.println("TEST: " + e.getMessage());
+			if (e.getMessage().contains("Access is denied"))
+				TFTPErrorHelper.sendError(udp, (byte) 2, "Access denied for " + fileName + ".");
+			else 
+				TFTPErrorHelper.sendError(udp, (byte) 1, "File " + fileName + " not found.");
 			return;
 		}
 

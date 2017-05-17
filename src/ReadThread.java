@@ -1,7 +1,8 @@
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.nio.file.AccessDeniedException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import util.FileReader;
 import util.Log;
@@ -37,18 +38,12 @@ public class ReadThread extends ClientResponseThread {
 		FileReader fr = null;
 		try {
 			fr = new FileReader(Var.SERVER_ROOT + file);
-		} catch (AccessDeniedException e){
-			TFTPErrorHelper.sendError(udp, (byte) 2, "Access denied for " + file + ".");
-			return;
-		} catch (FileNotFoundException e) {
-			// There is potential here to send a file not found error back to
-			// the client.
-			TFTPErrorHelper.sendError(udp, (byte) 1, ("File " +  file + " not found."));
-			super.close(); 
-			return;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("TEST: " + e.getMessage());
+			if (e.getMessage().contains("Access is denied"))
+				TFTPErrorHelper.sendError(udp, (byte) 2, "Access denied for " + file + ".");
+			else	
+				TFTPErrorHelper.sendError(udp, (byte) 1, "File " + file + " not found.");
 			return;
 		}
 

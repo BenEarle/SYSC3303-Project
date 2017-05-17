@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.AccessDeniedException;
-import java.nio.file.Files;
 
 /*************************************************************************/
 //This class is used by both the client and the server to read byte 
@@ -27,12 +25,7 @@ public class FileReader {
 	 */
 	public FileReader(String filename) throws IOException {
 		file = new File(filename);
-		if(!Files.exists(file.toPath())){
-			throw new FileNotFoundException("");
-		}
-		if (!Files.isReadable(file.toPath())){
-			throw new AccessDeniedException("");
-		}
+		
 		// Open a stream to the file.
 		in = new FileInputStream(file);
 		closed = false;
