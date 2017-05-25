@@ -25,7 +25,7 @@ public class Client {
 	Scanner reader;
 
 	public Client(InputStream in) throws SocketException {
-		udp = new UDPHelper();
+		udp = new UDPHelper(Var.TIMEOUT);
 
 		addrHost = new InetSocketAddress("localhost", Var.PORT_CLIENT);
 		addrServer = new InetSocketAddress("localhost", Var.PORT_SERVER);
@@ -251,6 +251,7 @@ public class Client {
 			packet = udp.receivePacket();
 			if (packet != null) {
 				if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
+					
 					if (TFTPErrorHelper.isError(packet.getData()))
 						TFTPErrorHelper.unPackError(packet);
 					udp.setTestSender(false);

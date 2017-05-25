@@ -189,15 +189,12 @@ public class TFTPErrorHelper {
 
 		// Unexpected block number 
 		// 
-		if(blockNum < expectedBlock){
-//			THIS MUST BE DUPLICATE ACK 
-//			Ignore the packet.
-			return 2;
-		}
 		if (blockNum > expectedBlock) {	
 			sendError(u, (byte) 0x04, "ACK wrong block number");
 			return 4;
 		}
+//			THIS MUST BE DUPLICATE ACK 
+//			Ignore the packet.
 		return null;
 	}
 

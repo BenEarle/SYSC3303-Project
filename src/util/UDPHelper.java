@@ -60,6 +60,7 @@ public class UDPHelper {
 		setReturn(p);
 	}
 
+	
 	public void setIP(InetAddress IP) {
 		this.IP = IP;
 	}
@@ -107,39 +108,42 @@ public class UDPHelper {
 
 	public DatagramPacket receivePacket() {
 		recPacket = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
-
-		try {
-			socket.receive(recPacket);
-			Log.packet("Packet Received", recPacket);
-			
-			if(testSender && !(recPacket.getAddress().equals(IP) && recPacket.getPort() == port)){
-				//Send error code 5 and continue
-				//Change sending info for the senderror handler to use
-				int correctPort = port;
-				InetAddress correctIP = IP; 
-				port = recPacket.getPort();
-				IP = recPacket.getAddress();
-				TFTPErrorHelper.sendError(this, (byte) 5, "Invalid sender. Was expecting a response from: " + IP.toString() + ":" + port);
-				//Correct state of ip and port
-				port = correctPort;
-				IP = correctIP;
-				return null;
-			} else if (!testSender) {
-				port = recPacket.getPort();
-			}
-			
-			return recPacket;
-		} catch (SocketTimeoutException ste) {
-			// Nothing here.
-		} catch (SocketException e) {
-			// If the socket should be closed this is fine.
-			if (!closed || !e.getMessage().equals("socket closed")) {
+		int packetsSent = 0; 
+		while(packetsSent < Var.NUMBER_OF_RETRY){
+			try {
+				packetsSent++;
+				socket.receive(recPacket);
+				Log.packet("Packet Received", recPacket);
+				
+				if(testSender && !(recPacket.getAddress().equals(IP) && recPacket.getPort() == port)){
+					//Send error code 5 and continue
+					//Change sending info for the senderror handler to use
+					int correctPort = port;
+					InetAddress correctIP = IP; 
+					port = recPacket.getPort();
+					IP = recPacket.getAddress();
+					TFTPErrorHelper.sendError(this, (byte) 5, "Invalid sender. Was expecting a response from: " + IP.toString() + ":" + port);
+					//Correct state of ip and port
+					port = correctPort;
+					IP = correctIP;
+					return null;
+				} else if (!testSender) {
+					port = recPacket.getPort();
+				}
+				
+				return recPacket;
+			} catch (SocketTimeoutException ste) {
+				this.resendLastPacket();
+				// Nothing here.
+			} catch (SocketException e) {
+				// If the socket should be closed this is fine.
+				if (!closed || !e.getMessage().equals("socket closed")) {
+					Log.err("ERROR Receiving packet", e);
+				}
+			} catch (IOException e) {
 				Log.err("ERROR Receiving packet", e);
 			}
-		} catch (IOException e) {
-			Log.err("ERROR Receiving packet", e);
 		}
-
 		return null;
 	}
 
