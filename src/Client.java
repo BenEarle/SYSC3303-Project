@@ -280,7 +280,8 @@ public class Client {
 					TFTPErrorHelper.sendError(udp, (byte) 2, "Access denied for " + fileName + ".");
 					return;
 				}
-				blockNum = bytesIncrement(blockNum);
+				if(data[2] * 256 + data[3] == blockNum[2] * 256 + blockNum[3] + 1)
+					blockNum = bytesIncrement(blockNum);
 
 				// Add OPCode to data.
 				data[0] = Var.DATA[0];
