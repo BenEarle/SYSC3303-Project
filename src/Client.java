@@ -275,9 +275,9 @@ public class Client {
 					if (reader.isClosed()) {
 						lastPacket = true;
 					}
-				} catch (Exception e) {
-					data = new byte[0]; // Empty Message
-					lastPacket = true;
+				} catch (IOException e) {
+					TFTPErrorHelper.sendError(udp, (byte) 2, "Access denied for " + fileName + ".");
+					return;
 				}
 				blockNum = bytesIncrement(blockNum);
 

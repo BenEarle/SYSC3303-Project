@@ -26,7 +26,7 @@ public class FillItUp {
 			}
 			return;
 		}
-		
+
 		if (massive.exists()) {
 			massive.delete();
 		} else {
@@ -34,7 +34,15 @@ public class FillItUp {
 		}
 		long size = new File("/").getUsableSpace();
         RandomAccessFile f = new RandomAccessFile(massive, "rw");
-        f.setLength(size - remaining*1024);
+        boolean worked = false;
+        while (!worked) {
+    		try {
+    	        f.setLength(size - remaining*1024);
+    	        worked = true;
+    		} catch (IOException e) {
+    			remaining++;
+    		}
+        }
         f.close();
 	}
 	

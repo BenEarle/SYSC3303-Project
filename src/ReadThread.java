@@ -1,8 +1,5 @@
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.nio.file.AccessDeniedException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import util.FileReader;
 import util.Log;
@@ -63,6 +60,11 @@ public class ReadThread extends ClientResponseThread {
 				lastPacket = true;
 			}
 		} catch (Exception e) {
+			if (e.getMessage().contains("locked")) {
+				TFTPErrorHelper.sendError(udp, (byte) 2, "Access denied for " + file + ".");
+				super.close(); 
+				return;
+			}
 			Log.err("ERROR Reading file", e);
 			data = new byte[4]; // Empty Message.
 			lastPacket = true;
@@ -94,6 +96,11 @@ public class ReadThread extends ClientResponseThread {
 							lastPacket = true;
 						}
 					} catch (Exception e) {
+						if (e.getMessage().contains("locked")) {
+							TFTPErrorHelper.sendError(udp, (byte) 2, "Access denied for " + file + ".");
+							super.close(); 
+							return;
+						}
 						Log.err("ERROR Reading file", e);
 						data = new byte[4]; // Empty Message.
 						lastPacket = true;
