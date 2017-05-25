@@ -20,13 +20,15 @@ public class DelayedSendThread extends Thread {
 	
 	public void run(){
 		// Do nothing for delay
+		System.out.println("Waiting");
 		try {
 			Thread.sleep(delay);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		System.out.println("Done");
 		
-		Log.packet(msg, packet);
+		Log.packet("LOOK AT ME!!!\n\n\n\n\n"+msg, packet);
 		try {
 			socket.send(packet);
 		} catch (IOException e) {
