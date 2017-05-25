@@ -251,7 +251,6 @@ public class Client {
 			packet = udp.receivePacket();
 			if (packet != null) {
 				if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
-					
 					if (TFTPErrorHelper.isError(packet.getData()))
 						TFTPErrorHelper.unPackError(packet);
 					udp.setTestSender(false);
@@ -265,8 +264,8 @@ public class Client {
 					firstPacket = false;
 				}
 				data = packet.getData();
-				// Log.packet("Client: Receiving WRITE ACK",
-				// udp.getLastPacket());
+				if((data[2] * 256 + data[3]) == (blockNum[0] * 256 + blockNum[1]))
+					blockNum = bytesIncrement(blockNum);
 
 				// Get data from file and check if length read is less than
 				// full block size
@@ -280,9 +279,7 @@ public class Client {
 					TFTPErrorHelper.sendError(udp, (byte) 2, "Access denied for " + fileName + ".");
 					return;
 				}
-				if((data[2] * 256 + data[3]) == (blockNum[0] * 256 + blockNum[1]))
-					blockNum = bytesIncrement(blockNum);
-
+				
 				// Add OPCode to data.
 				data[0] = Var.DATA[0];
 				data[1] = Var.DATA[1];

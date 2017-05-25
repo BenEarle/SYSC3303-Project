@@ -1,6 +1,6 @@
 import java.net.DatagramPacket;
 import util.UDPHelper;
-import util.Var;
+
 
 /*************************************************************************/
 //ClientResponseThread is abstract as it doesn't do anything on it's own. 

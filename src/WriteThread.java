@@ -65,7 +65,7 @@ public class WriteThread extends ClientResponseThread {
 				}
 	
 				data = packet.getData();
-				if(data[2] * 256 + data[3] == ack[2] * 256 + ack[3] +1)
+				if(data[2] * 256 + data[3] == ack[2] * 256 + ack[3] + 1)
 					ack = ackIncrement(ack);
 				if (TFTPErrorHelper.dataPacketChecker(udp, packet, ack[2] * 256 + ack[3]) != null) {
 					//System.out.println("Server<ReadThread>: Invalid data packet.");
