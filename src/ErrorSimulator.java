@@ -22,15 +22,19 @@ public class ErrorSimulator {
 	private static final SocketAddress SERVER_ADDRESS = new InetSocketAddress("localhost", Var.PORT_SERVER);
 	private boolean running;
 
-	// Socket
+	// Sockets
 	private DatagramSocket socClient; 
 	private DatagramSocket socServer; 
+	
+	// Addresses
+	SocketAddress addrClient;
+	SocketAddress addrServer;
 	
 	// Error Scenario
 	private ErrorScenario err;
 	
 	// Flag to indicate keep track where last packet was sent
-	private boolean recentPacketToServer = true;
+	private boolean recentPacketFromServer = true;
 	
 	public ErrorSimulator() throws SocketException {
 		socket = new DatagramSocket(Var.PORT_CLIENT);
@@ -38,10 +42,10 @@ public class ErrorSimulator {
 	}
 	
 	private void display(DatagramPacket packet){
-		for(int i=0; i<packet.getLength(); i++){
+		/*for(int i=0; i<packet.getLength(); i++){
 			System.out.print(packet.getData()[i]+", ");
 		} 
-		System.out.print("\n");
+		System.out.print("\n");*/
 	}
 	
 	/*************************************************************************/
@@ -74,32 +78,41 @@ public class ErrorSimulator {
 			Log.out("ErrorSimulatorChannel: DATA Packet #"+err.getBlockNum()+" sabotaged with "+ErrorScenario.FAULT[err.getFaultType()] +" Fault");
 			// Lose ----------------------------------------------
 			if ( err.getErrorCode()==1 ){
-				// Do nothing with this packet, just wait to receive another one
-				if(recentPacketToServer){ // Ignore response from server and expect another packet
+				// Do nothing with this packet, just wait to receive another one from the same place
+				if(recentPacketFromServer){ // Ignore response from server and expect another packet
 					packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
 					socServer.receive(packet);
 					Log.packet("ErrorSimulatorChannel: Server -> ErrorSim", packet);
 					display(packet);
+					packet.setSocketAddress(addrClient);
 				} else { // Ignore response from client and expect another packet
 					packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
 					socClient.receive(packet);
 					Log.packet("ErrorSimulatorChannel: Client -> ErrorSim", packet);
 					display(packet);
-				}
+					packet.setSocketAddress(addrServer);
+				}	
 			// Delay ----------------------------------------------	
 			} else if( err.getErrorCode()==2 ){
-				// Do nothing with this packet, just wait to receive another one
-				if(recentPacketToServer){ // Ignore response from server and expect another packet
+				/*// Do nothing with this packet, just wait to receive another one
+				Thread delayThread;
+				if(recentPacketFromServer){ // Ignore response from server and expect another packet
+					delayThread = new DelayedSendThread(err.getDelay(), packet, socServer, "ErrorSimulatorChannel: Server -> ErrorSim");
+					delayThread.start();
 					packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
 					socServer.receive(packet);
 					Log.packet("ErrorSimulatorChannel: Server -> ErrorSim", packet);
 					display(packet);
+					packet.setSocketAddress(addrClient);
 				} else { // Ignore response from client and expect another packet
+					delayThread = new DelayedSendThread(err.getDelay(), packet, socClient, "ErrorSimulatorChannel: Client -> ErrorSim");
+					delayThread.start();
 					packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
 					socClient.receive(packet);
 					Log.packet("ErrorSimulatorChannel: Client -> ErrorSim", packet);
 					display(packet);
-				}
+					packet.setSocketAddress(addrServer);
+				}*/
 			// Duplicate ----------------------------------------------
 			} else if( err.getErrorCode()==3 ){
 				
@@ -111,10 +124,33 @@ public class ErrorSimulator {
 		} 
 		// Sabotage a Specific ACK packet
 		if( data[1] == Var.ACK[1]  && err.getPacketType()==ErrorScenario.ACK_PACKET && (data[2]*256+data[3]) == err.getBlockNum()){
-			Log.out(
-				"ErrorSimulatorChannel: ACK Packet #"+err.getBlockNum()+" sabotaged with "
-				+ErrorScenario.FAULT[err.getFaultType()] +" Fault");
-			packet = err.Sabotage(packet);
+			Log.out("ErrorSimulatorChannel: ACK Packet #"+err.getBlockNum()+" sabotaged with "+ErrorScenario.FAULT[err.getFaultType()] +" Fault");
+			// Lose ----------------------------------------------
+			if ( err.getErrorCode()==1 ){
+				// Do nothing with this packet, just wait to receive another one from the same place
+				if(recentPacketFromServer){ // Ignore response from server and expect another packet
+					packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
+					socServer.receive(packet);
+					Log.packet("ErrorSimulatorChannel: Server -> ErrorSim", packet);
+					display(packet);
+					packet.setSocketAddress(addrClient);
+				} else { // Ignore response from client and expect another packet
+					packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
+					socClient.receive(packet);
+					Log.packet("ErrorSimulatorChannel: Client -> ErrorSim", packet);
+					display(packet);
+					packet.setSocketAddress(addrServer);
+				}	
+			// Delay ----------------------------------------------	
+			} else if( err.getErrorCode()==2 ){
+				
+			// Duplicate ----------------------------------------------
+			} else if( err.getErrorCode()==3 ){
+				
+			// Sabotage ----------------------------------------------
+			} else {
+				packet = err.Sabotage(packet);
+			}
 			return packet;
 		}
 		// Sabotage an ERROR packet
@@ -141,8 +177,8 @@ public class ErrorSimulator {
 		socServer = new DatagramSocket(); 
 
 		// Set up variables to remember addresses of client and server
-		SocketAddress addrClient = null;
-		SocketAddress addrServer = SERVER_ADDRESS;//new InetSocketAddress("localhost", Var.PORT_SERVER);
+		addrClient = null;
+		addrServer = SERVER_ADDRESS;//new InetSocketAddress("localhost", Var.PORT_SERVER);
 		
 		// Packet used to transfer between client and server
 		DatagramPacket packet = null;
@@ -161,13 +197,12 @@ public class ErrorSimulator {
 			packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
 			if(!initiated) socket.receive(packet); // Receive on Well-Known port socket
 			else        socClient.receive(packet); // Receive on Channel-Dedicated port socket
-			
 			initiated = true; // If here transfer has been initiated
 			
 			// Display packet that was received
 			Log.packet("ErrorSimulatorChannel: Client -> ErrorSim", packet);
 			display(packet);
-			recentPacketToServer = false;
+			recentPacketFromServer = false;
 			
 			// Update address for Client, where future requests are sent
 			addrClient = packet.getSocketAddress();
@@ -197,7 +232,6 @@ public class ErrorSimulator {
 			socServer.send(packet);
 			Log.packet("ErrorSimulatorChannel: ErrorSim -> Server", packet);
 			display(packet);
-			recentPacketToServer = true;
 
 			// Quit if lastAck was sent
 			if ((lastData && lastAck) || error) break;
@@ -209,6 +243,7 @@ public class ErrorSimulator {
 			socServer.receive(packet);
 			Log.packet("ErrorSimulatorChannel: Server -> ErrorSim", packet);
 			display(packet);
+			recentPacketFromServer = true;
 			
 			// Update address for server, where future requests are sent
 			addrServer = packet.getSocketAddress();
