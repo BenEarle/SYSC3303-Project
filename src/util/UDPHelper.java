@@ -18,7 +18,8 @@ public class UDPHelper {
 	private InetAddress IP;
 	private int port;
 	private boolean closed = true;
-	private DatagramPacket p;
+	private DatagramPacket sentPacket;
+	private DatagramPacket recPacket;
 	private boolean testSender = false;
 
 	public UDPHelper() {
@@ -95,39 +96,39 @@ public class UDPHelper {
 	}
 
 	public void sendPacket(byte[] data) {
-		p = new DatagramPacket(data, data.length, IP, port);
-		Log.packet("Sending Packet", p);
+		sentPacket = new DatagramPacket(data, data.length, IP, port);
+		Log.packet("Sending Packet", sentPacket);
 		try {
-			socket.send(p);
+			socket.send(sentPacket);
 		} catch (IOException e) {
 			Log.err("ERROR Sending packet", e);
 		}
 	}
 
 	public DatagramPacket receivePacket() {
-		p = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
+		recPacket = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
 
 		try {
-			socket.receive(p);
-			Log.packet("Packet Received", p);
+			socket.receive(recPacket);
+			Log.packet("Packet Received", recPacket);
 			
-			if(testSender && !(p.getAddress().equals(IP) && p.getPort() == port)){
+			if(testSender && !(recPacket.getAddress().equals(IP) && recPacket.getPort() == port)){
 				//Send error code 5 and continue
 				//Change sending info for the senderror handler to use
 				int correctPort = port;
 				InetAddress correctIP = IP; 
-				port = p.getPort();
-				IP = p.getAddress();
+				port = recPacket.getPort();
+				IP = recPacket.getAddress();
 				TFTPErrorHelper.sendError(this, (byte) 5, "Invalid sender. Was expecting a response from: " + IP.toString() + ":" + port);
 				//Correct state of ip and port
 				port = correctPort;
 				IP = correctIP;
 				return null;
 			} else if (!testSender) {
-				port = p.getPort();
+				port = recPacket.getPort();
 			}
 			
-			return p;
+			return recPacket;
 		} catch (SocketTimeoutException ste) {
 			// Nothing here.
 		} catch (SocketException e) {
@@ -146,14 +147,23 @@ public class UDPHelper {
 		testSender = b;
 	}
 	
-	public DatagramPacket getLastPacket() {
-		return p;
+	public DatagramPacket getRecPacket() {
+		return recPacket;
 	}
 	
 	public void close() {
 		if (!closed) {
 			closed = true;
 			socket.close();
+		}
+	}
+
+	public void resendLastPacket() {
+		Log.packet("Resending Last Packet", sentPacket);
+		try {
+			socket.send(sentPacket);
+		} catch (IOException e) {
+			Log.err("ERROR Sending packet", e);
 		}
 	}
 

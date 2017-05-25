@@ -11,6 +11,7 @@ public class Var {
 	public static final int BUF_SIZE    = 516;
 	public static final int BLOCK_SIZE  = 512;
 	public static final int TIMEOUT     = 1000;
+	public static final int NUMBER_OF_RETRY = 3;
 	
 	public static String CLIENT_ROOT = "testFiles/";
 	public static String SERVER_ROOT = "testFiles/server/";

@@ -144,9 +144,18 @@ public class TFTPErrorHelper {
 			return 4;
 		}
 		int blockNum = data[2] * 256 + data[3];
-		if (blockNum != expectedBlock) {
-			// Got wrong block
-			sendError(u, (byte) 0x04, "Recv wrong block number");
+
+		// Unexpected block number 
+		// 
+		if(blockNum < expectedBlock){
+			// Re-send the ACK packet with "blockNum"
+			byte[] d = Var.ACK_WRITE.clone();
+			d[2] = data[2];
+			d[3] = data[3];
+			u.sendPacket(d);
+			return null;
+		}
+		if (blockNum > expectedBlock) {	
 			return 4;
 		}
 		return null;
@@ -177,8 +186,15 @@ public class TFTPErrorHelper {
 		}
 
 		int blockNum = data[2] * 256 + data[3];
-		if (blockNum != expectedBlock) {
-			// Got wrong block
+
+		// Unexpected block number 
+		// 
+		if(blockNum < expectedBlock){
+//			THIS MUST BE DUPLICATE ACK 
+//			Ignore the packet.
+			return 2;
+		}
+		if (blockNum > expectedBlock) {	
 			sendError(u, (byte) 0x04, "ACK wrong block number");
 			return 4;
 		}
