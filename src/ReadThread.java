@@ -134,7 +134,8 @@ public class ReadThread extends ClientResponseThread {
 		// Receive final ACK packet
 		Log.out("Server<ReadThread>: Receiving Final ACK Data");
 		packet = super.receivePacket();
-		if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
+		if (packet == null) System.out.println("Server<ReadThread>: Server never recieved the final ack packet, please check the validity of the transfer.");
+		else if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
 			if (TFTPErrorHelper.isError(packet.getData()))
 				TFTPErrorHelper.unPackError(packet);
 			System.out.println("Server<ReadThread>: Invalid ACK packet.");
