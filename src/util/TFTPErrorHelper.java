@@ -152,6 +152,7 @@ public class TFTPErrorHelper {
 			byte[] d = Var.ACK_WRITE.clone();
 			d[2] = data[2];
 			d[3] = data[3];
+			Log.out("Received a duplicate DATA packet. Resending ACK " + blockNum + ".");
 			u.sendPacket(d);
 			return null;
 		}
