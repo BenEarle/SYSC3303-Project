@@ -19,10 +19,18 @@ import util.ErrorScenario;
 
 public class ErrorSimulator {
 	private DatagramSocket socket;
-	private static final SocketAddress SERVER_ADDRESS = new InetSocketAddress("localhost", Var.PORT_SERVER);;
+	private static final SocketAddress SERVER_ADDRESS = new InetSocketAddress("localhost", Var.PORT_SERVER);
 	private boolean running;
 
+	// Socket
+	private DatagramSocket socClient; 
+	private DatagramSocket socServer; 
+	
+	// Error Scenario
 	private ErrorScenario err;
+	
+	// Flag to indicate keep track where last packet was sent
+	private boolean recentPacketToServer = true;
 	
 	public ErrorSimulator() throws SocketException {
 		socket = new DatagramSocket(Var.PORT_CLIENT);
@@ -42,47 +50,78 @@ public class ErrorSimulator {
 	// method is called on the packet, else it is unchanged
 	/*************************************************************************/
 	
-	private DatagramPacket checkSabotage(DatagramPacket packet){
+	private DatagramPacket checkSabotage(DatagramPacket packet) throws IOException{
 		byte[] data = packet.getData();
-		// Sabotage a Read packet
+		// Sabotage a RRQ packet
 		if       ( data[1]==Var.READ[1] && err.getPacketType()==ErrorScenario.READ_PACKET){
 			Log.out(
 				"ErrorSimulatorChannel: READ Packet sabotaged with "
 				+ErrorScenario.FAULT[err.getFaultType()]
-				+" Fault (CODE: "+err.getErrorCode()+")"
-			);
+				+" Fault (CODE: "+err.getErrorCode()+")");
 			packet = err.Sabotage(packet);
 			return packet;
 		}
-		// Sabotage a Write packet
+		// Sabotage a WRQ packet
 		if( data[1]==Var.WRITE[1]  && err.getPacketType()==ErrorScenario.WRITE_PACKET){
 			Log.out(
 				"ErrorSimulatorChannel: WRITE Packet sabotaged with "
-				+ErrorScenario.FAULT[err.getFaultType()]
-				+" Fault (CODE: "+err.getErrorCode()+")"
-			);
+				+ErrorScenario.FAULT[err.getFaultType()] +" Fault");
 			packet = err.Sabotage(packet);
 			return packet;
 		}
-		// Sabotage a Data packet
-		if( data[1] == Var.DATA[1] && err.getPacketType()==ErrorScenario.DATA_PACKET 
-										  && (data[2]*256+data[3]) == err.getBlockNum()){
-			Log.out(
-				"ErrorSimulatorChannel: DATA Packet #"+err.getBlockNum()+" sabotaged with "
-				+ErrorScenario.FAULT[err.getFaultType()]
-				+" Fault (CODE: "+err.getErrorCode()+")"
-			);
-			packet = err.Sabotage(packet);
+		// Sabotage a Specific DATA packet
+		if( data[1] == Var.DATA[1] && err.getPacketType()==ErrorScenario.DATA_PACKET && (data[2]*256+data[3]) == err.getBlockNum()){
+			Log.out("ErrorSimulatorChannel: DATA Packet #"+err.getBlockNum()+" sabotaged with "+ErrorScenario.FAULT[err.getFaultType()] +" Fault");
+			// Lose ----------------------------------------------
+			if ( err.getErrorCode()==1 ){
+				// Do nothing with this packet, just wait to receive another one
+				if(recentPacketToServer){ // Ignore response from server and expect another packet
+					packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
+					socServer.receive(packet);
+					Log.packet("ErrorSimulatorChannel: Server -> ErrorSim", packet);
+					display(packet);
+				} else { // Ignore response from client and expect another packet
+					packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
+					socClient.receive(packet);
+					Log.packet("ErrorSimulatorChannel: Client -> ErrorSim", packet);
+					display(packet);
+				}
+			// Delay ----------------------------------------------	
+			} else if( err.getErrorCode()==2 ){
+				// Do nothing with this packet, just wait to receive another one
+				if(recentPacketToServer){ // Ignore response from server and expect another packet
+					packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
+					socServer.receive(packet);
+					Log.packet("ErrorSimulatorChannel: Server -> ErrorSim", packet);
+					display(packet);
+				} else { // Ignore response from client and expect another packet
+					packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
+					socClient.receive(packet);
+					Log.packet("ErrorSimulatorChannel: Client -> ErrorSim", packet);
+					display(packet);
+				}
+			// Duplicate ----------------------------------------------
+			} else if( err.getErrorCode()==3 ){
+				
+			// Sabotage ----------------------------------------------
+			} else {
+				packet = err.Sabotage(packet);
+			}
 			return packet;
 		} 
-		// Sabotage an ACK packet
-		if( data[1] == Var.ACK[1]  && err.getPacketType()==ErrorScenario.ACK_PACKET  
-									 	  && (data[2]*256+data[3]) == err.getBlockNum()){
+		// Sabotage a Specific ACK packet
+		if( data[1] == Var.ACK[1]  && err.getPacketType()==ErrorScenario.ACK_PACKET && (data[2]*256+data[3]) == err.getBlockNum()){
 			Log.out(
 				"ErrorSimulatorChannel: ACK Packet #"+err.getBlockNum()+" sabotaged with "
-				+ErrorScenario.FAULT[err.getFaultType()]
-				+" Fault (CODE: "+err.getErrorCode()+")"
-			);
+				+ErrorScenario.FAULT[err.getFaultType()] +" Fault");
+			packet = err.Sabotage(packet);
+			return packet;
+		}
+		// Sabotage an ERROR packet
+		if( data[1] == Var.ERROR[1]  && err.getPacketType()==ErrorScenario.ERR_PACKET){
+			Log.out(
+				"ErrorSimulatorChannel: ERR Packet #"+err.getBlockNum()+" sabotaged with "
+				+ErrorScenario.FAULT[err.getFaultType()] +" Fault");
 			packet = err.Sabotage(packet);
 			return packet;
 		}
@@ -98,8 +137,8 @@ public class ErrorSimulator {
 	
 	public void runChannel() throws IOException {
 		// Set up sockets for communicating with client and server
-		DatagramSocket socClient = new DatagramSocket(); 
-		DatagramSocket socServer = new DatagramSocket(); 
+		socClient = new DatagramSocket(); 
+		socServer = new DatagramSocket(); 
 
 		// Set up variables to remember addresses of client and server
 		SocketAddress addrClient = null;
@@ -115,7 +154,6 @@ public class ErrorSimulator {
 		boolean error     = false;
 		boolean initiated = false;
 		
-		
 		// Begin loop: Get Response from Client and forward to server, vice-versa
 		running = true;
 		while (running) {
@@ -129,6 +167,7 @@ public class ErrorSimulator {
 			// Display packet that was received
 			Log.packet("ErrorSimulatorChannel: Client -> ErrorSim", packet);
 			display(packet);
+			recentPacketToServer = false;
 			
 			// Update address for Client, where future requests are sent
 			addrClient = packet.getSocketAddress();
@@ -144,19 +183,21 @@ public class ErrorSimulator {
 				Log.out("ErrorSimulatorChannel: Received Last ACK Packet in Transfer");
 				lastAck = true;
 			}
+			
 			// Update Address
 			packet.setSocketAddress(addrServer);
-			// Check whether or not to sabotage
-			packet = checkSabotage(packet);
 			//Check for Error packet
 			if (data[0] == Var.ERROR[0] && data[1] == Var.ERROR[1] && data[3] != 5) {
 				error = true;
 			}
+			// Sabotage packet from Client if relevant
+			packet = checkSabotage(packet);
 			
 			// Send socket to Server
 			socServer.send(packet);
 			Log.packet("ErrorSimulatorChannel: ErrorSim -> Server", packet);
 			display(packet);
+			recentPacketToServer = true;
 
 			// Quit if lastAck was sent
 			if ((lastData && lastAck) || error) break;
@@ -183,15 +224,16 @@ public class ErrorSimulator {
 				Log.out("ErrorSimulatorChannel: Received Last ACK Packet in Transfer");
 				lastAck = true;
 			}
+			
 			// Update Address
 			packet.setSocketAddress(addrClient);
-			// Check whether or not to sabotage
-			packet = checkSabotage(packet);
 			//Check for Error packet
 			if (data[0] == Var.ERROR[0] && data[1] == Var.ERROR[1] && data[3] != 5) {
 				error = true;
 			}
-						
+			// Sabotage packet from Server if relevant
+			packet = checkSabotage(packet);
+				
 			// Send socket to Client
 			socClient.send(packet);
 			Log.packet("ErrorSimulatorChannel: ErrorSim -> Client", packet);
@@ -205,26 +247,27 @@ public class ErrorSimulator {
 		Log.out("Transfer complete. Closing Channel");
 	}
 
+	
+	// Util Functions
 	public void run() throws IOException {
 		running = true;
 		while (running) {
-			err = new ErrorScenario();
-			Log.out("Running new channel");
+			
+			err = new ErrorScenario(); //create a new scenario after every transfer
+			
+			Log.out("Creating new channel between the Client and Server");
 			runChannel();
 		}
 	}
-
 	public void close() {
 		if (running) {
 			running = false;
 			socket.close();
 		}
 	}
-
 	public boolean isClosed() {
 		return !running;
 	}
-	
 	public static void main(String[] args) throws SocketException, IOException {
 		new ErrorSimulator().run();
 	}

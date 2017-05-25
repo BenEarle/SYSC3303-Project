@@ -14,19 +14,23 @@ public class ErrorScenario {
 	public static final int IRRELEVANT   = -1;
 	public static final int UNDEFINED    = -2;
 	
-	public static final String[] PACKET  = {"READ","WRITE","DATA","ACK"};
+	public static final String[] PACKET  = {"READ","WRITE","DATA","ACK","ERROR"};
 	public static final int READ_PACKET  = 1;
 	public static final int WRITE_PACKET = 2;
 	public static final int DATA_PACKET  = 3;
 	public static final int ACK_PACKET   = 4;
+	public static final int ERR_PACKET   = 5;
 
-	public static final String[] FAULT   = {"NONE","OPCODE","MODE","NULL","BLOCK","SIZE","SOURCE"};
-	public static final int OPCODE_FAULT = 1;
-	public static final int MODE_FAULT   = 2;
-	public static final int NULL_FAULT   = 3;
-	public static final int BLOCK_FAULT  = 4;
-	public static final int SIZE_FAULT   = 5;
-	public static final int SOURCE_FAULT = 6;
+	public static final String[] FAULT   = {"NONE","OPCODE","MODE","NULL","BLOCK","SIZE","SOURCE", "LOSS", "DELAY", "DUPLICATE"};
+	public static final int OPCODE_FAULT    = 1;
+	public static final int MODE_FAULT      = 2;
+	public static final int NULL_FAULT      = 3;
+	public static final int BLOCK_FAULT     = 4;
+	public static final int SIZE_FAULT      = 5;
+	public static final int SOURCE_FAULT    = 6;
+	public static final int LOSS_FAULT      = 7;
+	public static final int DELAY_FAULT     = 8;
+	public static final int DUPLICATE_FAULT = 9;
 	
 	/*************************************************************************/
 	// Instance Variables
@@ -35,7 +39,9 @@ public class ErrorScenario {
 	private int packetType;
 	private int faultType;
 	private int blockNum;
-	private Scanner  scanner;
+	private int packetDelay;
+	
+	private Scanner scanner;
 	
 	/*************************************************************************/
 	// Accessors
@@ -52,6 +58,9 @@ public class ErrorScenario {
 	public int getBlockNum(){
 		return blockNum;
 	}
+	public int getDelay(){
+		return packetDelay;
+	}
 	/*************************************************************************/
 	// Constructor
 	/*************************************************************************/
@@ -59,8 +68,16 @@ public class ErrorScenario {
 		scanner = new Scanner(System.in);
 		this.errorCode  = promptErrorCode ();
 		this.packetType = promptPacketType(errorCode);
-		this.faultType  = promptFault     (errorCode, packetType);
+		this.faultType  = promptFault     (errorCode, packetType); //sets packet delay if relevant
 		this.blockNum   = promptBlockNum  (errorCode, packetType);
+		
+		System.out.println("Case Summary:\n"
+				+"ERR: "+this.errorCode+"\n"
+				+"PAC: "+this.packetType+"\n"
+				+"FLT: "+this.faultType+"\n"
+				+"BLK: "+this.blockNum+"\n"
+				+"DEL: "+this.packetDelay+"\n"
+		);
 	}
 	
 	/*************************************************************************/
@@ -69,20 +86,10 @@ public class ErrorScenario {
 	public DatagramPacket Sabotage(DatagramPacket packet){
 		byte[] data = packet.getData();
 		//-------------------------------------------------
-		// File not Found Error
-		if       (errorCode == 1) {
-			//TODO in later Iteration
+		// 1-3 -- No sabotage for packets here
 		//-------------------------------------------------
-		// Access Violation Error
-		} else if(errorCode == 2) {
-			//TODO in later Iteration
-		//-------------------------------------------------
-		// Disk Full or Allocation Exceeded Error
-		} else if(errorCode == 3) {
-			//TODO in later Iteration
-		//-------------------------------------------------
-		// Illegal TFTP operation Error
-		} else if(errorCode == 4) {
+		// 4 -- Illegal TFTP operation Error
+		if(errorCode == 4) {
 			if(packetType==READ_PACKET || packetType==WRITE_PACKET){
 				//-------------------------------------------------
 				// Set Opcode to 0xFFFF
@@ -158,12 +165,7 @@ public class ErrorScenario {
 				e.printStackTrace();
 			}
 		//-------------------------------------------------
-		// File Already Exists Error
-		} else if(errorCode == 6) {
-			//TODO in later Iteration
-		}
-		//-------------------------------------------------
-		return packet;
+		} return packet;
 	}	
 	
 	/*************************************************************************/
@@ -173,14 +175,13 @@ public class ErrorScenario {
 		int errorType = UNDEFINED;		
 		while(errorType == UNDEFINED){
 			Log.out(
-				"Select a TFTP Error Code to Test:\n"
-			  + " 0) None\n"
-			  + " 1) File not Found\n"
-			  + " 2) Access Violation\n"
-			  + " 3) Disk full or allocation exceeded\n"
-			  + " 4) Illegal TFTP operation\n"
-			  + " 5) Unknown transfer ID\n"
-			  + " 6) No such user"
+				"Select a TFTP Error Category:\n"
+			  + " [0] None\n"
+			  + " [1] Lose Packet\n"
+			  + " [2] Delay Packt\n"
+			  + " [3] Duplicate Packet\n"
+			  + " [4] Illegal TFTP operation (CODE 4)\n"
+			  + " [5] Unknown transfer ID (CODE 5)"
 			);
 			switch(scanner.next().trim()){
 				case "0": errorType = 0; break;
@@ -189,7 +190,6 @@ public class ErrorScenario {
 				case "3": errorType = 3; break;
 				case "4": errorType = 4; break;
 				case "5": errorType = 5; break;
-				case "6": errorType = 6; break;
 				default: Log.out("ERROR - Invalid Entry"); break;
 			}
 		}
@@ -200,71 +200,107 @@ public class ErrorScenario {
 	// Get Packet Type for Error From User
 	/*************************************************************************/
 	public int promptPacketType(int errorCode){
-		int packetType = UNDEFINED;
+		int packetType = UNDEFINED;		
 		//-------------------------------------------------
-		// No Error
+		// 0 - No Error
 		if (errorCode == 0) {
 			packetType = IRRELEVANT;
 		//-------------------------------------------------
-		// File not Found Error
+		// 1 - Lose Packet
 		} else if (errorCode == 1) {
-			packetType = UNDEFINED;
-			//TODO in later Iteration
+			while(packetType == UNDEFINED){
+				Log.out(
+					"Select a Message Type to Test:\n"
+				  + " [1] DATA\n"
+				  + " [2] ACK\n"
+				  + " [3] ERR"
+				);
+				scanner = new Scanner(System.in);
+				switch(scanner.nextLine().trim()){
+					case "1": packetType = DATA_PACKET;  break;
+					case "2": packetType = ACK_PACKET;   break;
+					case "3": packetType = ERR_PACKET;   break;
+			        default: Log.out("ERROR - Invalid Entry"); break;
+				}
+			}
 		//-------------------------------------------------
-		// Access Violation Error
+		// 2 - Delay Packet
 		} else if(errorCode == 2) {
-			packetType = UNDEFINED;
-			//TODO in later Iteration
+			while(packetType == UNDEFINED){
+				Log.out(
+					"Select a Message Type to Test:\n"
+				  + " [1] DATA\n"
+				  + " [2] ACK\n"
+				  + " [3] ERR"
+				);
+				scanner = new Scanner(System.in);
+				switch(scanner.nextLine().trim()){
+					case "1": packetType = DATA_PACKET;  break;
+					case "2": packetType = ACK_PACKET;   break;
+					case "3": packetType = ERR_PACKET;   break;
+			        default: Log.out("ERROR - Invalid Entry"); break;
+				}
+			}
 		//-------------------------------------------------
-		// Disk Full or Allocation Exceeded Error
+		// 3 - Duplicate Packet
 		} else if(errorCode == 3) {
-			packetType = UNDEFINED;
-			//TODO in later Iteration
+			while(packetType == UNDEFINED){
+				Log.out(
+					"Select a Message Type to Test:\n"
+				  + " [1] DATA\n"
+				  + " [2] ACK\n"
+				  + " [3] ERR"
+				);
+				scanner = new Scanner(System.in);
+				switch(scanner.nextLine().trim()){
+					case "1": packetType = DATA_PACKET;  break;
+					case "2": packetType = ACK_PACKET;   break;
+					case "3": packetType = ERR_PACKET;   break;
+			        default: Log.out("ERROR - Invalid Entry"); break;
+				}
+			}
 		//-------------------------------------------------
-		// Illegal TFTP operation Error
+		// 4 - Illegal TFTP operation Error
 		} else if(errorCode == 4){
 			while(packetType == UNDEFINED){
 				Log.out(
 					"Select a Message Type to Test:\n"
-				  + " 1) RRQ\n"
-				  + " 2) WRQ\n"
-				  + " 3) DATA\n"
-				  + " 4) ACK"
+				  + " [1] RRQ\n"
+				  + " [2] WRQ\n"
+				  + " [3] DATA\n"
+				  + " [4] ACK\n"
+				  + " [5] ERR"
 				);
-
 				scanner = new Scanner(System.in);
 				switch(scanner.next().trim()){
 					case "1": packetType = READ_PACKET;  break;
 					case "2": packetType = WRITE_PACKET; break;
 					case "3": packetType = DATA_PACKET;  break;
 					case "4": packetType = ACK_PACKET;   break;
+					case "5": packetType = ERR_PACKET;   break;
 			        default: Log.out("ERROR - Invalid Entry"); break;
 				}
 			}
 		//-------------------------------------------------
-		// Unknown Transfer ID Error
+		// 5 - Unknown Transfer ID Error
 		} else if(errorCode == 5){
 			while(packetType == UNDEFINED){
 				Log.out(
 					"Select a Message Type to Test:\n"
-				  + " 1) DATA\n"
-				  + " 2) ACK"
+				  + " [1] DATA\n"
+				  + " [2] ACK\n"
+				  + " [3] ERR"
 				);
 				scanner = new Scanner(System.in);
 				switch(scanner.nextLine().trim()){
 					case "1": packetType = DATA_PACKET;  break;
 					case "2": packetType = ACK_PACKET;   break;
+					case "3": packetType = ERR_PACKET;   break;
 			        default: Log.out("ERROR - Invalid Entry"); break;
 				}
 			}
 		//-------------------------------------------------
-		// File Already Exists Error
-		} else if(errorCode == 6) {
-			packetType = UNDEFINED;
-			//TODO in later Iteration
-		}
-		//-------------------------------------------------
-		return packetType;
+		} return packetType;
 	}
 	
 	/*************************************************************************/
@@ -272,27 +308,37 @@ public class ErrorScenario {
 	/*************************************************************************/
 	public int promptFault(int errorCode, int packetType){
 		int faultType = UNDEFINED;
+		packetDelay   = IRRELEVANT; // irrelevant by default
 		//-------------------------------------------------
-		// No Error
+		// 0 - No Error
 		if (errorCode == 0) {
 			faultType = IRRELEVANT;
-		///-------------------------------------------------
-		// File not Found Error
+		//-------------------------------------------------
+		// 1 - Lose Packet
 		} else if (errorCode == 1) {
-			faultType = UNDEFINED;
-			//TODO in later Iteration
+			faultType = LOSS_FAULT;
 		//-------------------------------------------------
-		// Access Violation Error
+		// 2 - Delay Packet
 		} else if(errorCode == 2) {
-			faultType = UNDEFINED;
-			//TODO in later Iteration
+			faultType = DELAY_FAULT;
+			while(packetDelay == IRRELEVANT){
+				Log.out(
+					"Enter a delay time in ms:"
+				);
+				packetDelay = Integer.parseInt(scanner.nextLine().trim());
+			}
 		//-------------------------------------------------
-		// Disk Full or Allocation Exceeded Error
+		// 3 - Duplicate Packet
 		} else if(errorCode == 3) {
-			faultType = UNDEFINED;
-			//TODO in later Iteration
+			faultType = DUPLICATE_FAULT;
+			while(packetDelay == IRRELEVANT){
+				Log.out(
+					"Enter a delay time between duplicates in ms:"
+				);
+				packetDelay = Integer.parseInt(scanner.nextLine().trim());
+			}
 		//-------------------------------------------------
-		// Illegal TFTP operation Error
+		// 4 - Illegal TFTP operation Error
 		} else if(errorCode == 4){
 			if( packetType==READ_PACKET || packetType==WRITE_PACKET){
 				while(faultType == UNDEFINED){
@@ -311,7 +357,7 @@ public class ErrorScenario {
 				        default: Log.out("ERROR - Invalid Entry"); break;
 					}
 				}
-			} else if( packetType == ACK_PACKET || packetType == DATA_PACKET){
+			} else if( packetType == ACK_PACKET || packetType == DATA_PACKET || packetType == ERR_PACKET){
 				while(faultType == UNDEFINED){
 					Log.out(
 						"Select a Fault Case to Test:\n"
@@ -329,17 +375,11 @@ public class ErrorScenario {
 				}
 			}
 		//-------------------------------------------------
-		// Unknown Transfer ID Error
+		// 5 - Unknown Transfer ID Error
 		} else if(errorCode == 5){
 			faultType = SOURCE_FAULT;
 		//-------------------------------------------------
-		// File Already Exists Error
-		} else if(errorCode == 6) {
-			faultType = UNDEFINED;
-			//TODO in later Iteration
-		}
-		//-------------------------------------------------
-		return faultType;
+		} return faultType;
 	}
 	
 	/*************************************************************************/
@@ -348,58 +388,24 @@ public class ErrorScenario {
 	public int promptBlockNum(int errorCode, int packetType){
 		int blockNum = UNDEFINED;	
 		//-------------------------------------------------
-		// No Error
+		// 0 - No Error
 		if (errorCode == 0) {
 			blockNum = IRRELEVANT;
-		///-------------------------------------------------
-		// File not Found Error
-		} else if       (errorCode == 1) {
-			blockNum = UNDEFINED;
-			//TODO in later Iteration
 		//-------------------------------------------------
-		// Access Violation Error
-		} else if(errorCode == 2) {
-			blockNum = UNDEFINED;
-			//TODO in later Iteration
-		//-------------------------------------------------
-		// Disk Full or Allocation Exceeded Error
-		} else if(errorCode == 3) {
-			blockNum = UNDEFINED;
-			//TODO in later Iteration
-		//-------------------------------------------------
-		// Illegal TFTP operation Error
-		} else if(errorCode == 4){
-			if( packetType == READ_PACKET || packetType == WRITE_PACKET){
+		// 1-5 - All Cases
+		} else if ( 1 <= errorCode && errorCode <= 5) {
+			if( packetType == READ_PACKET || packetType == WRITE_PACKET || packetType == ERR_PACKET) { 
 				blockNum = IRRELEVANT;
-			} else {
+			} else { // Block Number only relevant for ack and data packets 
 				while(blockNum == UNDEFINED){
 					Log.out(
 						"Enter a packet number to trigger the fault:"
 					);
 					blockNum = Integer.parseInt(scanner.nextLine().trim());
 				}
-			}
+			} 
 		//-------------------------------------------------
-		// Unknown Transfer ID Error
-		} else if(errorCode == 5){
-			if( packetType == READ_PACKET || packetType == WRITE_PACKET){
-				blockNum = IRRELEVANT;
-			} else {
-				while(blockNum == UNDEFINED){
-					Log.out(
-						"Enter a packet number to trigger the fault:"
-					);
-					blockNum = Integer.parseInt(scanner.nextLine().trim());
-				}
-			}
-		//-------------------------------------------------
-		// File Already Exists Error
-		} else if(errorCode == 6) {
-			blockNum = UNDEFINED;
-			//TODO in later Iteration
-		}
-		//-------------------------------------------------
-		return blockNum;
+		} return blockNum;
 	}
 	/*************************************************************************/
 }
