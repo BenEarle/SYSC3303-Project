@@ -1,5 +1,6 @@
 import java.net.DatagramPacket;
 import util.UDPHelper;
+import util.Var;
 
 /*************************************************************************/
 //ClientResponseThread is abstract as it doesn't do anything on it's own. 
@@ -13,7 +14,7 @@ public abstract class ClientResponseThread extends Thread {
 	protected String file, mode;
 
 	ClientResponseThread(DatagramPacket initialPacket) {
-		udp = new UDPHelper();
+		udp = new UDPHelper(Var.TIMEOUT);
 		udp.setReturn(initialPacket);
 		udp.setTestSender(true);
 		unpack(initialPacket);
