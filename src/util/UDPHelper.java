@@ -117,7 +117,7 @@ public class UDPHelper {
 				
 				if(testSender && !(recPacket.getAddress().equals(IP) && recPacket.getPort() == port)){
 					//Send error code 5 and continue
-					//Change sending info for the senderror handler to use
+					//Change sending info for the send error handler to use
 					int correctPort = port;
 					InetAddress correctIP = IP; 
 					port = recPacket.getPort();
@@ -133,8 +133,8 @@ public class UDPHelper {
 				
 				return recPacket;
 			} catch (SocketTimeoutException ste) {
-				this.resendLastPacket();
-				// Nothing here.
+				if(sentPacket != null)
+					this.resendLastPacket();
 			} catch (SocketException e) {
 				// If the socket should be closed this is fine.
 				if (!closed || !e.getMessage().equals("socket closed")) {

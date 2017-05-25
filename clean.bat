@@ -1,3 +1,4 @@
-del src\testFile\s_*
-del src\testFile\server\c_*
+del testFile\s_*
+del testFile\server\c_*
 rmdir /s /q temp
+pause

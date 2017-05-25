@@ -25,7 +25,7 @@ public class Client {
 	Scanner reader;
 
 	public Client(InputStream in) throws SocketException {
-		udp = new UDPHelper(Var.TIMEOUT);
+		udp = new UDPHelper(true);
 
 		addrHost = new InetSocketAddress("localhost", Var.PORT_CLIENT);
 		addrServer = new InetSocketAddress("localhost", Var.PORT_SERVER);
