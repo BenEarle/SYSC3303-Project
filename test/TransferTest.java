@@ -1,7 +1,6 @@
 import static org.junit.Assert.*;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -13,6 +12,9 @@ import util.Log;
 import util.Var;
 
 public class TransferTest {
+	public static final String FILE_LOCATION = "testFiles/";
+	public static final String TEMP_LOCATION = "temp/";
+	
 	private static final String LANG_EXCEPTION = "Exception";
 	private static final String LANG_DISK_FULL = "Disk full, cannot complete opperation.";
 	private static final String LANG_PACKET_3 = "Error packet type 3 received.";
@@ -138,8 +140,8 @@ public class TransferTest {
 	 */
 	private void testWriteFile(String filename) throws Exception {
 		// Set test roots and build files to be used.
-		Var.CLIENT_ROOT = "src/testFile/server/";
-		Var.SERVER_ROOT = "temp/";
+		Var.CLIENT_ROOT = FILE_LOCATION;
+		Var.SERVER_ROOT = TEMP_LOCATION;
 		File fileClient = new File(Var.CLIENT_ROOT + filename);
 		File fileServer = new File(Var.SERVER_ROOT + filename);
 		if (fileServer.exists()) {
@@ -165,8 +167,8 @@ public class TransferTest {
 	 */
 	private void testReadFile(String filename) throws Exception {
 		// Set test roots and build files to be used.
-		Var.CLIENT_ROOT = "temp/";
-		Var.SERVER_ROOT = "src/testFile/server/";
+		Var.CLIENT_ROOT = TEMP_LOCATION;
+		Var.SERVER_ROOT = FILE_LOCATION;
 		File fileClient = new File(Var.CLIENT_ROOT + filename);
 		File fileServer = new File(Var.SERVER_ROOT + filename);
 		if (fileClient.exists()) {
@@ -188,7 +190,7 @@ public class TransferTest {
 	@Test
 	public void testFiles() throws Exception {
 		final int INTERATIONS = 1;
-		File folder = new File("src/testFile/server");
+		File folder = new File(FILE_LOCATION);
 		Log.enable(false);
 
 		// Run test on each file in the test directory.
@@ -209,10 +211,10 @@ public class TransferTest {
 
 	@Test
 	public void testConcurrent() throws Exception {
-		File folder = new File("src/testFile/server");
+		File folder = new File(FILE_LOCATION);
 		Log.enable(false);
-		Var.CLIENT_ROOT = "temp/";
-		Var.SERVER_ROOT = "src/testFile/server/";
+		Var.CLIENT_ROOT = TEMP_LOCATION;
+		Var.SERVER_ROOT = FILE_LOCATION;
 
 		// Run test on each file in the test directory.
 		ArrayList<Thread> t = new ArrayList<>();
@@ -302,8 +304,8 @@ public class TransferTest {
 		String filename = "c_jpg.jpg";
 		
 		// Set test roots and build files to be used.
-		Var.CLIENT_ROOT = "temp/";
-		Var.SERVER_ROOT = "src/testFile/";
+		Var.CLIENT_ROOT = TEMP_LOCATION;
+		Var.SERVER_ROOT = FILE_LOCATION;
 		File fileClient = new File(Var.CLIENT_ROOT + filename);
 		if (fileClient.exists()) {
 			fileClient.delete();
@@ -317,8 +319,8 @@ public class TransferTest {
 		String filename = "c_jpg.jpg";
 		
 		// Set test roots and build files to be used.
-		Var.CLIENT_ROOT = "src/testFile/";
-		Var.SERVER_ROOT = "temp/";
+		Var.CLIENT_ROOT = FILE_LOCATION;
+		Var.SERVER_ROOT = TEMP_LOCATION;
 		File fileServer = new File(Var.SERVER_ROOT + filename);
 		if (fileServer.exists()) {
 			fileServer.delete();
@@ -332,9 +334,8 @@ public class TransferTest {
 		String filename = "50mb.zip";
 
 		// Set test roots and build files to be used.
-		Var.CLIENT_ROOT = "src/testFile/";
-		Var.SERVER_ROOT = "temp/";
-		File fileClient = new File(Var.CLIENT_ROOT + filename);
+		Var.CLIENT_ROOT = FILE_LOCATION;
+		Var.SERVER_ROOT = TEMP_LOCATION;
 		File fileServer = new File(Var.SERVER_ROOT + filename);
 		if (fileServer.exists()) {
 			fileServer.delete();
@@ -369,10 +370,9 @@ public class TransferTest {
 		String filename = "50mb.zip";
 
 		// Set test roots and build files to be used.
-		Var.CLIENT_ROOT = "temp/";
-		Var.SERVER_ROOT = "src/testFile/";
+		Var.CLIENT_ROOT = TEMP_LOCATION;
+		Var.SERVER_ROOT = FILE_LOCATION;
 		File fileClient = new File(Var.CLIENT_ROOT + filename);
-		File fileServer = new File(Var.SERVER_ROOT + filename);
 		if (fileClient.exists()) {
 			fileClient.delete();
 		}
@@ -427,8 +427,8 @@ public class TransferTest {
 		String filename = "c_jpg.jpg";
 
 		// Set test roots and build files to be used.
-		Var.CLIENT_ROOT = "src/testFile/";
-		Var.SERVER_ROOT = "temp/";
+		Var.CLIENT_ROOT = FILE_LOCATION;
+		Var.SERVER_ROOT = TEMP_LOCATION;
 		File fileServer = new File(Var.SERVER_ROOT + filename);
 		if (fileServer.exists()) {
 			fileServer.delete();
@@ -446,8 +446,8 @@ public class TransferTest {
 		String filename = "c_jpg.jpg";
 
 		// Set test roots and build files to be used.
-		Var.CLIENT_ROOT = "temp/";
-		Var.SERVER_ROOT = "src/testFile/";
+		Var.CLIENT_ROOT = TEMP_LOCATION;
+		Var.SERVER_ROOT = FILE_LOCATION;
 		File fileClient = new File(Var.CLIENT_ROOT + filename);
 		if (fileClient.exists()) {
 			fileClient.delete();

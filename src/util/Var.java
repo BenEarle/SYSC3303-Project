@@ -12,8 +12,8 @@ public class Var {
 	public static final int BLOCK_SIZE  = 512;
 	public static final int TIMEOUT     = 1000;
 	
-	public static String CLIENT_ROOT = "src/testFile/";
-	public static String SERVER_ROOT = "src/testFile/server/";
+	public static String CLIENT_ROOT = "testFiles/";
+	public static String SERVER_ROOT = "testFiles/server/";
 
 	public static final byte[] READ  = new byte[] { 0, 1 };
 	public static final byte[] WRITE = new byte[] { 0, 2 };
