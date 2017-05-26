@@ -178,7 +178,7 @@ public class ErrorScenario {
 				"Select a TFTP Error Category:\n"
 			  + " [0] None\n"
 			  + " [1] Lose Packet\n"
-			  + " [2] Delay Packt\n"
+			  + " [2] Delay Packet\n"
 			  + " [3] Duplicate Packet\n"
 			  + " [4] Illegal TFTP operation (CODE 4)\n"
 			  + " [5] Unknown transfer ID (CODE 5)"
@@ -206,62 +206,8 @@ public class ErrorScenario {
 		if (errorCode == 0) {
 			packetType = IRRELEVANT;
 		//-------------------------------------------------
-		// 1 - Lose Packet
-		} else if (errorCode == 1) {
-			while(packetType == UNDEFINED){
-				Log.out(
-					"Select a Message Type to Test:\n"
-				  + " [1] DATA\n"
-				  + " [2] ACK\n"
-				  + " [3] ERR"
-				);
-				scanner = new Scanner(System.in);
-				switch(scanner.nextLine().trim()){
-					case "1": packetType = DATA_PACKET;  break;
-					case "2": packetType = ACK_PACKET;   break;
-					case "3": packetType = ERR_PACKET;   break;
-			        default: Log.out("ERROR - Invalid Entry"); break;
-				}
-			}
-		//-------------------------------------------------
-		// 2 - Delay Packet
-		} else if(errorCode == 2) {
-			while(packetType == UNDEFINED){
-				Log.out(
-					"Select a Message Type to Test:\n"
-				  + " [1] DATA\n"
-				  + " [2] ACK\n"
-				  + " [3] ERR"
-				);
-				scanner = new Scanner(System.in);
-				switch(scanner.nextLine().trim()){
-					case "1": packetType = DATA_PACKET;  break;
-					case "2": packetType = ACK_PACKET;   break;
-					case "3": packetType = ERR_PACKET;   break;
-			        default: Log.out("ERROR - Invalid Entry"); break;
-				}
-			}
-		//-------------------------------------------------
-		// 3 - Duplicate Packet
-		} else if(errorCode == 3) {
-			while(packetType == UNDEFINED){
-				Log.out(
-					"Select a Message Type to Test:\n"
-				  + " [1] DATA\n"
-				  + " [2] ACK\n"
-				  + " [3] ERR"
-				);
-				scanner = new Scanner(System.in);
-				switch(scanner.nextLine().trim()){
-					case "1": packetType = DATA_PACKET;  break;
-					case "2": packetType = ACK_PACKET;   break;
-					case "3": packetType = ERR_PACKET;   break;
-			        default: Log.out("ERROR - Invalid Entry"); break;
-				}
-			}
-		//-------------------------------------------------
-		// 4 - Illegal TFTP operation Error
-		} else if(errorCode == 4){
+		// 1,2,3,4 - Multiple Cases
+		} else if(1 <= errorCode && errorCode <= 4){
 			while(packetType == UNDEFINED){
 				Log.out(
 					"Select a Message Type to Test:\n"
