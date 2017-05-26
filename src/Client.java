@@ -188,7 +188,7 @@ public class Client {
 
 					// write the block to the file
 					try {
-						writer.write(packet.getData(), 4);
+						writer.write(packet.getData(), 4, packet.getLength());
 					} catch (IOException e) {
 						if (e.getMessage().equals("There is not enough space on the disk"))
 							TFTPErrorHelper.sendError(udp, (byte) 3, "Disk full, cannot complete opperation.");
