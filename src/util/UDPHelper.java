@@ -97,7 +97,7 @@ public class UDPHelper {
 	}
 
 	public void sendPacket(byte[] data) {
-		sentPacket = new DatagramPacket(data, data.length, IP, port);
+		sentPacket = new DatagramPacket(data.clone(), data.length, IP, port);
 		Log.packet("Sending Packet", sentPacket);
 		try {
 			socket.send(sentPacket);
