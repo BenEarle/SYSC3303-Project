@@ -126,7 +126,7 @@ public class UDPHelper {
 					//Correct state of ip and port
 					port = correctPort;
 					IP = correctIP;
-					return null;
+					return receivePacket();
 				} else if (!testSender) {
 					port = recPacket.getPort();
 				}
