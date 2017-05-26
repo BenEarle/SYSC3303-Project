@@ -140,7 +140,6 @@ public class Client {
 										// transfer
 		boolean lastPacket = false; // flag to indicate transfer is ending
 		byte[] data; // Data in packet
-		byte[] bytesToWrite; // Bytes to be written to file
 
 		// Initialize packet block number to receive first block of data
 		byte[] blockNum = new byte[2];
@@ -178,19 +177,18 @@ public class Client {
 						udp.setReturn(packet);
 						udp.setTestSender(true);
 					}
-					data = packet.getData();
 					// Log.packet("Client: Receiving READ DATA",
 					// udp.getLastPacket());
 
 					// Get bytes to write to file from packet
 
 					// Flag as last data packet if not full block size
-					if (data.length != Var.BUF_SIZE)
+					if (packet.getLength() != Var.BUF_SIZE)
 						lastPacket = true;
 
 					// write the block to the file
 					try {
-						writer.write(data, 4);
+						writer.write(packet.getData(), 4);
 					} catch (IOException e) {
 						if (e.getMessage().equals("There is not enough space on the disk"))
 							TFTPErrorHelper.sendError(udp, (byte) 3, "Disk full, cannot complete opperation.");
