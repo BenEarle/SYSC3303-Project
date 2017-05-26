@@ -90,11 +90,11 @@ public class ReadThread extends ClientResponseThread {
 				Integer check = TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]);
 				if (check == null) {
 					// Valid packet received, continue normally.
-					
+
 					// Get data from file
 					try {
 						data = fr.read(4);
-	
+
 						// Check if end of file has been reached.
 						if (fr.isClosed()) {
 							lastPacket = true;
@@ -109,10 +109,10 @@ public class ReadThread extends ClientResponseThread {
 						data = new byte[4]; // Empty Message.
 						lastPacket = true;
 					}
-	
+
 					// Increment Block Number
 					blockNum = bytesIncrement(blockNum);
-	
+
 					// Add OPCode to data.
 					data[0] = Var.DATA[0];
 					data[1] = Var.DATA[1];

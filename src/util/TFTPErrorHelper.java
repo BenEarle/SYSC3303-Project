@@ -196,6 +196,7 @@ public class TFTPErrorHelper {
 			return 4;
 		} else if (blockNum < expectedBlock) {
 			// This is a duplicate ack, ignore the packet it.
+			Log.out("Received a duplicate ACK " + blockNum + " packet, ignoring.");
 			return -1;
 		}
 		return null;

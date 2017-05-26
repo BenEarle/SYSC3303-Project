@@ -115,11 +115,11 @@ public class UDPHelper {
 				socket.receive(recPacket);
 				Log.packet("Packet Received", recPacket);
 				
-				if(testSender && !(recPacket.getAddress().equals(IP) && recPacket.getPort() == port)){
+				if(testSender && !(recPacket.getAddress().equals(IP) && recPacket.getPort() == port)) {
 					//Send error code 5 and continue
 					//Change sending info for the send error handler to use
 					int correctPort = port;
-					InetAddress correctIP = IP; 
+					InetAddress correctIP = IP;
 					port = recPacket.getPort();
 					IP = recPacket.getAddress();
 					TFTPErrorHelper.sendError(this, (byte) 5, "Invalid sender. Was expecting a response from: " + IP.toString() + ":" + port);

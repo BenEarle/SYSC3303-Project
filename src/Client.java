@@ -283,6 +283,7 @@ public class Client {
 						}
 					} catch (IOException e) {
 						TFTPErrorHelper.sendError(udp, (byte) 2, "Access denied for " + fileName + ".");
+						udp.setTestSender(false);
 						return;
 					}
 
@@ -307,6 +308,10 @@ public class Client {
 					udp.setTestSender(false);
 					return;
 				}
+			} else {
+				System.out.println("Connection timed out, file transfer failed.");
+				udp.setTestSender(false);
+				return;
 			}
 		}
 

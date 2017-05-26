@@ -198,9 +198,10 @@ public class TransferTest {
 			for (File f : folder.listFiles()) {
 				if (f.isFile()) {
 					String filename = f.getName();
-					System.out.println("\n---------------------\nTesting '" + filename + "'\n---------------------\n");
+					System.out.println("\n---------------------\nTesting WRITE '" + filename + "'\n---------------------\n");
 					testWriteFile(filename);
 					runServer(null);
+					System.out.println("\n---------------------\nTesting READ '" + filename + "'\n---------------------\n");
 					testReadFile(filename);
 					runServer(null);
 				}
