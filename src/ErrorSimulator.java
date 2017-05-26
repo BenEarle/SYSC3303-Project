@@ -55,6 +55,88 @@ public class ErrorSimulator {
 	}
 	
 	/*************************************************************************/
+	// Lose a Packet
+	/*************************************************************************/
+	public DatagramPacket lose(DatagramPacket packet) throws IOException {
+		// Do nothing with this data packet, just wait to receive another one from the same place
+		if(nextSendToClient){
+			// Wait for another data packet from the Server
+			packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
+			socServer.receive(packet);
+			Log.packet("ErrorSimulatorChannel: Receiving - Server -> ErrorSim", packet);
+			packet.setSocketAddress(addrClient); // update the address
+		} else {
+			// Wait for another data packet from the Client
+			packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
+			socClient.receive(packet);
+			Log.packet("ErrorSimulatorChannel: Receiving - Client -> ErrorSim", packet);
+			packet.setSocketAddress(addrServer); // update the address
+		}	
+		return packet;
+	}
+	
+	/*************************************************************************/
+	// Delay a Packet
+	/*************************************************************************/
+	public DatagramPacket delay(DatagramPacket packet) throws IOException {
+		Thread delayThread;
+		if(nextSendToClient){ 
+			// Create a thread to send a message to Client after a delay
+			delayThread = new DelayedSendThread(err.getDelay(), packet, socClient, "ErrorSimulatorChannel: Sending delayed Packet - ErrorSim -> Client");
+			delayThread.start();
+			// If delay is longer than timeout, expect another packet from the server to be sent in place
+			if(err.getDelay() > Var.TIMEOUT){
+				packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
+				socServer.receive(packet);
+				Log.packet("ErrorSimulatorChannel: Receiving - Server -> ErrorSim", packet);
+				packet.setSocketAddress(addrClient);
+			// Otherwise, just delay thread for duration of delay
+			} else {
+				try {Thread.sleep(err.getDelay());} 
+				catch (InterruptedException e) { e.printStackTrace(); }
+				packet = null; // don't send this packet, it will be sent by the thread
+			}
+		} else {
+			// Create a thread to send a message to Server after a delay
+			delayThread = new DelayedSendThread(err.getDelay(), packet, socServer, "ErrorSimulatorChannel: Sending delayed Packet - ErrorSim -> Server");
+			delayThread.start();
+			// If delay is longer than timeout, expect another packet from the client to be sent in place
+			if(err.getDelay() > Var.TIMEOUT){
+				packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
+				socClient.receive(packet);
+				Log.packet("ErrorSimulatorChannel: Receiving - Client -> ErrorSim", packet);
+				//display(packet);
+				packet.setSocketAddress(addrServer);
+			// Otherwise, just delay thread for duration of delay
+			} else {
+				try {Thread.sleep(err.getDelay());} 
+				catch (InterruptedException e) { e.printStackTrace(); }
+				packet = null; // don't send this packet, it will be sent by the thread
+			}
+		}
+		return packet;
+	}
+	
+	/*************************************************************************/
+	// Duplicate a Packet
+	/*************************************************************************/
+	public DatagramPacket duplicate(DatagramPacket packet) throws IOException {
+		Thread delayThread;
+		// Create a thread to send a message to client after a delay
+		if(nextSendToClient){ 
+			delayThread = new DelayedSendThread(err.getDelay(), packet, socClient, "ErrorSimulatorChannel: Sending delayed Packet - ErrorSim -> Client");
+		// Create a thread to send a message to server after a delay
+		} else {
+			delayThread = new DelayedSendThread(err.getDelay(), packet, socServer, "ErrorSimulatorChannel: Sending delayed Packet - ErrorSim -> Server");
+		}					
+		delayThread.start();
+		// Copy original packet
+		DatagramPacket newPacket = new DatagramPacket( packet.getData(), packet.getLength(), packet.getAddress(), packet.getPort());
+		newPacket.setData(packet.getData(),0,packet.getLength());
+		return newPacket; //send other packet normally
+		
+	}
+	/*************************************************************************/
 	// This method checks a packet for the existing conditions described in the
 	// error scenario. If the correct scenario is present, the error scenario
 	// is triggered 
@@ -62,199 +144,36 @@ public class ErrorSimulator {
 	private DatagramPacket checkTrigger(DatagramPacket packet) throws IOException{
 		
 		if(triggered) return packet; // only proceed if scenario not yet triggered
-		// ----------------------------------------------	
+		
 		byte[] data = packet.getData();
-		// ----------------------------------------------	
+		
 		// Trigger an error for a RRQ packet
-		// ----------------------------------------------	
 		if( data[1]==Var.READ[1] && err.getPacketType()==ErrorScenario.READ_PACKET){
 			triggered = true;
-			Log.out("ErrorSimulatorChannel: READ Packet sabotaged with "+ErrorScenario.FAULT[err.getFaultType()]+" Fault");
-			packet = err.Sabotage(packet);
-		}
-		// ----------------------------------------------	
+			Log.out("ErrorSimulatorChannel: READ Packet sabotaged with "+ErrorScenario.FAULT[err.getFaultType()]+" Fault");	
 		// Trigger an error for a WRQ packet
-		// ----------------------------------------------	
-		if( data[1]==Var.WRITE[1]  && err.getPacketType()==ErrorScenario.WRITE_PACKET){
+		} else if( data[1]==Var.WRITE[1]  && err.getPacketType()==ErrorScenario.WRITE_PACKET){
 			triggered = true;
 			Log.out("ErrorSimulatorChannel: WRITE Packet sabotaged with "+ErrorScenario.FAULT[err.getFaultType()] +" Fault");
-			packet = err.Sabotage(packet);
-		}
-		// ----------------------------------------------	
 		// Trigger an error for a Specific DATA packet
-		// ----------------------------------------------	
-		if( data[1]==Var.DATA[1] && err.getPacketType()==ErrorScenario.DATA_PACKET && getBlockNum(packet)==err.getBlockNum() ){
+		} else if( data[1]==Var.DATA[1] && err.getPacketType()==ErrorScenario.DATA_PACKET && getBlockNum(packet)==err.getBlockNum() ){
 			triggered = true;
 			Log.out("ErrorSimulatorChannel: DATA Packet #"+err.getBlockNum()+" sabotaged with "+ErrorScenario.FAULT[err.getFaultType()] +" Fault");
-			// ----------------------------------------------	
-			// 1 -- Lose a Data Packet
-			if ( err.getErrorCode()==1 ){
-				// Do nothing with this data packet, just wait to receive another one from the same place
-				if(nextSendToClient){
-					// RRQ -> wait for another data packet from the Server
-					packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
-					socServer.receive(packet);
-					Log.packet("ErrorSimulatorChannel: Receiving - Server -> ErrorSim", packet);
-					packet.setSocketAddress(addrClient); // update the address
-				} else {
-					// WRQ -> wait for another data packet from the Client
-					packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
-					socClient.receive(packet);
-					Log.packet("ErrorSimulatorChannel: Receiving - Client -> ErrorSim", packet);
-					packet.setSocketAddress(addrServer); // update the address
-				}	
-			// ----------------------------------------------	
-			// 2 -- Delay a Data Packet 
-			} else if( err.getErrorCode()==2 ) {
-				Thread delayThread;
-				if(nextSendToClient){ 
-					// RRQ -> Create a thread to send a message to Client after a delay
-					delayThread = new DelayedSendThread(err.getDelay(), packet, socClient, "ErrorSimulatorChannel: Sending delayed Packet - ErrorSim -> Client");
-					delayThread.start();
-					// If delay is longer than timeout, expect another packet from the server to be sent in place
-					if(err.getDelay() > Var.TIMEOUT){
-						packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
-						socServer.receive(packet);
-						Log.packet("ErrorSimulatorChannel: Receiving - Server -> ErrorSim", packet);
-						packet.setSocketAddress(addrClient);
-					// Otherwise, just delay thread for duration of delay
-					} else {
-						try {Thread.sleep(err.getDelay());} 
-						catch (InterruptedException e) { e.printStackTrace(); }
-						packet = null; // don't send this packet, it will be sent by the thread
-					}
-				} else {
-					// WRQ -> Create a thread to send a message to Server after a delay
-					delayThread = new DelayedSendThread(err.getDelay(), packet, socServer, "ErrorSimulatorChannel: Sending delayed Packet - ErrorSim -> Server");
-					delayThread.start();
-					// If delay is longer than timeout, expect another packet from the client to be sent in place
-					if(err.getDelay() > Var.TIMEOUT){
-						packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
-						socClient.receive(packet);
-						Log.packet("ErrorSimulatorChannel: Receiving - Client -> ErrorSim", packet);
-						//display(packet);
-						packet.setSocketAddress(addrServer);
-					// Otherwise, just delay thread for duration of delay
-					} else {
-						try {Thread.sleep(err.getDelay());} 
-						catch (InterruptedException e) { e.printStackTrace(); }
-						packet = null; // don't send this packet, it will be sent by the thread
-					}
-				}
-			// ----------------------------------------------	
-			// 3 -- Duplicate a Data Packet 
-			} else if( err.getErrorCode()==3 ) {
-				Thread delayThread;
-				// RRQ -> Create a thread to send a message to client after a delay
-				if(nextSendToClient){ 
-					delayThread = new DelayedSendThread(err.getDelay(), packet, socClient, "ErrorSimulatorChannel: Sending delayed Packet - ErrorSim -> Client");
-				// WRQ -> Create a thread to send a message to server after a delay
-				} else {
-					delayThread = new DelayedSendThread(err.getDelay(), packet, socServer, "ErrorSimulatorChannel: Sending delayed Packet - ErrorSim -> Server");
-				}					
-				delayThread.start();
-				// Copy original packet
-				DatagramPacket newPacket = new DatagramPacket( packet.getData(), packet.getLength(), packet.getAddress(), packet.getPort());
-				newPacket.setData(packet.getData(),0,packet.getLength());
-				packet = newPacket; //send other packet normally
-			// ----------------------------------------------	
-			// 4,5 -- Sabotage a Packet 
-			} else {
-				packet = err.Sabotage(packet);
-			}
-		} 
-		// ----------------------------------------------	
 		// Trigger an error for a Specific ACK packet
-		// ----------------------------------------------	
-		if( data[1]==Var.ACK[1] && err.getPacketType()==ErrorScenario.ACK_PACKET && getBlockNum(packet)==err.getBlockNum() ){
+		} else if( data[1]==Var.ACK[1] && err.getPacketType()==ErrorScenario.ACK_PACKET && getBlockNum(packet)==err.getBlockNum() ){
 			triggered = true;
 			Log.out("ErrorSimulatorChannel: ACK Packet #" +err.getBlockNum()+" sabotaged with "+ErrorScenario.FAULT[err.getFaultType()] +" Fault");
-			// ----------------------------------------------	
-			// 1 -- Lose an Ack Packet
-			if ( err.getErrorCode()==1 ){
-				// Do nothing with this ack packet, just wait to receive another one from the same place
-				if(nextSendToClient){
-					// WRQ -> wait for another ack packet from the Server
-					packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
-					socServer.receive(packet);
-					Log.packet("ErrorSimulatorChannel: Receiving - Server -> ErrorSim", packet);
-					packet.setSocketAddress(addrClient); // update the address
-					//send this packet normally
-				} else {
-					// RRQ -> wait for another ack packet from the Client
-					packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
-					socClient.receive(packet);
-					Log.packet("ErrorSimulatorChannel: Receiving - Client -> ErrorSim", packet);
-					packet.setSocketAddress(addrServer); // update the address
-					//send this packet normally
-				}	
-			// ----------------------------------------------	
-			// 2 -- Delay an Ack Packet 
-			} else if( err.getErrorCode()==2 ) {
-				Thread delayThread;
-				if(nextSendToClient){ 
-					// WRQ -> Create a thread to send an ack to Client after a delay
-					delayThread = new DelayedSendThread(err.getDelay(), packet, socClient, "ErrorSimulatorChannel: Sending delayed Packet - ErrorSim -> Client");
-					delayThread.start();
-					// If delay is longer than timeout, expect another packet from the server to be sent in place
-					if(err.getDelay() > Var.TIMEOUT){
-						packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
-						socServer.receive(packet);
-						Log.packet("ErrorSimulatorChannel: Receiving - Server -> ErrorSim", packet);
-						packet.setSocketAddress(addrClient);
-					// Otherwise, just delay thread for duration of delay
-					} else {
-						try {Thread.sleep(err.getDelay());} 
-						catch (InterruptedException e) { e.printStackTrace(); }
-						packet = null; // don't send this packet, it will be sent by the thread
-					}
-				} else {
-					// RRQ -> Create a thread to send an ack to Server after a delay
-					delayThread = new DelayedSendThread(err.getDelay(), packet, socServer, "ErrorSimulatorChannel: Sending delayed Packet delayed Packet - ErrorSim -> Server");
-					delayThread.start();
-					// If delay is longer than timeout, expect another packet from the client to be sent in place
-					if(err.getDelay() > Var.TIMEOUT){
-						packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
-						socClient.receive(packet);
-						Log.packet("ErrorSimulatorChannel: Receiving - Client -> ErrorSim", packet);
-						//display(packet);
-						packet.setSocketAddress(addrServer);
-					// Otherwise, just delay thread for duration of delay
-					} else {
-						try {Thread.sleep(err.getDelay());} 
-						catch (InterruptedException e) { e.printStackTrace(); }
-						packet = null; // don't send this packet, it will be sent by the thread
-					}
-				}
-			// ----------------------------------------------	
-			// 3 -- Duplicate an Ack Packet 
-			} else if( err.getErrorCode()==3 ) {
-				Thread delayThread;
-				// WRQ -> Create a thread to send a message to client after a delay
-				if(nextSendToClient){ 
-					delayThread = new DelayedSendThread(err.getDelay(), packet, socClient, "ErrorSimulatorChannel: Sending delayed Packet - ErrorSim -> Client");
-				// RRQ -> Create a thread to send a message to server after a delay
-				} else {
-					delayThread = new DelayedSendThread(err.getDelay(), packet, socServer, "ErrorSimulatorChannel: Sending delayed Packet - ErrorSim -> Server");
-				}					
-				delayThread.start();
-				// Copy original packet
-				DatagramPacket newPacket = new DatagramPacket( packet.getData(), packet.getLength(), packet.getAddress(), packet.getPort());
-				newPacket.setData(packet.getData(),0,packet.getLength());
-				packet = newPacket; //send other packet normally
-			// ----------------------------------------------	
-			// 4,5 -- Sabotage a Packet 
-			} else {
-				packet = err.Sabotage(packet);
-			}
-		}		
-		// ----------------------------------------------	
 		// Trigger an error for an ERROR packet
-		// ----------------------------------------------	
-		if( data[1] == Var.ERROR[1]  && err.getPacketType()==ErrorScenario.ERR_PACKET){
+		} else if( data[1] == Var.ERROR[1]  && err.getPacketType()==ErrorScenario.ERR_PACKET){
 			triggered = true;
 			Log.out("ErrorSimulatorChannel: ERR Packet #"+err.getBlockNum()+" sabotaged with "+ErrorScenario.FAULT[err.getFaultType()] +" Fault");
-			packet = err.Sabotage(packet);
+		}
+		// Run error case if triggered
+		if(triggered){
+			if     ( err.getErrorCode()==1 ) packet = lose(packet);
+			else if( err.getErrorCode()==2 ) packet = delay(packet); 
+			else if( err.getErrorCode()==3 ) packet = duplicate(packet);	
+			else                             packet = err.Sabotage(packet);	
 		}
 		return packet;
 	}
@@ -263,7 +182,7 @@ public class ErrorSimulator {
 	// This method checks the received packet and sets program behavior 
 	// accordingly. Return true to proceed, false to keep receiving
 	/*************************************************************************/
-	public boolean parsePacket(DatagramPacket packet){
+	public boolean parsePacket(DatagramPacket packet) throws IOException{
 		byte[] data = packet.getData();
 		// RRQ
 		if(data[0]==Var.READ[0] && data[1]==Var.READ[1]){
@@ -294,13 +213,11 @@ public class ErrorSimulator {
 				Log.out("ErrorSimulatorChannel: Forwarding Unexpected Block");
 				if( nextSendToClient ){ // forward to server
 					packet.setSocketAddress(addrServer);
-					try { socServer.send(packet); } 
-					catch (IOException e) { e.printStackTrace(); }
+					socServer.send(packet);
 					Log.packet("ErrorSimulatorChannel: Sending - ErrorSim -> Server", packet); //display(packet);
 				} else { // forward to client
 					packet.setSocketAddress(addrClient);
-					try { socClient.send(packet); } 
-					catch (IOException e) { e.printStackTrace(); }
+					socClient.send(packet);
 					Log.packet("ErrorSimulatorChannel: Sending - ErrorSim -> Client", packet); //display(packet);
 				}
 				return false;
@@ -320,13 +237,11 @@ public class ErrorSimulator {
 				Log.out("ErrorSimulatorChannel: Forwarding Unexpected Block");
 				if( nextSendToClient ){ // forward to server
 					packet.setSocketAddress(addrServer);
-					try { socServer.send(packet); } 
-					catch (IOException e) { e.printStackTrace(); }
+					socServer.send(packet);
 					Log.packet("ErrorSimulatorChannel: Sending - ErrorSim -> Server", packet); //display(packet);
 				} else { // forward to client
 					packet.setSocketAddress(addrClient);
-					try { socClient.send(packet); } 
-					catch (IOException e) { e.printStackTrace(); }
+					socClient.send(packet);
 					Log.packet("ErrorSimulatorChannel: Sending - ErrorSim -> Client", packet); //display(packet);
 				}
 				return false;
@@ -437,10 +352,8 @@ public class ErrorSimulator {
 	public void run() throws IOException {
 		running = true;
 		while (running) {
-			
 			err = new ErrorScenario(); //create a new scenario after every transfer
-			Log.out("Creating new channel between the Client and Server");
-			
+			Log.out("Running a new channel between the Client and Server");
 			runChannel();
 		}
 	}

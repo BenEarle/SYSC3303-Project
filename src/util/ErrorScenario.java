@@ -271,7 +271,11 @@ public class ErrorScenario {
 				Log.out(
 					"Enter a delay time in ms:"
 				);
-				packetDelay = Integer.parseInt(scanner.nextLine().trim());
+				try {
+					packetDelay = Integer.parseInt(scanner.nextLine().trim());
+				} catch( Exception e) {
+					packetDelay = Integer.parseInt(scanner.nextLine().trim());
+				}
 			}
 		//-------------------------------------------------
 		// 3 - Duplicate Packet
@@ -281,7 +285,11 @@ public class ErrorScenario {
 				Log.out(
 					"Enter a delay time between duplicates in ms:"
 				);
-				packetDelay = Integer.parseInt(scanner.nextLine().trim());
+				try {
+					packetDelay = Integer.parseInt(scanner.nextLine().trim());
+				} catch( Exception e) {
+					packetDelay = Integer.parseInt(scanner.nextLine().trim());
+				}
 			}
 		//-------------------------------------------------
 		// 4 - Illegal TFTP operation Error
@@ -347,7 +355,11 @@ public class ErrorScenario {
 					Log.out(
 						"Enter a packet number to trigger the fault:"
 					);
-					blockNum = Integer.parseInt(scanner.nextLine().trim());
+					try {
+						blockNum = Integer.parseInt(scanner.nextLine().trim());
+					} catch(Exception e) {
+						blockNum = Integer.parseInt(scanner.nextLine().trim());
+					}
 				}
 			} 
 		//-------------------------------------------------
