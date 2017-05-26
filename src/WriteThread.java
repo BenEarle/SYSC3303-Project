@@ -110,6 +110,16 @@ public class WriteThread extends ClientResponseThread {
 					super.close();
 					return;
 				}
+			} else {
+				System.out.println("Server<WriteThread>: Connection timed out, file transfer failed.");
+				if (fw != null)
+					try {
+						fw.abort();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				super.close();
+				return;
 			}
 		}
 

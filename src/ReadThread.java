@@ -135,6 +135,10 @@ public class ReadThread extends ClientResponseThread {
 					super.close();
 					return;
 				}
+			} else {
+				System.out.println("Server<ReadThread>: Connection timed out, file transfer failed.");
+				super.close();
+				return;
 			}
 		}
 

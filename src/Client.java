@@ -200,6 +200,9 @@ public class Client {
 						} catch (IOException e1) {
 							e1.printStackTrace();
 						}
+						udp.setTestSender(false);
+						if (writer != null)
+							writer.abort();
 						return;
 					}
 
@@ -219,6 +222,12 @@ public class Client {
 						writer.abort();
 					return;
 				}
+			} else {
+				System.out.println("Connection timed out, file transfer failed.");
+				udp.setTestSender(false);
+				if (writer != null)
+					writer.abort();
+				return;
 			}
 		}
 		System.out.println("Client: Read Operation Successful");
@@ -317,7 +326,7 @@ public class Client {
 
 		// Receive final ACK packet
 		packet = udp.receivePacket();
-		if (packet == null) System.out.println("Server<ReadThread>: Server never recieved the final ack packet, please check the validity of the transfer.");
+		if (packet == null) System.out.println("Never recieved the final acknowledgement, please check the validity of the transfer.");
 		else if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
 			if (TFTPErrorHelper.isError(packet.getData()))
 				TFTPErrorHelper.unPackError(packet);
