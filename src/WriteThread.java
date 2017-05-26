@@ -35,20 +35,20 @@ public class WriteThread extends ClientResponseThread {
 	
 	public void run() {
 		DatagramPacket packet;
+		FileWriter fw = null;
 		byte[] data;
 		byte[] ack = Var.ACK_WRITE.clone(); // initial ack message
 
-		// Open FileWriter
-		FileWriter fw = null;
-
 		// Send initial Acknowledge
 		super.sendPacket(ack);
+		ack = ackIncrement(ack);
 		boolean firstData = true;
 		// Loop until all packets are received
 		while(true) {
 			// receive packet
 			packet = super.receivePacket();
 			if (packet != null) {
+				// If this is the first data open up the file writer.
 				if (firstData) {
 					firstData = false;
 					try {
@@ -63,11 +63,41 @@ public class WriteThread extends ClientResponseThread {
 						return;
 					}
 				}
-	
-				data = packet.getData();
-				if(data[2] * 256 + data[3] == ack[2] * 256 + ack[3] + 1)
+				
+				// Check the data packet is valid.
+				Integer check = TFTPErrorHelper.dataPacketChecker(udp, packet, ack[2] * 256 + ack[3]);
+				if (check == null) {
+					// Valid packet received, continue normally.
+					
+					// Write the block to the file
+					try {
+						fw.write(packet.getData(), 4, packet.getLength());
+					} catch (IOException e) {
+						if (e.getMessage().equals("There is not enough space on the disk"))
+							TFTPErrorHelper.sendError(udp, (byte) 3, "Disk full, cannot complete operation.");
+						else
+							TFTPErrorHelper.sendError(udp, (byte) 3, "File writing exception: " + e.getMessage());
+						
+						try {
+							fw.abort();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+						super.close();
+						return;
+					}
+					
+					// Send the ack packet, then increment the ack block number.
+					super.sendPacket(ack);
 					ack = ackIncrement(ack);
-				if (TFTPErrorHelper.dataPacketChecker(udp, packet, ack[2] * 256 + ack[3]) != null) {
+					if (packet.getLength() != Var.BUF_SIZE) {
+						break;
+					}
+				} else if (check == -1) {
+					// Ignore the packet.
+				} else {
+					// Unrecoverable error encountered, send error packet and exit.
+					
 					//System.out.println("Server<ReadThread>: Invalid data packet.");
 					if (TFTPErrorHelper.isError(packet.getData()))
 						TFTPErrorHelper.unPackError(packet);
@@ -79,26 +109,6 @@ public class WriteThread extends ClientResponseThread {
 						}
 					super.close();
 					return;
-				}
-	
-				// Write the block to the file
-				try {
-					fw.write(data, 4, packet.getLength());
-				} catch (IOException e) {
-					if (e.getMessage().equals("There is not enough space on the disk"))
-						TFTPErrorHelper.sendError(udp, (byte) 3, "Disk full, cannot complete opperation.");
-					try {
-						fw.abort();
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
-					return;
-				}
-				
-		 
-				super.sendPacket(ack);
-				if (packet.getLength() != Var.BUF_SIZE) {
-					break;
 				}
 			}
 		}

@@ -47,7 +47,7 @@ public class ControlThread extends Thread {
 						close();
 					}
 					Log.out("SERVER<ControlThread>: Waiting to receive a packet...");
-				}else {
+				} else {
 					//Do we care about the code???
 					if (packet.getData()[1] == 5)
 						TFTPErrorHelper.unPackError(packet);

@@ -3,3 +3,4 @@
 testFiles/s_*
 testFiles/server/c_*
 *.db
+testFiles/server/50MB.zip

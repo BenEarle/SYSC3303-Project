@@ -167,7 +167,53 @@ public class Client {
 			// Create packet then receive and get info from packet
 			packet = udp.receivePacket();
 			if (packet != null) {
-				if (TFTPErrorHelper.dataPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
+				// Check the data packet is valid.
+				Integer check = TFTPErrorHelper.dataPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]);
+				if (check == null) {
+					// Valid packet received, continue normally.
+					
+					if (firstData) {
+						firstData = false;
+						// Save address to send response to
+						udp.setReturn(packet);
+						udp.setTestSender(true);
+					}
+					data = packet.getData();
+					// Log.packet("Client: Receiving READ DATA",
+					// udp.getLastPacket());
+
+					// Get bytes to write to file from packet
+
+					// Flag as last data packet if not full block size
+					if (data.length != Var.BUF_SIZE)
+						lastPacket = true;
+
+					// write the block to the file
+					try {
+						writer.write(data, 4);
+					} catch (IOException e) {
+						if (e.getMessage().equals("There is not enough space on the disk"))
+							TFTPErrorHelper.sendError(udp, (byte) 3, "Disk full, cannot complete opperation.");
+						else
+							TFTPErrorHelper.sendError(udp, (byte) 3, "File writing exception: " + e.getMessage());
+
+						try {
+							writer.abort();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+						return;
+					}
+
+					// Send the acknowledge packet
+					udp.sendPacket(makeData(Var.ACK, blockNum));
+					blockNum = bytesIncrement(blockNum);
+					// Log.packet("Client: Sending READ ACK", udp.getLastPacket());
+				} else if (check == -1) {
+					// Ignore the packet.
+				} else {
+					// Unrecoverable error encountered, send error packet and exit.
+					
 					if (TFTPErrorHelper.isError(packet.getData()))
 						TFTPErrorHelper.unPackError(packet);
 					udp.setTestSender(false);
@@ -175,39 +221,6 @@ public class Client {
 						writer.abort();
 					return;
 				}
-				if (firstData) {
-					firstData = false;
-					// Save address to send response to
-					udp.setReturn(packet);
-					udp.setTestSender(true);
-				}
-				data = packet.getData();
-				// Log.packet("Client: Receiving READ DATA",
-				// udp.getLastPacket());
-
-				// Get bytes to write to file from packet
-				bytesToWrite = new byte[packet.getLength() - 4];
-				System.arraycopy(data, 4, bytesToWrite, 0, bytesToWrite.length);
-
-				// Flag as last data packet if not full block size
-				if (bytesToWrite.length != Var.BLOCK_SIZE)
-					lastPacket = true;
-
-				// write the block to the file
-				try {
-					writer.write(bytesToWrite);
-				} catch (IOException e) {
-				//	System.out.println(e.getMessage());
-					if(e.getMessage().equals("There is not enough space on the disk"))
-						TFTPErrorHelper.sendError(udp, (byte) 3, "Disk full, cannot complete opperation.");
-					writer.abort();
-					return;
-				}
-
-				// Send the acknowledge packet
-				udp.sendPacket(makeData(Var.ACK, blockNum));
-				blockNum = bytesIncrement(blockNum);
-				// Log.packet("Client: Sending READ ACK", udp.getLastPacket());
 			}
 		}
 		System.out.println("Client: Read Operation Successful");
@@ -250,47 +263,52 @@ public class Client {
 			// Create packet then receive and get info from packet
 			packet = udp.receivePacket();
 			if (packet != null) {
-				if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
+				// Check the ack packet is valid.
+				Integer check = TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]);
+				if (check == null) {
+					// Valid packet received, continue normally.
+					
+					if (firstPacket) {
+						// Save address to send data to
+						udp.setReturn(packet);
+						udp.setTestSender(true);
+						firstPacket = false;
+					}
+
+					// Get data from file and check if length read is less than
+					// full block size
+					try {
+						data = reader.read(4);
+
+						if (reader.isClosed()) {
+							lastPacket = true;
+						}
+					} catch (IOException e) {
+						TFTPErrorHelper.sendError(udp, (byte) 2, "Access denied for " + fileName + ".");
+						return;
+					}
+
+					// Increment Block Number
+					blockNum = bytesIncrement(blockNum);
+					
+					// Add OPCode to data.
+					data[0] = Var.DATA[0];
+					data[1] = Var.DATA[1];
+					data[2] = blockNum[0];
+					data[3] = blockNum[1];
+
+					// Send write data to Server
+					udp.sendPacket(data);
+					// Log.packet("Client: Sending WRITE Data",
+					// udp.getLastPacket());
+				} else if (check == -1) {
+					// Ignore the packet.
+				} else {
 					if (TFTPErrorHelper.isError(packet.getData()))
 						TFTPErrorHelper.unPackError(packet);
 					udp.setTestSender(false);
 					return;
 				}
-
-				if (firstPacket) {
-					// Save address to send data to
-					udp.setReturn(packet);
-					udp.setTestSender(true);
-					firstPacket = false;
-				}
-				data = packet.getData();
-				if((data[2] * 256 + data[3]) == (blockNum[0] * 256 + blockNum[1]))
-					blockNum = bytesIncrement(blockNum);
-
-				// Get data from file and check if length read is less than
-				// full block size
-				try {
-					data = reader.read(4);
-
-					if (reader.isClosed()) {
-						lastPacket = true;
-					}
-				} catch (IOException e) {
-					TFTPErrorHelper.sendError(udp, (byte) 2, "Access denied for " + fileName + ".");
-					return;
-				}
-				
-				// Add OPCode to data.
-				data[0] = Var.DATA[0];
-				data[1] = Var.DATA[1];
-				data[2] = blockNum[0];
-				data[3] = blockNum[1];
-
-				// Send write data to Server
-				udp.sendPacket(data);
-				// Log.packet("Client: Sending WRITE Data",
-				// udp.getLastPacket());
-
 			}
 		}
 

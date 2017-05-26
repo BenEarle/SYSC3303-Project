@@ -145,20 +145,21 @@ public class TFTPErrorHelper {
 		}
 		int blockNum = data[2] * 256 + data[3];
 
-		// Unexpected block number 
-		// 
+		//System.out.println("DATA: " + blockNum + "  " + expectedBlock);
+		// Unexpected block number
 		if(blockNum < expectedBlock){
-			// Re-send the ACK packet with "blockNum"
+			// This is a duplicate data, resend the ack packet with the correct block number.
 			byte[] d = Var.ACK_WRITE.clone();
 			d[2] = data[2];
 			d[3] = data[3];
 			Log.out("Received a duplicate DATA packet. Resending ACK " + blockNum + ".");
 			u.sendPacket(d);
-			return null;
-		}
-		if (blockNum > expectedBlock) {	
+			return -1;
+		} else if (blockNum > expectedBlock) {
+			sendError(u, (byte) 0x04, "Recv wrong block number");
 			return 4;
 		}
+		
 		return null;
 	}
 	
@@ -188,14 +189,15 @@ public class TFTPErrorHelper {
 
 		int blockNum = data[2] * 256 + data[3];
 
-		// Unexpected block number 
-		// 
+		//System.out.println("ACK:  " + blockNum + "  " + expectedBlock);
+		// Unexpected block number
 		if (blockNum > expectedBlock) {	
 			sendError(u, (byte) 0x04, "ACK wrong block number");
 			return 4;
+		} else if (blockNum < expectedBlock) {
+			// This is a duplicate ack, ignore the packet it.
+			return -1;
 		}
-//			THIS MUST BE DUPLICATE ACK 
-//			Ignore the packet.
 		return null;
 	}
 
@@ -209,6 +211,7 @@ public class TFTPErrorHelper {
 		System.arraycopy(message.getBytes(), 0, data, 4, message.length());
 		Log.err(Log.bString(data).trim());
 		// send the packet back to the person who sent us the wrong message
+		System.out.println(Log.bBytes(data));
 		u.sendPacket(data);
 	}
 

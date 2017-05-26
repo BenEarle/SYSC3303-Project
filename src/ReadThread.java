@@ -86,7 +86,11 @@ public class ReadThread extends ClientResponseThread {
 			Log.out("Server<ReadThread>: Receiving ACK Data");
 			packet = super.receivePacket();
 			if (packet != null) {
-				if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) == null) {
+				// Check the ack packet is valid.
+				Integer check = TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]);
+				if (check == null) {
+					// Valid packet received, continue normally.
+					
 					// Get data from file
 					try {
 						data = fr.read(4);
@@ -95,7 +99,7 @@ public class ReadThread extends ClientResponseThread {
 						if (fr.isClosed()) {
 							lastPacket = true;
 						}
-					} catch (Exception e) {
+					} catch (IOException e) {
 						if (e.getMessage().contains("locked")) {
 							TFTPErrorHelper.sendError(udp, (byte) 2, "Access denied for " + file + ".");
 							super.close(); 
@@ -119,7 +123,10 @@ public class ReadThread extends ClientResponseThread {
 					Log.out("Server<ReadThread>: Sending READ Data");
 					super.sendPacket(data);
 	
+				} else if (check == -1) {
+					// Ignore the packet.
 				} else {
+					// Unrecoverable error encountered, send error packet and exit.
 					if (TFTPErrorHelper.isError(packet.getData())) {
 						TFTPErrorHelper.unPackError(packet);
 					}
@@ -134,13 +141,17 @@ public class ReadThread extends ClientResponseThread {
 		// Receive final ACK packet
 		Log.out("Server<ReadThread>: Receiving Final ACK Data");
 		packet = super.receivePacket();
-		if (packet == null) System.out.println("Server<ReadThread>: Server never recieved the final ack packet, please check the validity of the transfer.");
-		else if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
-			if (TFTPErrorHelper.isError(packet.getData()))
-				TFTPErrorHelper.unPackError(packet);
-			System.out.println("Server<ReadThread>: Invalid ACK packet.");
-			super.close();
-			return;
+		if (packet == null) {
+			System.out.println("Server<ReadThread>: Server never recieved the final ack packet, please check the validity of the transfer.");
+		} else {
+			Integer check = TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]);
+			if (check != null && check != -1) {
+				if (TFTPErrorHelper.isError(packet.getData()))
+					TFTPErrorHelper.unPackError(packet);
+				System.out.println("Server<ReadThread>: Invalid ACK packet.");
+				super.close();
+				return;
+			}
 		}
 
 		// Close file

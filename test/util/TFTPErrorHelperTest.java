@@ -90,13 +90,21 @@ public class TFTPErrorHelperTest {
 		r.nextBytes(bytes);
 		dataPacketChecker(null, "", 25, makePacket(Var.DATA, toByte(25), bytes));
 		
+		// IGNORED
+		dataPacketChecker(-1, "", 50, makePacket(Var.DATA, toByte(25)));
+		try {
+			socket.receive(new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 		// BAD
 		dataPacketChecker(4, "Data packet too small", 25, makePacket());
 		dataPacketChecker(4, "Data packet too small", 25, makePacket(Var.WRITE));
 		
 		dataPacketChecker(4, "Invalid data op code", 25, makePacket(Var.WRITE, toByte(25), "data".getBytes()));
 		
-		dataPacketChecker(4, "Recv wrong block number", 804, makePacket(Var.DATA, toByte(25), "data".getBytes()));
+		dataPacketChecker(4, "Recv wrong block number", 25, makePacket(Var.DATA, toByte(50), "data".getBytes()));
 
 		bytes = new byte[Var.BUF_SIZE - 3];
 		r.nextBytes(bytes);
@@ -105,13 +113,14 @@ public class TFTPErrorHelperTest {
 
 	public void dataPacketChecker(Integer expectedError, String expectedMsg, int expectedBlock, DatagramPacket p) {
 		//System.out.println(Log.bString(p.getData()));
-		//System.out.println(Log.bBytes(p.getData()));
+		System.out.println("ASAD");
 		Integer actual = TFTPErrorHelper.dataPacketChecker(u, p, expectedBlock);
-
-		if (actual != null) {
+		
+		if (actual != null && actual != -1) {
 			DatagramPacket pa = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
 			try {
 				socket.receive(pa);
+				System.out.println(Log.bBytes(pa.getData(), pa.getLength()));
 				assertEquals(expectedMsg, new String(pa.getData(), 4, pa.getLength() - 5));
 			} catch (IOException e) {
 				fail("Error receive timeout, return was " + actual);
@@ -127,6 +136,9 @@ public class TFTPErrorHelperTest {
 		ackPacketChecker(null, "", 25, makePacket(Var.ACK, toByte(25)));
 		ackPacketChecker(null, "", 8034, makePacket(Var.ACK, toByte(8034)));
 		
+		// IGNORED
+		ackPacketChecker(-1, "", 50, makePacket(Var.ACK, toByte(25)));
+		
 		// BAD
 		ackPacketChecker(4, "Invalid ACK op code", 25, makePacket(Var.WRITE, toByte(25)));
 
@@ -134,15 +146,16 @@ public class TFTPErrorHelperTest {
 		ackPacketChecker(4, "Ack packet wrong size", 25, makePacket(Var.ACK));
 		ackPacketChecker(4, "Ack packet wrong size", 25, makePacket(Var.ACK, new byte[]{1,2,3}));
 		
-		ackPacketChecker(4, "ACK wrong block number", 25, makePacket(Var.ACK, toByte(250)));
+		ackPacketChecker(4, "ACK wrong block number", 25, makePacket(Var.ACK, toByte(50)));
 	}
 
 	public void ackPacketChecker(Integer expectedError, String expectedMsg, int expectedBlock, DatagramPacket p) {
 		//System.out.println(Log.bString(p.getData()));
 		//System.out.println(Log.bBytes(p.getData()));
+		System.out.println(expectedMsg);
 		Integer actual = TFTPErrorHelper.ackPacketChecker(u, p, expectedBlock);
 
-		if (actual != null) {
+		if (actual != null && actual != -1) {
 			DatagramPacket pa = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
 			try {
 				socket.receive(pa);
