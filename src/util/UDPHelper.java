@@ -21,6 +21,7 @@ public class UDPHelper {
 	private DatagramPacket sentPacket;
 	private DatagramPacket recPacket;
 	private boolean testSender = false;
+	private boolean resendOnTimeout = false;
 
 	public UDPHelper() {
 		this(false);
@@ -60,6 +61,9 @@ public class UDPHelper {
 		setReturn(p);
 	}
 
+	public void setResendOnTimeout(Boolean b){
+		resendOnTimeout = b;
+	}
 	
 	public void setIP(InetAddress IP) {
 		this.IP = IP;
@@ -133,7 +137,7 @@ public class UDPHelper {
 				
 				return recPacket;
 			} catch (SocketTimeoutException ste) {
-				if(sentPacket != null)
+				if(sentPacket != null && resendOnTimeout)
 					this.resendLastPacket();
 			} catch (SocketException e) {
 				// If the socket should be closed this is fine.

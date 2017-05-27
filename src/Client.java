@@ -48,7 +48,7 @@ public class Client {
 
 		running = true;
 		while (running) {
-
+			udp.setResendOnTimeout(true);
 			if (testMode) {
 				udp.setIP(addrHost.getAddress());
 				udp.setPort(addrHost.getPort());
