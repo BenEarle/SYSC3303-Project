@@ -1,7 +1,7 @@
 ===========================================================================================================
-# SYSC3303 : Project - Iteration #4
------------------------------------------------------------------------------------------------------------
-# 30/05/17
+# SYSC3303 : Project - Iteration #5 / Full Project
+===========================================================================================================
+# 05/06/17
 # Group #1 (1000000):
   Ben Croskery      (100973306)
   Ben Earle         (100970237)
@@ -10,23 +10,60 @@
   Shane Corrigan    (100965710)
   
 ===========================================================================================================
-# Responsibilities
+# Responsibilities over each Iteration
+===========================================================================================================
+Iteration 1:
+-----------------------------------------------------------------------------------------------------------
+  Ben Croskery     -> Provided base code, util classes, FileRead/Writer Classes, Test Classes, Client 
+                      Read/Write
+  Ben Earle        -> Server main, control, read and write threads, command line interfaces, formatting 
+  Dillon Verhaeghe -> Client side support, verbose mode, test mode, conforming to TFTP protocal
+  Patrick Perron   -> Writing threads for server, debugging read/write transfers, Main ErrorSimulator code
+  Shane Corrigan   -> UMC Diagrams, Server main user interface, documentation  
+-----------------------------------------------------------------------------------------------------------
+Iteration 2:
+-----------------------------------------------------------------------------------------------------------
+  Ben Croskery     -> unit testing, terminate incompleted files in bad transfers, testing of packet checking
+  Ben Earle        -> UML Sequence diagrams, UDP helper class and replacing all old udp code, client code
+  Dillon Verhaeghe -> Created packet checking methods for various packet types, fixed bugs
+  Patrick Perron   -> Error Sim interface, sabotaging packets with Error Sim, Debugging
+  Shane Corrigan   -> Updated client to use UDPHelper, UML class, client debugging 
+-----------------------------------------------------------------------------------------------------------
+Iteration 3:
+-----------------------------------------------------------------------------------------------------------
+  Ben Croskery     -> Testing and utility scripts.
+  Ben Earle        -> Typed for group programing for err code 1, 2, and 3
+  Dillon Verhaeghe -> Research and design for err code 1, 2, and 3
+  Patrick Perron   -> Research and design for err code 1, 2, and 3
+  Shane Corrigan   -> Research and design for err code 1, 2, and 3
+-----------------------------------------------------------------------------------------------------------
+Iteration 4:
 -----------------------------------------------------------------------------------------------------------
   Ben Croskery     -> Fixing bugs, diagrams, verification testing
-  Ben Earle        -> Fixing bugs, verification testing, added timeout to UDP helper
+  Ben Earle        -> Fixing bugs, diagrams, verification testing 
   Dillon Verhaeghe -> Fixing bugs, diagrams, verification testing
   Patrick Perron   -> Error Sim Interface, Duplication, Loss, Delay, etc.
   Shane Corrigan   -> Fixing bugs, diagrams, verification testing
-  
-===========================================================================================================
-# Decisions
 -----------------------------------------------------------------------------------------------------------
+Iteration 5:
+-----------------------------------------------------------------------------------------------------------
+  Ben Croskery     -> 
+  Ben Earle        -> 
+  Dillon Verhaeghe -> 
+  Patrick Perron   -> 
+  Shane Corrigan   -> 
+===========================================================================================================
+# Assumptions made for conditions not specified by TFTP Protocol
+===========================================================================================================
+  * We chose to delete files if there was an error in the transfer. We did not want half complete files
+    to exist on the client or server.
+  * We chose to NOT allow the client and server to overwrite files. This means that our TFTP client and
+    Server will be sending error code 6 if a file already exists on the server in a WRQ.
   * The client and server each try resend packets up to 3 times if no response is received. Quits after 
 	the 3rd retransmission
-  * The Timeout is 1000 ms for both the server and the client
 ===========================================================================================================
 # Files
------------------------------------------------------------------------------------------------------------
+===========================================================================================================
  Main Classes:
   * Server.java --------------- Code for Server User Interface, launches ControlThread
   * Client.java --------------- Code for Client that will send Read/Write requests
@@ -48,25 +85,45 @@
   * util/FileWriter.java ------ Class to handle readinh bytes from a file
   * util/TFTPErrorHelper.java - Static class that checks packets for specific errors
   * util/UDPHelper.java ------- Class to faciliate UDP send and receive operations
- ----------------------------------------------------------------------------------------------------------
+===========================================================================================================
  Diagrams:
-  * Diagrams/Iteration4/IT4_LostACKFromServer.png
-  * Diagrams/Iteration4/IT4_LostDataFromServer.png
+===========================================================================================================
+  * Diagrams/Iteration1/IT1 RRQ Connection.png
+  * Diagrams/Iteration1/IT1 WRQ Connection.png
+  * Diagrams/Iteration1/IT1 RRQ Data Transfer.png
+  * Diagrams/Iteration1/IT1 WRQ Data Transfer.png
+  * Diagrams/Iteration1/UML_default.PNG
+  * Diagrams/Iteration1/UML_util.PNG
+  
+  * Diagrams/Iteration2/IT2_Bad_RRQ.png	
+  * Diagrams/Iteration2/IT2_Bad_WRQ.png	
+  * Diagrams/Iteration2/IT2_Client_Receives_Bad_ACK.png		
+  * Diagrams/Iteration2/IT2_Client_Receives_Bad_Data.png	
+  * Diagrams/Iteration2/IT2_Client_Receives_Packet_From_Unkown_Sender.png
+  * Diagrams/Iteration2/IT2_Server_Receives_Bad_ACK.png
+  * Diagrams/Iteration2/IT2_Server_Receives_Bad_DATA.png
+  * Diagrams/Iteration2/IT2_Server_Receives_Packet_From_Unkown_Sender.png
+  
+  * Diagrams/Iteration3/IT3_RRQ_Code1
+  * Diagrams/Iteration3/IT3_RRQ_Code2
+  * Diagrams/Iteration3/IT3_RRQ_Code3
+  * Diagrams/Iteration3/IT3_WRQ_Code3
+  * Diagrams/Iteration3/IT3_WRQ_Code6
+  
   * Diagrams/Iteration4/IT4_
   * Diagrams/Iteration4/IT4_
-  * Diagrams/Iteration4/IT4_DelayedACKFromServer.png
-  * Diagrams/Iteration4/IT4_DelayedDataFromServer.png
   * Diagrams/Iteration4/IT4_
   * Diagrams/Iteration4/IT4_
-  * Diagrams/Iteration4/IT4_DuplicatedACKToServer.png
-  * Diagrams/Iteration4/IT4_DuplicatedDataToServer.png
-  * Diagrams/Iteration4/IT4_DuplicatedACKToClient
-  * Diagrams/Iteration4/IT4_DuplicatedDataToClient
-  * Diagrams/Iteration4/UML Class - Default.png
-  * Diagrams/Iteration4/UML Class - Util.png
-
- ----------------------------------------------------------------------------------------------------------
- Test Files:
+  * Diagrams/Iteration4/IT4_
+  
+  * Diagrams/Iteration4/IT5_
+  * Diagrams/Iteration4/IT5_
+  * Diagrams/Iteration4/IT5_
+  * Diagrams/Iteration4/IT5_
+  * Diagrams/Iteration4/IT5_
+===========================================================================================================
+Test Files:
+===========================================================================================================
   * c_0.txt, s_0.txt ----------- Empty file
   * c_512.txt, s_512.txt ------- File with 512 bytes of ASCII characters
   * c_1221.txt, s_1221.txt ----- File with 1221 bytes of ASCII characters
@@ -78,19 +135,20 @@
  **NOTE: s_* and c_* convention for test files is used to indicate if file originally existed in 
  **      client root folder or server root folder. Client files in /src/testFile/, Server files 
  **      in /src/testFile/server/. 
+ 
 ===========================================================================================================
 # Instructions for running
------------------------------------------------------------------------------------------------------------
+===========================================================================================================
  Setup:
       1) Compile and run Server.java
           - For VERBOSE mode: enter 'v' or 'verbose' to toggle verbose after startup, OR pass 'v' as
             an initial argument
       2) (OPTIONAL) Compile and run ErrorSimulator.java
-	      - Select desired error(4,5) or no error mode(0).
+	      - Select desired error(1,2,3,4,5) or no error mode(0). Follow instructions to set up scenario
       3) Compile and run Client.java
           - For VERBOSE mode: enter 'v' or 'verbose' to toggle verbose after startup, OR pass 'v' as
             an initial argument
-          - For error simulator mode: enter 't' or 'test' to toggle test mode after startup, OR pass 't' as
+          - For ERROR SIM mode: enter 't' or 'test' to toggle test mode after startup, OR pass 't' as
             an initial argument
 ----------------------------------------------------------------------------------------------------------
  Write:
@@ -111,7 +169,7 @@
       3)(OPTIONAL)Ctrl+C on Error Simulator console
 ===========================================================================================================
 # Instructions for Test Cases
- ----------------------------------------------------------------------------------------------------------
+===========================================================================================================
  Test Case: Lost Packet:
 	  1) Start server and client in verbose and test modes
       2) Start Error Simulator. Setup desired lost packet error scenario using error simulator interface
@@ -149,7 +207,6 @@
         - To simulate a lost ERR packet, start read request with a file that does not exist in the server dir
       4) In /src/testFile/, an identical copy of file should be found 
 	  5) In the logs of each of the 3 programs, the system behaviour for a delayed packet is shown
-
 ----------------------------------------------------------------------------------------------------------
  Test Case: Duplicate Packet:
 	  1) Start server and client in verbose and test modes
@@ -169,10 +226,9 @@
         - To simulate a lost ERR packet, start read request with a file that does not exist in the server dir
       4) In /src/testFile/, an identical copy of file should be found 
 	  5) In the logs of each of the 3 programs, the system behaviour for a duplicate packet is shown
-
 ===========================================================================================================
 # Github source link
------------------------------------------------------------------------------------------------------------
+===========================================================================================================
       https://github.com/BenEarle/SYSC3303-Project
       *Note: GitHub project is private - if you would like access, please let us know.  
 ===========================================================================================================
