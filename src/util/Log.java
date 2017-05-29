@@ -106,22 +106,23 @@ public class Log {
 		if (type.equals("RRQ") || type.equals("WRQ")) {
 			sendString = "\n" + s +  ":\n" + 
 						 "\tIP\t\t" + packet.getAddress().toString() + "\n" +
-						 "\tport\t\t" + packet.getPort() + "\n" +
-						 "\tlength\t\t" + packet.getLength() + "\n" + 
+						 "\tPort\t\t" + packet.getPort() + "\n" +
+						 "\tLength\t\t" + packet.getLength() + "\n" + 
 						 "\tType\t\t" + type + "\n" +
 						 "\tName and Mode\t" + new String(data).substring(2).trim() + "";
 		} else if (type.equals("DATA") || type.equals("ACK")) {
 			sendString = "\n" + s +  ":\n" + 
 					 "\tIP\t\t" + packet.getAddress().toString() + "\n" +
-					 "\tport\t\t" + packet.getPort() + "\n" +
-					 "\tlength\t\t" + packet.getLength() + "\n" + 
+					 "\tPort\t\t" + packet.getPort() + "\n" +
+					 "\tLength\t\t" + packet.getLength() + "\n" + 
+					 "\tData length\t\t" + (packet.getLength() - 4) + "\n" + 
 					 "\tType\t\t" + type + "\n" +
 					 "\tBlock #\t\t" +  (Byte.toUnsignedInt(packet.getData()[2]) * 256 + Byte.toUnsignedInt(packet.getData()[3])) + "";
 		} else if (type.equals("ERROR")){
 			sendString = "\n" + s +  ":\n" + 
 					 "\tIP\t\t" + packet.getAddress().toString() + "\n" +
-					 "\tport\t\t" + packet.getPort() + "\n" +
-					 "\tlength\t\t" + packet.getLength() + "\n" + 
+					 "\tPort\t\t" + packet.getPort() + "\n" +
+					 "\tLength\t\t" + packet.getLength() + "\n" + 
 					 "\tType\t\t" + type + "\n" +
 					 "\tError Code\t" + packet.getData()[2] + packet.getData()[3] + "\n" + 	
 			 		 "\tError Message\t" + bString(data).substring(4).trim();			
@@ -129,8 +130,8 @@ public class Log {
 		} else{
 			sendString = "\n" + s +  ":\n" + 
 					 "\tIP\t\t" + packet.getAddress().toString() + "\n" +
-					 "\tport\t\t" + packet.getPort() + "\n" +
-					 "\tlength\t\t" + packet.getLength() + "\n" + 
+					 "\tPort\t\t" + packet.getPort() + "\n" +
+					 "\tLength\t\t" + packet.getLength() + "\n" + 
 					 "\tType\t\tNot Defined";
 		}
 		out(sendString);
