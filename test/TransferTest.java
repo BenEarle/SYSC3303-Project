@@ -16,7 +16,7 @@ public class TransferTest {
 	public static final String TEMP_LOCATION = "temp/";
 	
 	private static final String LANG_EXCEPTION = "Exception";
-	private static final String LANG_DISK_FULL = "Disk full, cannot complete opperation.";
+	private static final String LANG_DISK_FULL = "Disk full, cannot complete operation.";
 	private static final String LANG_PACKET_3 = "Error packet type 3 received.";
 	private static final String LANG_ALREADY_EXISTS = "File already exists.";
 	private static final String LANG_PACKET_6 = "Error packet type 6 received.";
@@ -268,7 +268,7 @@ public class TransferTest {
 		}
 	}
 	
-	public void alreadyExists(String filename, String type) throws Exception {
+	public String alreadyExists(String filename, String type) throws Exception {
 		Log.enable(false);
 		Log.saveLog(true);
 		// Run the client with the given file, then close the server.
@@ -292,12 +292,7 @@ public class TransferTest {
 				"S\n");
 		stop();
 
-		String log = Log.getLog();
-		assertFalse("There was an exception in the log", log.contains(LANG_EXCEPTION));
-		assertTrue("Already exists error was not found in log", log.contains(LANG_ALREADY_EXISTS));
-		log = log.substring(log.indexOf(LANG_ALREADY_EXISTS) + LANG_ALREADY_EXISTS.length());
-		assertTrue("packet type 3 not received in log", log.contains(LANG_PACKET_6));
-		assertTrue("Already exists error was not found in log", log.contains(LANG_ALREADY_EXISTS));
+		return Log.getLog();
 	}
 
 	@Test
@@ -312,7 +307,13 @@ public class TransferTest {
 			fileClient.delete();
 		}
 		
-		alreadyExists(filename, "R");
+		String log = alreadyExists(filename, "R");
+
+		assertFalse("There was an exception in the log", log.contains(LANG_EXCEPTION));
+		assertTrue("Already exists error was not found in log", log.contains(LANG_ALREADY_EXISTS));
+		log = log.substring(log.indexOf(LANG_ALREADY_EXISTS) + LANG_ALREADY_EXISTS.length());
+		assertFalse("packet type 6 received in log", log.contains(LANG_PACKET_6));
+		assertFalse("Second already exists error was found in log", log.contains(LANG_ALREADY_EXISTS));
 	}
 
 	@Test
@@ -327,7 +328,13 @@ public class TransferTest {
 			fileServer.delete();
 		}
 		
-		alreadyExists(filename, "W");
+		String log = alreadyExists(filename, "W");
+
+		assertFalse("There was an exception in the log", log.contains(LANG_EXCEPTION));
+		assertTrue("Already exists error was not found in log", log.contains(LANG_ALREADY_EXISTS));
+		log = log.substring(log.indexOf(LANG_ALREADY_EXISTS) + LANG_ALREADY_EXISTS.length());
+		assertTrue("packet type 6 not received in log", log.contains(LANG_PACKET_6));
+		assertTrue("Already exists error was found in log", log.contains(LANG_ALREADY_EXISTS));
 	}
 	
 	@Test
