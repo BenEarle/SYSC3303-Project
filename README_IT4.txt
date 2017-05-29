@@ -13,7 +13,7 @@
 # Responsibilities
 -----------------------------------------------------------------------------------------------------------
   Ben Croskery     -> Fixing bugs, diagrams, verification testing
-  Ben Earle        -> Fixing bugs, diagrams, verification testing 
+  Ben Earle        -> Fixing bugs, verification testing, added timeout to UDP helper
   Dillon Verhaeghe -> Fixing bugs, diagrams, verification testing
   Patrick Perron   -> Error Sim Interface, Duplication, Loss, Delay, etc.
   Shane Corrigan   -> Fixing bugs, diagrams, verification testing
@@ -23,6 +23,7 @@
 -----------------------------------------------------------------------------------------------------------
   * The client and server each try resend packets up to 3 times if no response is received. Quits after 
 	the 3rd retransmission
+  * The Timeout is 1000 ms for both the server and the client
 ===========================================================================================================
 # Files
 -----------------------------------------------------------------------------------------------------------
@@ -49,11 +50,20 @@
   * util/UDPHelper.java ------- Class to faciliate UDP send and receive operations
  ----------------------------------------------------------------------------------------------------------
  Diagrams:
+  * Diagrams/Iteration4/IT4_LostACKFromServer.png
+  * Diagrams/Iteration4/IT4_LostDataFromServer.png
   * Diagrams/Iteration4/IT4_
   * Diagrams/Iteration4/IT4_
+  * Diagrams/Iteration4/IT4_DelayedACKFromServer.png
+  * Diagrams/Iteration4/IT4_DelayedDataFromServer.png
   * Diagrams/Iteration4/IT4_
   * Diagrams/Iteration4/IT4_
-  * Diagrams/Iteration4/IT4_
+  * Diagrams/Iteration4/IT4_DuplicatedACKToServer.png
+  * Diagrams/Iteration4/IT4_DuplicatedDataToServer.png
+  * Diagrams/Iteration4/IT4_DuplicatedACKToClient
+  * Diagrams/Iteration4/IT4_DuplicatedDataToClient
+  * Diagrams/Iteration4/UML Class - Default.png
+  * Diagrams/Iteration4/UML Class - Util.png
 
  ----------------------------------------------------------------------------------------------------------
  Test Files:
