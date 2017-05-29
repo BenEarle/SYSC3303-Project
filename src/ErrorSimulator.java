@@ -62,13 +62,13 @@ public class ErrorSimulator {
 	private DatagramPacket lose(DatagramPacket packet) throws IOException {
 		// Do nothing with this data packet, just wait to receive another one from the same place
 		if(nextSendToClient){
-			Log.out("ErrorSimulatorChannel: Waiting for other packet from Server");
+			Log.out("ErrorSimulatorChannel: Waiting for another packet from Server");
 			packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
 			socServer.receive(packet);
 			Log.packet("ErrorSimulatorChannel: Receiving - Server -> ErrorSim", packet);
 			packet.setSocketAddress(addrClient); // update the address
 		} else {
-			Log.out("ErrorSimulatorChannel: Waiting for other packet from Client");
+			Log.out("ErrorSimulatorChannel: Waiting for another packet from Client");
 			packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
 			if(!initiated) socket.receive(packet); // Receive on Well-Known port socket
 			else socClient.receive(packet);
@@ -89,6 +89,7 @@ public class ErrorSimulator {
 			delayThread.start();
 			// If delay is longer than timeout, expect another packet from the server to be sent in place
 			if(err.getDelay() > Var.TIMEOUT){
+				Log.out("ErrorSimulatorChannel: Waiting for another packet from Server");
 				packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
 				socServer.receive(packet);
 				Log.packet("ErrorSimulatorChannel: Receiving - Server -> ErrorSim", packet);
@@ -105,6 +106,7 @@ public class ErrorSimulator {
 			delayThread.start();
 			// If delay is longer than timeout, expect another packet from the client to be sent in place
 			if(err.getDelay() > Var.TIMEOUT){
+				Log.out("ErrorSimulatorChannel: Waiting for another packet from Client");
 				packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
 				if(!initiated) socket.receive(packet); // Receive on Well-Known port socket
 				else socClient.receive(packet);
@@ -275,10 +277,10 @@ public class ErrorSimulator {
 		}
 		// Run error case if triggered
 		if(triggered){
-			if     ( err.getErrorCode()==1 ) packet = lose(packet);
-			else if( err.getErrorCode()==2 ) packet = delay(packet); 
+			if     ( err.getErrorCode()==1 ) packet = lose     (packet);
+			else if( err.getErrorCode()==2 ) packet = delay    (packet); 
 			else if( err.getErrorCode()==3 ) packet = duplicate(packet);	
-			else                             packet = sabotage(packet);	
+			else                             packet = sabotage (packet);	
 		}
 		return packet;
 	}
@@ -289,21 +291,18 @@ public class ErrorSimulator {
 	/*************************************************************************/
 	public boolean parsePacket(DatagramPacket packet) throws IOException{
 		byte[] data = packet.getData();
-		// RRQ
 		if(data[0]==Var.READ[0] && data[1]==Var.READ[1]){
 			if(expDataBlk==0 && expDataBlk==0){ // ensure no transfer in progess
 				expDataBlk = 1;
 				expAckBlk  = 1;
 				return true;
 			}
-		// WRQ
 		} else if(data[0]==Var.WRITE[0] && data[1]==Var.WRITE[1]){
 			if(expDataBlk==0 && expDataBlk==0){	// ensure no transfer in progess
 				expDataBlk = 1;
-				expAckBlk  = 0;
+				expAckBlk  = 0; // WRQ starts with an ACK 0
 				return true;
 			}
-		// DATA
 		} else if(data[0]==Var.DATA[0] && data[1]==Var.DATA[1]){
 			// packet is expected
 			if(expDataBlk == getBlockNum(packet)){
@@ -313,7 +312,7 @@ public class ErrorSimulator {
 					lastData = true;
 				}
 				return true;
-			// Unexpected packet. Forward but do not change modes
+			// Unexpected packet. Forward but keep waiting for expected packet
 			} else {
 				Log.out("ErrorSimulatorChannel: Forwarding Unexpected Block");
 				if( nextSendToClient ){ // forward to server
@@ -327,7 +326,6 @@ public class ErrorSimulator {
 				}
 				return false;
 			}
-		// ACK
 		} else if(data[0]==Var.ACK[0] && data[1] == Var.ACK[1]){
 			// packet is expected
 			if(expAckBlk == getBlockNum(packet)){
@@ -337,7 +335,7 @@ public class ErrorSimulator {
 					lastAck = true;
 				}
 				return true;
-			// Unexpected packet. Forward but do not change modes
+			// Unexpected packet. Forward but keep waiting for expected packet
 			} else {
 				Log.out("ErrorSimulatorChannel: Forwarding Unexpected Block");
 				if( nextSendToClient ){ // forward to server
@@ -351,9 +349,8 @@ public class ErrorSimulator {
 				}
 				return false;
 			}
-		// ERROR
 		}else if(data[0]==Var.ERROR[0] && data[1]==Var.ERROR[1]){
-			if (data[3] != 5) error = true; // don't quit on code 5
+			if (data[3] != 5) error = true; // don't quit on error code 5
 			return true;
 		} 
 		Log.out("ErrorSimulatorChannel: Ignoring Unexpected Block");
