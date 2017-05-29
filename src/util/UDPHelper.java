@@ -137,9 +137,10 @@ public class UDPHelper {
 				
 				return recPacket;
 			} catch (SocketTimeoutException ste) {
-				if(sentPacket != null && resendOnTimeout)
+				if(sentPacket != null && resendOnTimeout){
 					Log.out("Socket receive timed out.");
 					this.resendLastPacket();
+				}
 			} catch (SocketException e) {
 				// If the socket should be closed this is fine.
 				if (!closed || !e.getMessage().equals("socket closed")) {

@@ -23,6 +23,7 @@ public class ControlThread extends Thread {
 		running = true;
 		Log.out("SERVER<ControlThread>: Waiting to receive a packet...");
 		while (running) {
+			udp.setResendOnTimeout(false);
 			// Wait to get a packet.
 			DatagramPacket packet = udp.receivePacket();
 			if (packet != null){

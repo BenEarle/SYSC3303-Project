@@ -110,15 +110,22 @@ public class Log {
 						 "\tLength\t\t" + packet.getLength() + "\n" + 
 						 "\tType\t\t" + type + "\n" +
 						 "\tName and Mode\t" + new String(data).substring(2).trim() + "";
-		} else if (type.equals("DATA") || type.equals("ACK")) {
+		} else if (type.equals("DATA")) {
 			sendString = "\n" + s +  ":\n" + 
 					 "\tIP\t\t" + packet.getAddress().toString() + "\n" +
 					 "\tPort\t\t" + packet.getPort() + "\n" +
 					 "\tLength\t\t" + packet.getLength() + "\n" + 
-					 "\tData length\t\t" + (packet.getLength() - 4) + "\n" + 
+					 "\tData length\t" + (packet.getLength() - 4) + "\n" + 
 					 "\tType\t\t" + type + "\n" +
 					 "\tBlock #\t\t" +  (Byte.toUnsignedInt(packet.getData()[2]) * 256 + Byte.toUnsignedInt(packet.getData()[3])) + "";
-		} else if (type.equals("ERROR")){
+		} else if ( type.equals("ACK")) {
+			sendString = "\n" + s +  ":\n" + 
+					 "\tIP\t\t" + packet.getAddress().toString() + "\n" +
+					 "\tPort\t\t" + packet.getPort() + "\n" +
+					 "\tLength\t\t" + packet.getLength() + "\n" +  
+					 "\tType\t\t" + type + "\n" +
+					 "\tBlock #\t\t" +  (Byte.toUnsignedInt(packet.getData()[2]) * 256 + Byte.toUnsignedInt(packet.getData()[3])) + "";
+		}else if (type.equals("ERROR")){
 			sendString = "\n" + s +  ":\n" + 
 					 "\tIP\t\t" + packet.getAddress().toString() + "\n" +
 					 "\tPort\t\t" + packet.getPort() + "\n" +
