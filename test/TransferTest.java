@@ -13,6 +13,7 @@ import util.Var;
 
 public class TransferTest {
 	public static final String FILE_LOCATION = "testFiles/";
+	public static final String FILS_LOCATION = "testFiles/server/";
 	public static final String TEMP_LOCATION = "temp/";
 	
 	private static final String LANG_EXCEPTION = "Exception";
@@ -140,7 +141,7 @@ public class TransferTest {
 	 */
 	private void testWriteFile(String filename) throws Exception {
 		// Set test roots and build files to be used.
-		Var.CLIENT_ROOT = FILE_LOCATION;
+		Var.CLIENT_ROOT = FILS_LOCATION;
 		Var.SERVER_ROOT = TEMP_LOCATION;
 		File fileClient = new File(Var.CLIENT_ROOT + filename);
 		File fileServer = new File(Var.SERVER_ROOT + filename);
@@ -168,7 +169,7 @@ public class TransferTest {
 	private void testReadFile(String filename) throws Exception {
 		// Set test roots and build files to be used.
 		Var.CLIENT_ROOT = TEMP_LOCATION;
-		Var.SERVER_ROOT = FILE_LOCATION;
+		Var.SERVER_ROOT = FILS_LOCATION;
 		File fileClient = new File(Var.CLIENT_ROOT + filename);
 		File fileServer = new File(Var.SERVER_ROOT + filename);
 		if (fileClient.exists()) {
@@ -190,7 +191,7 @@ public class TransferTest {
 	@Test
 	public void testFiles() throws Exception {
 		final int INTERATIONS = 1;
-		File folder = new File(FILE_LOCATION);
+		File folder = new File(FILS_LOCATION);
 		Log.enable(false);
 
 		// Run test on each file in the test directory.
@@ -212,10 +213,10 @@ public class TransferTest {
 
 	@Test
 	public void testConcurrent() throws Exception {
-		File folder = new File(FILE_LOCATION);
+		File folder = new File(FILS_LOCATION);
 		Log.enable(false);
 		Var.CLIENT_ROOT = TEMP_LOCATION;
-		Var.SERVER_ROOT = FILE_LOCATION;
+		Var.SERVER_ROOT = FILS_LOCATION;
 
 		// Run test on each file in the test directory.
 		ArrayList<Thread> t = new ArrayList<>();

@@ -71,7 +71,7 @@ public class FillItUp {
 			unlock();
 		}
 		
-		in = new FileOutputStream(filename);
+		in = new FileOutputStream(filename, true);
 	    lock = in.getChannel().lock();
 	}
 	
