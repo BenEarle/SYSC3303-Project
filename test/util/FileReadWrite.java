@@ -49,7 +49,7 @@ public class FileReadWrite {
 	@Test
 	public void testFilename() throws IOException {
 		String filename = DIR1 + FILENAME;
-		createFile(filename);
+		deleteFile(filename);
 		w = new FileWriter(filename);
 		r = new FileReader(filename);
 		

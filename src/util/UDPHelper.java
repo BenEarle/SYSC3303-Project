@@ -143,7 +143,7 @@ public class UDPHelper {
 				}
 			} catch (SocketException e) {
 				// If the socket should be closed this is fine.
-				if (!closed || !e.getMessage().equals("socket closed")) {
+				if (!closed || !e.getMessage().toLowerCase().equals("socket closed")) {
 					Log.err("ERROR Receiving packet", e);
 				}
 			} catch (IOException e) {
