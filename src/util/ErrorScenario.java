@@ -21,7 +21,7 @@ public class ErrorScenario {
 	public static final int ACK_PACKET   = 4;
 	public static final int ERR_PACKET   = 5;
 
-	public static final String[] FAULT   = {"NONE","OPCODE","MODE","NULL","BLOCK","SIZE","SOURCE", "LOSS", "DELAY", "DUPLICATE"};
+	public static final String[] FAULT   = {"NONE","OPCODE","MODE","NULL","BLOCK","SIZE","SOURCE", "LOSS", "DELAY", "DUPLICATE", "ERRCODE"};
 	public static final int OPCODE_FAULT    = 1;
 	public static final int MODE_FAULT      = 2;
 	public static final int NULL_FAULT      = 3;
@@ -31,6 +31,7 @@ public class ErrorScenario {
 	public static final int LOSS_FAULT      = 7;
 	public static final int DELAY_FAULT     = 8;
 	public static final int DUPLICATE_FAULT = 9;
+	public static final int ERRCODE_FAULT   = 10;
 	
 	/*************************************************************************/
 	// Instance Variables
@@ -71,102 +72,14 @@ public class ErrorScenario {
 		this.faultType  = promptFault     (errorCode, packetType); //sets packet delay if relevant
 		this.blockNum   = promptBlockNum  (errorCode, packetType);
 		
-		System.out.println("Case Summary:\n"
+		/*System.out.println("Case Summary:\n"
 				+"ERR: "+this.errorCode+"\n"
 				+"PAC: "+this.packetType+"\n"
 				+"FLT: "+this.faultType+"\n"
 				+"BLK: "+this.blockNum+"\n"
 				+"DEL: "+this.packetDelay+"\n"
-		);
+		);*/
 	}
-	
-	/*************************************************************************/
-	// Sabotage a packet according to error scenario specification
-	/*************************************************************************/
-	public DatagramPacket Sabotage(DatagramPacket packet){
-		byte[] data = packet.getData();
-		//-------------------------------------------------
-		// 1-3 -- No sabotage for packets here
-		//-------------------------------------------------
-		// 4 -- Illegal TFTP operation Error
-		if(errorCode == 4) {
-			if(packetType==READ_PACKET || packetType==WRITE_PACKET){
-				//-------------------------------------------------
-				// Set Opcode to 0xFFFF
-				if(faultType==OPCODE_FAULT){
-					data[0] = (byte)0xFF;
-					data[1] = (byte)0xFF;
-					packet.setData(data);
-				//-------------------------------------------------
-				// Set first 3 bytes of mode to ABC
-				} else if(faultType==MODE_FAULT){
-					for(int i=4; i<data.length; i++){
-						if(data[i]==0){ // Loop until end of file
-							if(i < data.length-3){
-								data[i+1] = (byte)'A'; data[i+2] = (byte)'B'; data[i+3] = (byte)'C';
-							} 
-							break;
-						}
-					}
-					packet.setData(data);
-				//-------------------------------------------------
-				// Replace first two nulls with 0xFF
-				} else if(faultType==NULL_FAULT){
-					int nullCount = 0;
-					for(int i=4; i<data.length; i++){
-						if(data[i]==0){
-							nullCount++;
-							data[i] = (byte)0xFF;
-						}
-						if(nullCount >= 2) break;
-					}
-					packet.setData(data);
-				}
-			// Data and Ack have almost the same data cases
-			} else if(packetType==DATA_PACKET || packetType==ACK_PACKET){
-				//-------------------------------------------------
-				// Set Opcode to 0xFFFF
-				if(faultType==OPCODE_FAULT){
-					data[0] = (byte)0xFF;
-					data[1] = (byte)0xFF;
-					packet.setData(data,0,packet.getLength());
-				//-------------------------------------------------
-				// Set Block Num to 0xFFFF
-				} else if(faultType==BLOCK_FAULT){
-					data[2] = (byte)0xFF;
-					data[3] = (byte)0xFF;
-					packet.setData(data,0,packet.getLength());
-				//-------------------------------------------------
-				// Make a packet larger by 100 bytes and fill with 0xFFs
-				} else if(faultType==SIZE_FAULT){
-					byte[] newData = new byte[Var.BLOCK_SIZE+100];
-					// Copy existing bytes
-					for(int i=0; i<data.length; i++) newData[i] = data[i];
-					// Copy new bytes
-					for(int i=data.length; i<newData.length; i++) newData[i] = (byte)0xFF;
-					packet.setData(newData);
-				}	
-			}
-		//-------------------------------------------------
-		// Unknown Transfer ID Error
-		} else if(errorCode == 5){
-			try{
-				DatagramSocket tempSocket  = new DatagramSocket();
-				DatagramPacket errorPacket = new DatagramPacket(
-					packet.getData(), packet.getLength(), packet.getAddress(), packet.getPort()
-				);
-				tempSocket.send(errorPacket);
-				Log.packet("INVALID SOCKET SOURCE: Sending Packet", errorPacket);
-				errorPacket = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
-				tempSocket.receive(errorPacket);
-				Log.packet("INVALID SOCKET SOURCE: Receiving Packet", errorPacket);
-				tempSocket.close();
-			} catch(Exception e){
-				e.printStackTrace();
-			}
-		//-------------------------------------------------
-		} return packet;
-	}	
 	
 	/*************************************************************************/
 	// Prompt user for Error Code
@@ -234,14 +147,12 @@ public class ErrorScenario {
 				Log.out(
 					"Select a Message Type to Test:\n"
 				  + " [1] DATA\n"
-				  + " [2] ACK\n"
-				  + " [3] ERR"
+				  + " [2] ACK"
 				);
 				scanner = new Scanner(System.in);
 				switch(scanner.nextLine().trim()){
 					case "1": packetType = DATA_PACKET;  break;
 					case "2": packetType = ACK_PACKET;   break;
-					case "3": packetType = ERR_PACKET;   break;
 			        default: Log.out("ERROR - Invalid Entry"); break;
 				}
 			}
@@ -311,7 +222,7 @@ public class ErrorScenario {
 				        default: Log.out("ERROR - Invalid Entry"); break;
 					}
 				}
-			} else if( packetType == ACK_PACKET || packetType == DATA_PACKET || packetType == ERR_PACKET){
+			} else if( packetType == ACK_PACKET || packetType == DATA_PACKET ){
 				while(faultType == UNDEFINED){
 					Log.out(
 						"Select a Fault Case to Test:\n"
@@ -324,6 +235,20 @@ public class ErrorScenario {
 						case "1": faultType = OPCODE_FAULT; break;
 						case "2": faultType = BLOCK_FAULT;  break;
 						case "3": faultType = SIZE_FAULT;  break;
+				        default: Log.out("ERROR - Invalid Entry"); break;
+					}
+				}
+			} else if( packetType == ERR_PACKET ){
+				while(faultType == UNDEFINED){
+					Log.out(
+						"Select a Fault Case to Test:\n"
+					  + " 1) opcode\n"
+					  + " 2) Errcode"
+					);
+					scanner = new Scanner(System.in);
+					switch(scanner.nextLine().trim()){
+						case "1": faultType = OPCODE_FAULT; break;
+						case "2": faultType = ERRCODE_FAULT;  break;
 				        default: Log.out("ERROR - Invalid Entry"); break;
 					}
 				}

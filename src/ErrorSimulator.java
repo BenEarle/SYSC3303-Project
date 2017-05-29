@@ -8,7 +8,6 @@ import util.Log;
 import util.Var;
 import util.ErrorScenario;
 
-
 /*************************************************************************/
 // This class will be used to simulate errors in future iterations of the
 // project. Currently all it does is act as a proxy from the client to 
@@ -18,6 +17,8 @@ import util.ErrorScenario;
 /*************************************************************************/
 
 public class ErrorSimulator {
+	
+	// Main ErrorSim attributes
 	private DatagramSocket socket;
 	private static final SocketAddress SERVER_ADDRESS = new InetSocketAddress("localhost", Var.PORT_SERVER);
 	private boolean running;
@@ -36,6 +37,7 @@ public class ErrorSimulator {
 	private boolean lastAck;
 	private boolean lastData;
 	private boolean error;
+	private boolean initiated;
 	
 	// Error Scenario
 	private ErrorScenario err;
@@ -57,18 +59,19 @@ public class ErrorSimulator {
 	/*************************************************************************/
 	// Lose a Packet
 	/*************************************************************************/
-	public DatagramPacket lose(DatagramPacket packet) throws IOException {
+	private DatagramPacket lose(DatagramPacket packet) throws IOException {
 		// Do nothing with this data packet, just wait to receive another one from the same place
 		if(nextSendToClient){
-			// Wait for another data packet from the Server
+			Log.out("ErrorSimulatorChannel: Waiting for other packet from Server");
 			packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
 			socServer.receive(packet);
 			Log.packet("ErrorSimulatorChannel: Receiving - Server -> ErrorSim", packet);
 			packet.setSocketAddress(addrClient); // update the address
 		} else {
-			// Wait for another data packet from the Client
+			Log.out("ErrorSimulatorChannel: Waiting for other packet from Client");
 			packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
-			socClient.receive(packet);
+			if(!initiated) socket.receive(packet); // Receive on Well-Known port socket
+			else socClient.receive(packet);
 			Log.packet("ErrorSimulatorChannel: Receiving - Client -> ErrorSim", packet);
 			packet.setSocketAddress(addrServer); // update the address
 		}	
@@ -78,7 +81,7 @@ public class ErrorSimulator {
 	/*************************************************************************/
 	// Delay a Packet
 	/*************************************************************************/
-	public DatagramPacket delay(DatagramPacket packet) throws IOException {
+	private DatagramPacket delay(DatagramPacket packet) throws IOException {
 		Thread delayThread;
 		if(nextSendToClient){ 
 			// Create a thread to send a message to Client after a delay
@@ -103,9 +106,9 @@ public class ErrorSimulator {
 			// If delay is longer than timeout, expect another packet from the client to be sent in place
 			if(err.getDelay() > Var.TIMEOUT){
 				packet = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
-				socClient.receive(packet);
+				if(!initiated) socket.receive(packet); // Receive on Well-Known port socket
+				else socClient.receive(packet);
 				Log.packet("ErrorSimulatorChannel: Receiving - Client -> ErrorSim", packet);
-				//display(packet);
 				packet.setSocketAddress(addrServer);
 			// Otherwise, just delay thread for duration of delay
 			} else {
@@ -120,7 +123,7 @@ public class ErrorSimulator {
 	/*************************************************************************/
 	// Duplicate a Packet
 	/*************************************************************************/
-	public DatagramPacket duplicate(DatagramPacket packet) throws IOException {
+	private DatagramPacket duplicate(DatagramPacket packet) throws IOException {
 		Thread delayThread;
 		// Create a thread to send a message to client after a delay
 		if(nextSendToClient){ 
@@ -136,6 +139,108 @@ public class ErrorSimulator {
 		return newPacket; //send other packet normally
 		
 	}
+	
+	/*************************************************************************/
+	// Sabotage a packet according to error scenario specification
+	/*************************************************************************/
+	public DatagramPacket sabotage(DatagramPacket packet){
+		byte[] data = packet.getData();
+		//-------------------------------------------------
+		// 1-3 -- No sabotage for packets here
+		//-------------------------------------------------
+		// 4 -- Illegal TFTP operation Error
+		if(err.getErrorCode() == 4) {
+			if(err.getPacketType()==ErrorScenario.READ_PACKET || err.getPacketType()==ErrorScenario.WRITE_PACKET){
+				//-------------------------------------------------
+				// Set Opcode to 0xFFFF
+				if(err.getFaultType()==ErrorScenario.OPCODE_FAULT){
+					data[0] = (byte)0xFF;
+					data[1] = (byte)0xFF;
+					packet.setData(data);
+				//-------------------------------------------------
+				// Set first 3 bytes of mode to ABC
+				} else if(err.getFaultType()==ErrorScenario.MODE_FAULT){
+					for(int i=4; i<data.length; i++){
+						if(data[i]==0){ // Loop until end of file
+							if(i < data.length-3){
+								data[i+1] = (byte)'A'; data[i+2] = (byte)'B'; data[i+3] = (byte)'C';
+							} 
+							break;
+						}
+					}
+					packet.setData(data);
+				//-------------------------------------------------
+				// Replace first two nulls with 0xFF
+				} else if(err.getFaultType()==ErrorScenario.NULL_FAULT){
+					int nullCount = 0;
+					for(int i=4; i<data.length; i++){
+						if(data[i]==0){
+							nullCount++;
+							data[i] = (byte)0xFF;
+						}
+						if(nullCount >= 2) break;
+					}
+					packet.setData(data);
+				}
+			} else if(err.getPacketType()==ErrorScenario.DATA_PACKET || err.getPacketType()==ErrorScenario.ACK_PACKET){
+				//-------------------------------------------------
+				// Set Opcode to 0xFFFF
+				if(err.getFaultType()==ErrorScenario.OPCODE_FAULT){
+					data[0] = (byte)0xFF;
+					data[1] = (byte)0xFF;
+					packet.setData(data,0,packet.getLength());
+				//-------------------------------------------------
+				// Set Block Num to 0xFFFF
+				} else if(err.getFaultType()==ErrorScenario.BLOCK_FAULT){
+					data[2] = (byte)0xFF;
+					data[3] = (byte)0xFF;
+					packet.setData(data,0,packet.getLength());
+				//-------------------------------------------------
+				// Make a packet larger by 100 bytes and fill with 0xFFs
+				} else if(err.getFaultType()==ErrorScenario.SIZE_FAULT){
+					byte[] newData = new byte[Var.BLOCK_SIZE+100];
+					// Copy existing bytes
+					for(int i=0; i<data.length; i++) newData[i] = data[i];
+					// Copy new bytes
+					for(int i=data.length; i<newData.length; i++) newData[i] = (byte)0xFF;
+					packet.setData(newData);
+				}	
+			} else if( err.getPacketType()==ErrorScenario.ERR_PACKET ){
+				//-------------------------------------------------
+				// Set Opcode to 0xFFFF
+				if(err.getFaultType()==ErrorScenario.OPCODE_FAULT){
+					data[0] = (byte)0xFF;
+					data[1] = (byte)0xFF;
+					packet.setData(data,0,packet.getLength());
+				//-------------------------------------------------
+				// Set Error Code to 0xFFFF
+				} else if(err.getFaultType()==ErrorScenario.ERRCODE_FAULT){
+					data[2] = (byte)0xFF;
+					data[3] = (byte)0xFF;
+					packet.setData(data,0,packet.getLength());
+				}	
+			}
+		//-------------------------------------------------
+		// Unknown Transfer ID Error
+		} else if(err.getErrorCode() == 5){
+			try{
+				DatagramSocket tempSocket  = new DatagramSocket();
+				DatagramPacket errorPacket = new DatagramPacket(
+					packet.getData(), packet.getLength(), packet.getAddress(), packet.getPort()
+				);
+				tempSocket.send(errorPacket);
+				Log.packet("Unknown Socket: Sending", errorPacket);
+				errorPacket = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
+				tempSocket.receive(errorPacket);
+				Log.packet("Unknown Socket: Receiving", errorPacket);
+				tempSocket.close();
+			} catch(Exception e){
+				e.printStackTrace();
+			}
+		//-------------------------------------------------
+		} return packet;
+	}	
+	
 	/*************************************************************************/
 	// This method checks a packet for the existing conditions described in the
 	// error scenario. If the correct scenario is present, the error scenario
@@ -166,14 +271,14 @@ public class ErrorSimulator {
 		// Trigger an error for an ERROR packet
 		} else if( data[1] == Var.ERROR[1]  && err.getPacketType()==ErrorScenario.ERR_PACKET){
 			triggered = true;
-			Log.out("ErrorSimulatorChannel: ERR Packet #"+err.getBlockNum()+" sabotaged with "+ErrorScenario.FAULT[err.getFaultType()] +" Fault");
+			Log.out("ErrorSimulatorChannel: ERR Packet sabotaged with "+ErrorScenario.FAULT[err.getFaultType()] +" Fault");
 		}
 		// Run error case if triggered
 		if(triggered){
 			if     ( err.getErrorCode()==1 ) packet = lose(packet);
 			else if( err.getErrorCode()==2 ) packet = delay(packet); 
 			else if( err.getErrorCode()==3 ) packet = duplicate(packet);	
-			else                             packet = err.Sabotage(packet);	
+			else                             packet = sabotage(packet);	
 		}
 		return packet;
 	}
@@ -262,7 +367,7 @@ public class ErrorSimulator {
 	// from the server.
 	/*************************************************************************/
 	
-	public void runChannel() throws IOException {
+	private void runChannel() throws IOException {
 		// Set up sockets for communicating with client and server
 		socClient = new DatagramSocket(); 
 		socServer = new DatagramSocket(); 
@@ -278,7 +383,7 @@ public class ErrorSimulator {
 		triggered  = false;
 		
 		DatagramPacket packet = null;
-		boolean initiated = false;
+		initiated = false;
 		
 		// Begin loop: Get Response from Client and forward to server, vice-versa
 		running = true;
@@ -349,6 +454,8 @@ public class ErrorSimulator {
 		socServer.close();
 		Log.out("Transfer complete. Closing Channel");
 	}
+	
+	// Run the channel
 	public void run() throws IOException {
 		running = true;
 		while (running) {
@@ -357,20 +464,36 @@ public class ErrorSimulator {
 			runChannel();
 		}
 	}
-	public int getBlockNum(DatagramPacket packet){
+	/*************************************************************************/
+	// Compute Block Num from socket
+	/*************************************************************************/
+	private int getBlockNum(DatagramPacket packet){
 		byte[] data = packet.getData();
 		return data[2]*256+data[3];
 	}
+
+	/*************************************************************************/
+	// Close the channel
+	/*************************************************************************/
 	public void close() {
 		if (running) {
 			running = false;
 			socket.close();
 		}
 	}
+
+	/*************************************************************************/
+	// Check if closed
+	/*************************************************************************/
 	public boolean isClosed() {
 		return !running;
 	}
+
+	/*************************************************************************/
+	//Run the Error Simulator
+	/*************************************************************************/
 	public static void main(String[] args) throws SocketException, IOException {
 		new ErrorSimulator().run();
 	}
 }
+/*************************************************************************/
