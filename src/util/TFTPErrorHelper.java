@@ -147,7 +147,7 @@ public class TFTPErrorHelper {
 
 		//System.out.println("DATA: " + blockNum + "  " + expectedBlock);
 		// Unexpected block number
-		if(blockNum < expectedBlock || !firstLoop){
+		if(blockNum < expectedBlock || (!firstLoop && blockNum != expectedBlock)){
 			// This is a duplicate data, resend the ack packet with the correct block number.
 			byte[] d = Var.ACK_WRITE.clone();
 			d[2] = data[2];
@@ -191,7 +191,7 @@ public class TFTPErrorHelper {
 
 		//System.out.println("ACK:  " + blockNum + "  " + expectedBlock);
 		// Unexpected block number
-		if (blockNum < expectedBlock || !firstLoop) {
+		if (blockNum < expectedBlock || (!firstLoop && blockNum != expectedBlock)) {
 			// This is a duplicate ack, ignore the packet it.
 			Log.out("Received a Potential duplicate ACK " + blockNum + " packet, ignoring.");
 			return -1;
