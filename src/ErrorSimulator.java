@@ -312,9 +312,9 @@ public class ErrorSimulator {
 			}
 		} else if(data[0]==Var.DATA[0] && data[1]==Var.DATA[1]){
 			// packet is expected
+			if(expAckBlk == 128) Log.out(""+getBlockNum(packet));
 			if(expDataBlk == getBlockNum(packet)){
 				if(expDataBlk == 65535){
-					rollOver++;
 					expDataBlk = 0;
 				} else {
 					expDataBlk++;
@@ -340,9 +340,10 @@ public class ErrorSimulator {
 			}
 		} else if(data[0]==Var.ACK[0] && data[1] == Var.ACK[1]){
 			// packet is expected
+			if(expAckBlk == 128) Log.out(""+getBlockNum(packet));
 			if(expAckBlk == getBlockNum(packet)){
 				if(expAckBlk == 65535){
-					// Rollover handled by data
+					rollOver++;
 					expAckBlk = 0;
 				} else {
 					expAckBlk++;
@@ -484,7 +485,7 @@ public class ErrorSimulator {
 	/*************************************************************************/
 	private int getBlockNum(DatagramPacket packet){
 		byte[] data = packet.getData();
-		return data[2]*256+data[3];
+		return (Byte.toUnsignedInt(data[2])*256+Byte.toUnsignedInt(data[3]));
 	}
 
 	/*************************************************************************/
