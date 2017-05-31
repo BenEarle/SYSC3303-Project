@@ -306,7 +306,7 @@ public class Client {
 
 					// Increment Block Number
 					blockNum = bytesIncrement(blockNum);
-					if (Byte.toUnsignedInt(blockNum[1]) * 256 + Byte.toUnsignedInt(blockNum[2]) == 65335) {
+					if (Byte.toUnsignedInt(blockNum[0]) * 256 + Byte.toUnsignedInt(blockNum[1]) == 65335) {
 						firstLoop = false;
 					}
 					// Add OPCode to data.
