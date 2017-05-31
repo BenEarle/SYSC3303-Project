@@ -26,7 +26,6 @@ public class Client {
 
 	public Client(InputStream in) throws SocketException {
 		udp = new UDPHelper(true);
-
 		addrHost = new InetSocketAddress("localhost", Var.PORT_CLIENT);
 		addrServer = new InetSocketAddress("localhost", Var.PORT_SERVER);
 		reader = new Scanner(in);
@@ -38,14 +37,15 @@ public class Client {
 		this.testMode = testMode;
 	}
 
-	// Take input, send request to server, and enter required mode to process
-	// transfer
+	/**
+	 * Main runner for the client, controls responses to user prompts
+	 * @throws IOException
+	 */
 	public void run() throws IOException {
 
 		Log.out("Client: Starting Client");
 		System.out.println(Var.CMDStart);
 		System.out.println("Client: Type 'help' to get a list of available commands.");
-		this.getServerIP();
 		running = true;
 		while (running) {
 			udp.setResendOnTimeout(true);
@@ -60,12 +60,7 @@ public class Client {
 			boolean RRQ = false, WRQ = false;
 			String file = null;
 			String StrIn = getUserInput("Client: ");
-		//	byte[] data = new byte[Var.BUF_SIZE];
-			// Create and send request according to input
 			switch (StrIn.toLowerCase()) {
-//			case("fill"):
-//				FillItUp.fillMyDrive(6);
-//				break;
 			case ("r"):
 			case ("read"):
 				file = getUserInput("Filename: ");
@@ -99,6 +94,10 @@ public class Client {
 			case ("q"):
 				close();
 				break;
+			case ("i"):
+			case ("ip"):
+				this.getServerIP();
+				break;
 			case ("h"):
 			case ("help"):
 				System.out.println("Client: Available commands: read, write, verbose, test, help.");
@@ -110,15 +109,11 @@ public class Client {
 
 			if (RRQ || WRQ) {
 				try {
-					
+
 					// Go into appropriate mode to receive message
 					if (RRQ) {
-						// Log.packet("Client: Sending READ",
-						// udp.getLastPacket());
 						readMode(file);
 					} else if (WRQ) {
-						// Log.packet("Client: Sending WRITE",
-						// udp.getLastPacket());
 						writeMode(file);
 					}
 				} catch (SocketException e) {
@@ -131,9 +126,11 @@ public class Client {
 
 	}
 
-	/*************************************************************************/
-	// Mode for reading a file from server and saving it locally
-	/*************************************************************************/
+	/**
+	 * Mode for reading a file from server and saving it locally
+	 * @param fileName the file we are interested in reading off the server
+	 * @throws IOException
+	 */
 	private void readMode(String fileName) throws IOException {
 
 		DatagramPacket packet = null; // packet to send and receive data during
@@ -147,7 +144,7 @@ public class Client {
 		blockNum[1] = 0x01;
 		boolean firstData = true;
 		FileWriter writer = null;
-		
+
 		try {
 			writer = new FileWriter(Var.CLIENT_ROOT + fileName);
 		} catch (IOException e) {
@@ -160,7 +157,7 @@ public class Client {
 		}
 		data = makeData(Var.READ, fileName.getBytes(), Var.ZERO, MODE.getBytes(), Var.ZERO);
 		udp.sendPacket(data);
-		
+
 		// Loop until last data packet is received
 		while (!lastPacket) {
 			// Create packet then receive and get info from packet
@@ -170,15 +167,13 @@ public class Client {
 				Integer check = TFTPErrorHelper.dataPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]);
 				if (check == null) {
 					// Valid packet received, continue normally.
-					
+
 					if (firstData) {
 						firstData = false;
 						// Save address to send response to
 						udp.setReturn(packet);
 						udp.setTestSender(true);
 					}
-					// Log.packet("Client: Receiving READ DATA",
-					// udp.getLastPacket());
 
 					// Get bytes to write to file from packet
 
@@ -209,12 +204,12 @@ public class Client {
 					// Send the acknowledge packet
 					udp.sendPacket(makeData(Var.ACK, blockNum));
 					blockNum = bytesIncrement(blockNum);
-					// Log.packet("Client: Sending READ ACK", udp.getLastPacket());
 				} else if (check == -1) {
 					// Ignore the packet.
 				} else {
-					// Unrecoverable error encountered, send error packet and exit.
-					
+					// Unrecoverable error encountered, send error packet and
+					// exit.
+
 					if (TFTPErrorHelper.isError(packet.getData()))
 						TFTPErrorHelper.unPackError(packet);
 					udp.setTestSender(false);
@@ -236,18 +231,20 @@ public class Client {
 		udp.setTestSender(false);
 	}
 
-	/*************************************************************************/
-	// Mode for writing a file to the server
-	/*************************************************************************/
+	/**
+	 * Mode for writing a file to the server
+	 * @param fileName local file we are interesting in writing to the server
+	 * @throws IOException
+	 */
 	private void writeMode(String fileName) throws IOException {
 		// Data for transfer
 		FileReader reader = null;
 		try {
 			reader = new FileReader(Var.CLIENT_ROOT + fileName);
-		} catch (IOException e){
+		} catch (IOException e) {
 			if (e.getMessage().contains("Access is denied"))
 				Log.err("Access denied for " + fileName + ".");
-			else 
+			else
 				Log.err("File " + fileName + " not found.");
 			return;
 		}
@@ -264,7 +261,7 @@ public class Client {
 		boolean firstPacket = true;
 		data = makeData(Var.WRITE, fileName.getBytes(), Var.ZERO, MODE.getBytes(), Var.ZERO);
 		udp.sendPacket(data);
-		
+
 		// Loop until last data packet is sent
 		while (!lastPacket) {
 			// Create packet then receive and get info from packet
@@ -274,7 +271,7 @@ public class Client {
 				Integer check = TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]);
 				if (check == null) {
 					// Valid packet received, continue normally.
-					
+
 					if (firstPacket) {
 						// Save address to send data to
 						udp.setReturn(packet);
@@ -298,7 +295,7 @@ public class Client {
 
 					// Increment Block Number
 					blockNum = bytesIncrement(blockNum);
-					
+
 					// Add OPCode to data.
 					data[0] = Var.DATA[0];
 					data[1] = Var.DATA[1];
@@ -307,8 +304,6 @@ public class Client {
 
 					// Send write data to Server
 					udp.sendPacket(data);
-					// Log.packet("Client: Sending WRITE Data",
-					// udp.getLastPacket());
 				} else if (check == -1) {
 					// Ignore the packet.
 				} else {
@@ -326,7 +321,8 @@ public class Client {
 
 		// Receive final ACK packet
 		packet = udp.receivePacket();
-		if (packet == null) System.out.println("Never recieved the final acknowledgement, please check the validity of the transfer.");
+		if (packet == null)
+			System.out.println("Never recieved the final acknowledgement, please check the validity of the transfer.");
 		else if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
 			if (TFTPErrorHelper.isError(packet.getData()))
 				TFTPErrorHelper.unPackError(packet);
@@ -334,7 +330,6 @@ public class Client {
 			return;
 		}
 		data = packet.getData();
-		// Log.packet("Client: Receiving FINAL WRITE ACK", udp.getLastPacket());
 		// Confirm packet is ACK
 		System.out.println("Client: Write operation successful.");
 		// Close file
@@ -342,6 +337,11 @@ public class Client {
 		udp.setTestSender(false);
 	}
 
+	/**
+	 * Increments a byte array of two bytes
+	 * @param data
+	 * @return
+	 */
 	private byte[] bytesIncrement(byte[] data) {
 		if (data[1] == -1) {
 			data[0]++;
@@ -375,46 +375,59 @@ public class Client {
 		return s;
 	}
 
-	private void getServerIP () {
-		boolean noValidIP = true;
-		while (noValidIP) {
-			String serverIP = getUserInput("IP of Server: ");
-			noValidIP = !isValidIP(serverIP);
-			if (!noValidIP) {
-				addrServer = new InetSocketAddress(serverIP, Var.PORT_SERVER);
-			} else {
-				System.out.println("Please enter a valid IP address");
-			}
+	/**
+	 * Prompts the user to get the ip where the server is running
+	 */
+	private void getServerIP() {
+		String serverIP = getUserInput("IP of Server: ");
+		boolean noValidIP = !isValidIP(serverIP);
+		if (!noValidIP) {
+			addrServer = new InetSocketAddress(serverIP, Var.PORT_SERVER);
+			addrHost = new InetSocketAddress(serverIP, Var.PORT_CLIENT);
+		} else {
+			System.out.println("Invalid IP defaulting to localhost please try again");
+			addrServer = new InetSocketAddress("localhost", Var.PORT_SERVER);
+			addrHost = new InetSocketAddress("localhost", Var.PORT_CLIENT);
 		}
 	}
-	
-	private boolean isValidIP (String ip) {
-	    try {
-	        if ( ip == null || ip.isEmpty() ) {
-	            return false;
-	        }
 
-	        String[] parts = ip.split( "\\." );
-	        if ( parts.length != 4 ) {
-	            return false;
-	        }
+	/**
+	 * Takes a string of an ip and checks to make sure it is a valid ip
+	 * @param ip ip string that you want to check
+	 * @return true if it is valid and false if it is not valid
+	 */
+	private boolean isValidIP(String ip) {
+		try {
+			if (ip == null || ip.isEmpty()) {
+				return false;
+			}
 
-	        for ( String s : parts ) {
-	            int i = Integer.parseInt( s );
-	            if ( (i < 0) || (i > 255) ) {
-	                return false;
-	            }
-	        }
-	        if ( ip.endsWith(".") ) {
-	            return false;
-	        }
+			String[] parts = ip.split("\\.");
+			if (parts.length != 4) {
+				return false;
+			}
 
-	        return true;
-	    } catch (NumberFormatException nfe) {
-	        return false;
-	    }
+			for (String s : parts) {
+				int i = Integer.parseInt(s);
+				if ((i < 0) || (i > 255)) {
+					return false;
+				}
+			}
+			if (ip.endsWith(".")) {
+				return false;
+			}
+
+			return true;
+		} catch (NumberFormatException nfe) {
+			return false;
+		}
 	}
-	
+
+	/**
+	 * Makes the data section of the packet to respond
+	 * @param bytes the information to be inputed into the data
+	 * @return byte array with all the data combined
+	 */
 	private byte[] makeData(byte[]... bytes) {
 		// Get the required length of the byte array.
 		int length = 0;
@@ -437,10 +450,14 @@ public class Client {
 		}
 
 		// Create a packet from the buffer (using the host address) and return
-		// it.
+		// it
+
 		return buffer;
 	}
 
+	/**
+	 * Ends the running and closes the sockets
+	 */
 	public void close() {
 		if (running) {
 			running = false;
@@ -449,10 +466,15 @@ public class Client {
 		}
 	}
 
+	/**
+	 * Check to see if it is running
+	 * @return true if running and false if not running
+	 */
 	public boolean isClosed() {
 		return !running;
 	}
 
+	
 	public static void main(String[] args) throws SocketException, IOException {
 		Log.enable(false);
 		boolean test = false;
