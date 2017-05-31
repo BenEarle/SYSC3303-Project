@@ -88,7 +88,7 @@ public class ReadThread extends ClientResponseThread {
 			packet = super.receivePacket();
 			if (packet != null) {
 				// Check the ack packet is valid.
-				Integer check = TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1], firstLoop);
+				Integer check = TFTPErrorHelper.ackPacketChecker(udp, packet, Byte.toUnsignedInt(blockNum[0]) * 256 + Byte.toUnsignedInt(blockNum[1]), firstLoop);
 				if (check == null) {
 					// Valid packet received, continue normally.
 

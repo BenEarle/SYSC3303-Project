@@ -67,7 +67,7 @@ public class WriteThread extends ClientResponseThread {
 				}
 				
 				// Check the data packet is valid.
-				Integer check = TFTPErrorHelper.dataPacketChecker(udp, packet, ack[2] * 256 + ack[3], firstLoop);
+				Integer check = TFTPErrorHelper.dataPacketChecker(udp, packet, Byte.toUnsignedInt(ack[2]) * 256 + Byte.toUnsignedInt(ack[3]), firstLoop);
 				if (check == null) {
 					// Valid packet received, continue normally.
 					
