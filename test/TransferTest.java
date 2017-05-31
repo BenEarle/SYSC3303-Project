@@ -18,11 +18,11 @@ public class TransferTest {
 	
 	private static final String LANG_EXCEPTION = "Exception";
 	private static final String LANG_DISK_FULL = "Disk full, cannot complete operation.";
-	private static final String LANG_PACKET_3 = "Error packet type 3 received.";
+	private static final String LANG_PACKET_3 = "Error packet type 3 received:";
 	private static final String LANG_ALREADY_EXISTS = "File already exists.";
-	private static final String LANG_PACKET_6 = "Error packet type 6 received.";
+	private static final String LANG_PACKET_6 = "Error packet type 6 received:";
 	private static final String LANG_DENIED = "Access denied for c_jpg.jpg.";
-	private static final String LANG_PACKET_2 = "Error packet type 2 received.";
+	private static final String LANG_PACKET_2 = "Error packet type 2 received:";
 	
 	Client c;
 	Server s;

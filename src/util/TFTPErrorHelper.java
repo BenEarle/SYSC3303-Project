@@ -210,24 +210,48 @@ public class TFTPErrorHelper {
 		data[3] = type;
 		u.setResendOnTimeout(false);
 		System.arraycopy(message.getBytes(), 0, data, 4, message.length());
-		Log.err(Log.bString(data).trim());
+		Log.err(message);
 		// send the packet back to the person who sent us the wrong message
-		System.out.println(Log.bBytes(data));
 		u.sendPacket(data);
 	}
 
 	public static boolean isError(byte[] data) {
-		return (data[0] == Var.ERROR[0] && data[1] == Var.ERROR[1]);
+		return data.length >= 2 && data[0] == Var.ERROR[0] && data[1] == Var.ERROR[1];
 	}
 
 	public static void unPackError(DatagramPacket p) {
 		byte[] data = p.getData();
-		byte[] message = new byte[Var.BLOCK_SIZE];
-		Log.err("Error packet type " + data[3] + " received.");
-		for (int i = 4; i < data.length; i++) {
-			message[i - 4] = data[i];
+		
+		// Check opCode.
+		if (p.getLength() < 2) {
+			// Data not long enough.
+			Log.err("Invalid ERROR packet received, missing opCode");
+			return;
 		}
-		Log.err(Log.bString(message, message.length).trim());
+		if (!(data[0] == Var.ERROR[0] && data[1] == Var.ERROR[1])) {
+			// opCode is incorrect.
+			Log.err("Invalid ERROR packet received, incorrect opCode " + data[0] + "" + data[1]);
+			return;
+		}
+		
+		// Check error code.
+		if (p.getLength() < 3) {
+			// Data not long enough.
+			Log.err("Invalid ERROR packet received, missing error code");
+			return;
+		}
+		if (data[3] < 0 || data[3] > 6) {
+			// Error code is incorrect.
+			Log.err("Invalid ERROR packet received, incorrect error code " + data[3]);
+			return;
+		}
+		
+		if (p.getLength() > 3) {
+			Log.err("Error packet type " + data[3] + " received:");
+			Log.err(new String(data, 4, p.getLength() - 4));
+		} else {
+			Log.err("Error packet type " + data[3] + " received, no attached message.");
+		}
 	}
 	
 }
