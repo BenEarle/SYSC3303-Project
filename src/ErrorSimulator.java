@@ -145,7 +145,7 @@ public class ErrorSimulator {
 	/*************************************************************************/
 	// Sabotage a packet according to error scenario specification
 	/*************************************************************************/
-	public DatagramPacket sabotage(DatagramPacket packet){
+	public DatagramPacket sabotage(DatagramPacket packet)  throws IOException {
 		byte[] data = packet.getData();
 		//-------------------------------------------------
 		// 1-3 -- No sabotage for packets here
@@ -197,6 +197,11 @@ public class ErrorSimulator {
 					data[2] = (byte)0xFF;
 					data[3] = (byte)0xFF;
 					packet.setData(data,0,packet.getLength());
+					
+					if(nextSendToClient) socClient.send(packet);
+					else socServer.send(packet);			
+					packet = lose(packet);
+					
 				//-------------------------------------------------
 				// Make a packet larger by 100 bytes and fill with 0xFFs
 				} else if(err.getFaultType()==ErrorScenario.SIZE_FAULT){
