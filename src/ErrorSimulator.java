@@ -395,6 +395,7 @@ public class ErrorSimulator {
 		lastAck    = false;
 		error      = false;
 		triggered  = false;
+		rollOver   = false;
 		
 		DatagramPacket packet = null;
 		initiated = false;
