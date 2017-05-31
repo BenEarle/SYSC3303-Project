@@ -7,7 +7,7 @@ import java.net.DatagramPacket;
 /*************************************************************************/
 
 public class TFTPErrorHelper {
-
+	
 	public static Integer requestPacketChecker(UDPHelper u, DatagramPacket p) {
 		/**
 		 * Checks:
@@ -114,7 +114,7 @@ public class TFTPErrorHelper {
 		return ch >= 32 && ch < 127;
 	}
 
-	public static Integer dataPacketChecker(UDPHelper u, DatagramPacket p, int expectedBlock) {
+	public static Integer dataPacketChecker(UDPHelper u, DatagramPacket p, int expectedBlock, boolean firstLoop) {
 		/**
 		 * Checks:
 		 * 1) data size is greater than 5
@@ -143,16 +143,16 @@ public class TFTPErrorHelper {
 			sendError(u, (byte) 0x04, "Invalid data op code");
 			return 4;
 		}
-		int blockNum = data[2] * 256 + data[3];
+		int blockNum = Byte.toUnsignedInt(data[2]) * 256 + Byte.toUnsignedInt(data[3]);
 
 		//System.out.println("DATA: " + blockNum + "  " + expectedBlock);
 		// Unexpected block number
-		if(blockNum < expectedBlock){
+		if(blockNum < expectedBlock || !firstLoop){
 			// This is a duplicate data, resend the ack packet with the correct block number.
 			byte[] d = Var.ACK_WRITE.clone();
 			d[2] = data[2];
 			d[3] = data[3];
-			Log.out("Received a duplicate DATA packet. Resending ACK " + blockNum + ".");
+			Log.out("Received a Potential duplicate DATA packet. Resending ACK " + blockNum + ".");
 			u.sendPacket(d);
 			return -1;
 		} else if (blockNum > expectedBlock) {
@@ -163,7 +163,7 @@ public class TFTPErrorHelper {
 		return null;
 	}
 	
-	public static Integer ackPacketChecker(UDPHelper u, DatagramPacket p, int expectedBlock) {
+	public static Integer ackPacketChecker(UDPHelper u, DatagramPacket p, int expectedBlock, boolean firstLoop) {
 		/**
 		 * Checks:
 		 * 1) data size is 4
@@ -187,18 +187,18 @@ public class TFTPErrorHelper {
 			return 4;
 		}
 
-		int blockNum = data[2] * 256 + data[3];
+		int blockNum = Byte.toUnsignedInt(data[2]) * 256 + Byte.toUnsignedInt(data[3]);
 
 		//System.out.println("ACK:  " + blockNum + "  " + expectedBlock);
 		// Unexpected block number
-		if (blockNum > expectedBlock) {	
+		if (blockNum < expectedBlock || !firstLoop) {
+			// This is a duplicate ack, ignore the packet it.
+			Log.out("Received a Potential duplicate ACK " + blockNum + " packet, ignoring.");
+			return -1;
+		} else if (blockNum > expectedBlock) {	
 			sendError(u, (byte) 0x04, "ACK wrong block number");
 			return 4;
-		} else if (blockNum < expectedBlock) {
-			// This is a duplicate ack, ignore the packet it.
-			Log.out("Received a duplicate ACK " + blockNum + " packet, ignoring.");
-			return -1;
-		}
+		} 
 		return null;
 	}
 
@@ -229,4 +229,5 @@ public class TFTPErrorHelper {
 		}
 		Log.err(Log.bString(message, message.length).trim());
 	}
+	
 }

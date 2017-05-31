@@ -35,6 +35,7 @@ public class WriteThread extends ClientResponseThread {
 	
 	public void run() {
 		DatagramPacket packet;
+		boolean firstLoop = true;
 		FileWriter fw = null;
 		byte[] ack = Var.ACK_WRITE.clone(); // initial ack message
 
@@ -53,7 +54,9 @@ public class WriteThread extends ClientResponseThread {
 					try {
 						fw = new FileWriter(Var.SERVER_ROOT + file);
 					} catch (IOException e) {
-						if (e.getMessage().equals("File already exists")) {
+						if (e.getMessage().equals("Access is denied")) {
+							TFTPErrorHelper.sendError(udp, (byte) 2, "Access is denied.");
+						} else if (e.getMessage().equals("File already exists")) {
 							TFTPErrorHelper.sendError(udp, (byte) 6, "File already exists.");
 						} else {
 							Log.err("ERROR Starting file writer", e);
@@ -64,7 +67,7 @@ public class WriteThread extends ClientResponseThread {
 				}
 				
 				// Check the data packet is valid.
-				Integer check = TFTPErrorHelper.dataPacketChecker(udp, packet, ack[2] * 256 + ack[3]);
+				Integer check = TFTPErrorHelper.dataPacketChecker(udp, packet, ack[2] * 256 + ack[3], firstLoop);
 				if (check == null) {
 					// Valid packet received, continue normally.
 					
@@ -89,6 +92,9 @@ public class WriteThread extends ClientResponseThread {
 					// Send the ack packet, then increment the ack block number.
 					super.sendPacket(ack);
 					ack = ackIncrement(ack);
+					if (Byte.toUnsignedInt(ack[2]) * 256 + Byte.toUnsignedInt(ack[3]) == 65335) {
+						firstLoop = false;
+					}
 					if (packet.getLength() != Var.BUF_SIZE) {
 						break;
 					}

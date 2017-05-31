@@ -144,12 +144,18 @@ public class Client {
 		blockNum[0] = 0x00;
 		blockNum[1] = 0x01;
 		boolean firstData = true;
+		boolean firstLoop = true;
 		FileWriter writer = null;
 
 		try {
 			writer = new FileWriter(Var.CLIENT_ROOT + fileName);
 		} catch (IOException e) {
-			if (e.getMessage().equals("File already exists")) {
+			if (e.getMessage().equals("Access is denied")) {
+				TFTPErrorHelper.sendError(udp, (byte) 2, "Access is denied.");
+				Log.err("File already exists.");
+				udp.setTestSender(false);
+				return;
+			} else if (e.getMessage().equals("File already exists")) {
 				Log.err("File already exists.");
 				udp.setTestSender(false);
 				return;
@@ -165,7 +171,7 @@ public class Client {
 			packet = udp.receivePacket();
 			if (packet != null) {
 				// Check the data packet is valid.
-				Integer check = TFTPErrorHelper.dataPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]);
+				Integer check = TFTPErrorHelper.dataPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1], firstLoop);
 				if (check == null) {
 					// Valid packet received, continue normally.
 
@@ -205,6 +211,9 @@ public class Client {
 					// Send the acknowledge packet
 					udp.sendPacket(makeData(Var.ACK, blockNum));
 					blockNum = bytesIncrement(blockNum);
+					if (Byte.toUnsignedInt(blockNum[1]) * 256 + Byte.toUnsignedInt(blockNum[2]) == 65335) {
+						firstLoop = false;
+					}
 				} else if (check == -1) {
 					// Ignore the packet.
 				} else {
@@ -240,6 +249,7 @@ public class Client {
 	private void writeMode(String fileName) throws IOException {
 		// Data for transfer
 		FileReader reader = null;
+		boolean firstLoop = true;
 		try {
 			reader = new FileReader(Var.CLIENT_ROOT + fileName);
 		} catch (IOException e) {
@@ -269,7 +279,7 @@ public class Client {
 			packet = udp.receivePacket();
 			if (packet != null) {
 				// Check the ack packet is valid.
-				Integer check = TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]);
+				Integer check = TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1], firstLoop);
 				if (check == null) {
 					// Valid packet received, continue normally.
 
@@ -296,7 +306,9 @@ public class Client {
 
 					// Increment Block Number
 					blockNum = bytesIncrement(blockNum);
-
+					if (Byte.toUnsignedInt(blockNum[1]) * 256 + Byte.toUnsignedInt(blockNum[2]) == 65335) {
+						firstLoop = false;
+					}
 					// Add OPCode to data.
 					data[0] = Var.DATA[0];
 					data[1] = Var.DATA[1];
@@ -324,7 +336,7 @@ public class Client {
 		packet = udp.receivePacket();
 		if (packet == null)
 			System.out.println("Never recieved the final acknowledgement, please check the validity of the transfer.");
-		else if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]) != null) {
+		else if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1],firstLoop) != null) {
 			if (TFTPErrorHelper.isError(packet.getData()))
 				TFTPErrorHelper.unPackError(packet);
 			udp.setTestSender(false);
