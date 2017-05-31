@@ -240,17 +240,17 @@ public class TFTPErrorHelper {
 			Log.err("Invalid ERROR packet received, missing error code");
 			return;
 		}
-		if (data[3] < 0 || data[3] > 6) {
+		if (data[2] < 0 || data[2] > 6) {
 			// Error code is incorrect.
 			Log.err("Invalid ERROR packet received, incorrect error code " + data[3]);
 			return;
 		}
 		
 		if (p.getLength() > 3) {
-			Log.err("Error packet type " + data[3] + " received:");
-			Log.err(new String(data, 4, p.getLength() - 4));
+			Log.err("Error packet type " + data[2] + " received:");
+			Log.err(new String(data, 3, p.getLength() - 3));
 		} else {
-			Log.err("Error packet type " + data[3] + " received, no attached message.");
+			Log.err("Error packet type " + data[2] + " received, no attached message.");
 		}
 	}
 	
