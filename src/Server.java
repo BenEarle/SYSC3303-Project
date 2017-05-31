@@ -42,6 +42,13 @@ public class Server {
 				else System.out.println("disabled.");
 			} else if (input.toLowerCase().equals("help") || input.toLowerCase().equals("h")) {
 				System.out.println("Server<Main>: List of available commands: quit, verbose, help");
+			} else if(input.toLowerCase().equals("cd") || input.toLowerCase().equals("c")){
+				System.out.println("New Path: ");
+				String newPath = sc.next();
+				if(newPath.charAt(newPath.length()) != '\\' || newPath.charAt(newPath.length()) != '/') {
+					newPath += '\\';
+				} 
+				Var.SERVER_ROOT = newPath;
 			} else {
 				System.out.println("Server<Main>: Type in 'help' for a list of commands...");
 			}

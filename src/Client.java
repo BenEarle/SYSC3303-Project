@@ -99,9 +99,17 @@ public class Client {
 			case ("ip"):
 				this.getServerIP();
 				break;
+			case ("cd"):
+			case ("c"):
+				String newPath = getUserInput("New Path: ");
+				if(newPath.charAt(newPath.length()) != '\\' || newPath.charAt(newPath.length()) != '/') {
+					newPath += '\\';
+				} 
+				Var.CLIENT_ROOT = newPath;
+				break;
 			case ("h"):
 			case ("help"):
-				System.out.println("Client: Available commands: read, write, verbose, test, help, ip.");
+				System.out.println("Client: Available commands: read, write, verbose, test, help, ip, cd.");
 				break;
 			default:
 				System.out.println("Client: Unrecognized command, type 'help' for a list of commands.");
