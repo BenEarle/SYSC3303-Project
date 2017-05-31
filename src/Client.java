@@ -107,6 +107,9 @@ public class Client {
 				} 
 				Var.CLIENT_ROOT = newPath;
 				break;
+			case ("ls"):
+			case ("dir"):
+				System.out.println("Current server directory: " + Var.CLIENT_ROOT);
 			case ("h"):
 			case ("help"):
 				System.out.println("Client: Available commands: read, write, verbose, test, help, ip, cd.");
