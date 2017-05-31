@@ -49,6 +49,7 @@ public class ReadThread extends ClientResponseThread {
 		blockNum[1] = 0x01;
 
 		boolean lastPacket = false; // flag to indicate if last packet is sent
+		boolean firstLoop = true;
 		byte[] data; // data from file
 
 		// Get data from file
@@ -87,7 +88,7 @@ public class ReadThread extends ClientResponseThread {
 			packet = super.receivePacket();
 			if (packet != null) {
 				// Check the ack packet is valid.
-				Integer check = TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]);
+				Integer check = TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1], firstLoop);
 				if (check == null) {
 					// Valid packet received, continue normally.
 
@@ -112,7 +113,9 @@ public class ReadThread extends ClientResponseThread {
 
 					// Increment Block Number
 					blockNum = bytesIncrement(blockNum);
-
+					if (Byte.toUnsignedInt(blockNum[1]) * 256 + Byte.toUnsignedInt(blockNum[2]) == 65335) {
+						firstLoop = false;
+					}
 					// Add OPCode to data.
 					data[0] = Var.DATA[0];
 					data[1] = Var.DATA[1];
@@ -148,7 +151,7 @@ public class ReadThread extends ClientResponseThread {
 		if (packet == null) {
 			System.out.println("Server<ReadThread>: Server never recieved the final ack packet, please check the validity of the transfer.");
 		} else {
-			Integer check = TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1]);
+			Integer check = TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1], firstLoop);
 			if (check != null && check != -1) {
 				if (TFTPErrorHelper.isError(packet.getData()))
 					TFTPErrorHelper.unPackError(packet);
