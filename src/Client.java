@@ -2,9 +2,10 @@
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.DatagramPacket;
-
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Scanner;
 
 import util.FileReader;
@@ -379,49 +380,34 @@ public class Client {
 	 * Prompts the user to get the ip where the server is running
 	 */
 	private void getServerIP() {
-		String serverIP = getUserInput("IP of Server: ");
-		boolean noValidIP = !isValidIP(serverIP);
-		if (!noValidIP) {
-			addrServer = new InetSocketAddress(serverIP, Var.PORT_SERVER);
-			addrHost = new InetSocketAddress(serverIP, Var.PORT_CLIENT);
-		} else {
-			System.out.println("Invalid IP defaulting to localhost please try again");
-			addrServer = new InetSocketAddress("localhost", Var.PORT_SERVER);
-			addrHost = new InetSocketAddress("localhost", Var.PORT_CLIENT);
-		}
-	}
-
-	/**
-	 * Takes a string of an ip and checks to make sure it is a valid ip
-	 * @param ip ip string that you want to check
-	 * @return true if it is valid and false if it is not valid
-	 */
-	private boolean isValidIP(String ip) {
+		String serverIP = getUserInput("IP of Destination: ");
 		try {
-			if (ip == null || ip.isEmpty()) {
-				return false;
-			}
-
-			String[] parts = ip.split("\\.");
-			if (parts.length != 4) {
-				return false;
-			}
-
-			for (String s : parts) {
-				int i = Integer.parseInt(s);
-				if ((i < 0) || (i > 255)) {
-					return false;
+			if (InetAddress.getByName(serverIP).isReachable(100)){
+				if (serverIP.equals("")) {
+					System.out.println("\tIP destination now: localHost");
+				} else {
+					System.out.println("\tIP destination now: " + serverIP);
 				}
+				addrServer = new InetSocketAddress(serverIP, Var.PORT_SERVER);
+				addrHost = new InetSocketAddress(serverIP, Var.PORT_CLIENT);
+				return;
+			} else {
+				//Timeout hit, destination unreachable
+				System.out.println("\tNo response from IP: " + serverIP
+						+ "\n\tPlease check connection or try a valid IP");
 			}
-			if (ip.endsWith(".")) {
-				return false;
-			}
-
-			return true;
-		} catch (NumberFormatException nfe) {
-			return false;
+		} catch (UnknownHostException e) {
+			//Caught an error in the host ip and so is unreachable
+			System.out.println("\tProblem setting destination IP to " + serverIP +
+							   "\n\tPlease try again with a valid IP address");
+		} catch (IOException e) {
+			//Caught an io exception, cant recover
+			System.out.println("\tProblem setting destination IP to " + serverIP +
+							   "\n\tPlease make sure the Host has Internet Access");
 		}
+		System.out.println("\tDestination IP staying: " + addrServer.getHostString());		
 	}
+
 
 	/**
 	 * Makes the data section of the packet to respond
