@@ -47,11 +47,11 @@ Iteration 4:
 -----------------------------------------------------------------------------------------------------------
 Iteration 5:
 -----------------------------------------------------------------------------------------------------------
-  Ben Croskery     -> 
-  Ben Earle        -> 
-  Dillon Verhaeghe -> 
-  Patrick Perron   -> 
-  Shane Corrigan   -> 
+  Ben Croskery     -> Final Testing and Debugging
+  Ben Earle        -> Final Testing and Debugging
+  Dillon Verhaeghe -> Implemented Changes, Final Testing and Debugging
+  Patrick Perron   -> Final Testing and Debugging
+  Shane Corrigan   -> Final Testing and Debugging
 ===========================================================================================================
 # Assumptions made for conditions not specified by TFTP Protocol
 ===========================================================================================================
@@ -61,6 +61,11 @@ Iteration 5:
     Server will be sending error code 6 if a file already exists on the server in a WRQ.
   * The client and server each try resend packets up to 3 times if no response is received. Quits after 
 	the 3rd retransmission
+  * If running on a separate computer, the error simulator runs on the same computer as the server
+  * The timeout when receiving packets is 1s, when the client or server timeout during a transfer they will
+    try resending the packet 3 times.
+  * The Error Simulator will be running on the same computer as the Server. 
+
 ===========================================================================================================
 # Files
 ===========================================================================================================
@@ -110,17 +115,21 @@ Iteration 5:
   * Diagrams/Iteration3/IT3_WRQ_Code3
   * Diagrams/Iteration3/IT3_WRQ_Code6
   
+  * Diagrams/Iteration4/IT4_LostACKFromServer.png
+  * Diagrams/Iteration4/IT4_LostDataFromServer.png
   * Diagrams/Iteration4/IT4_
   * Diagrams/Iteration4/IT4_
+  * Diagrams/Iteration4/IT4_DelayedACKFromServer.png
+  * Diagrams/Iteration4/IT4_DelayedDataFromServer.png
   * Diagrams/Iteration4/IT4_
   * Diagrams/Iteration4/IT4_
-  * Diagrams/Iteration4/IT4_
+  * Diagrams/Iteration4/IT4_DuplicatedACKToServer.png
+  * Diagrams/Iteration4/IT4_DuplicatedDataToServer.png
+  * Diagrams/Iteration4/IT4_DuplicatedACKToClient
+  * Diagrams/Iteration4/IT4_DuplicatedDataToClient
   
-  * Diagrams/Iteration4/IT5_
-  * Diagrams/Iteration4/IT5_
-  * Diagrams/Iteration4/IT5_
-  * Diagrams/Iteration4/IT5_
-  * Diagrams/Iteration4/IT5_
+  * Diagrams/Iteration5/UML Class - Default.png
+  * Diagrams/Iteration5/UML Class - Util.png
 ===========================================================================================================
 Test Files:
 ===========================================================================================================
@@ -150,6 +159,11 @@ Test Files:
             an initial argument
           - For ERROR SIM mode: enter 't' or 'test' to toggle test mode after startup, OR pass 't' as
             an initial argument
+	  - If server and error simulator are on a different computer, enter ‘i’ to set up new address. 
+	    Then enter the IP address of the server and error simulator 
+          - To set the path of the server directory, enter ‘cd’. Then enter the new desired path for the 
+            server directory
+
 ----------------------------------------------------------------------------------------------------------
  Write:
       1) Enter 'w" on client console
@@ -167,6 +181,11 @@ Test Files:
       1) Enter 'S' on client console
       2) Type 'S' on Server console
       3)(OPTIONAL)Ctrl+C on Error Simulator console
+-----------------------------------------------------------------------------------------------------------
+ Change Directory:
+      1) Enter ‘cd’ on either the client or the server.
+      2) Enter the directory you would like to be working out of.
+
 ===========================================================================================================
 # Instructions for Test Cases
 ===========================================================================================================
