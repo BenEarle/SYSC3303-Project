@@ -242,7 +242,7 @@ public class TFTPErrorHelper {
 		}
 		if (data[2] < 0 || data[2] > 6) {
 			// Error code is incorrect.
-			Log.err("Invalid ERROR packet received, incorrect error code " + data[3]);
+			Log.err("Invalid ERROR packet received, incorrect error code " + data[2]);
 			return;
 		}
 		

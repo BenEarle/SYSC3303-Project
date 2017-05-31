@@ -167,6 +167,42 @@ public class TFTPErrorHelperTest {
 
 		assertEquals(expectedError, actual);
 	}
+
+	@Test
+	public void testErrorPacketChecker() {
+		// GOOD
+		errorPacketChecker(2, "testing a message", makePacket(Var.ERROR, new byte[] {2}, "testing a message".getBytes()));
+		errorPacketChecker(6, "hi there", makePacket(Var.ERROR, new byte[] {6}, "hi there".getBytes()));
+		errorPacketChecker(0, null, makePacket(Var.ERROR, new byte[] {0}));
+		
+		// BAD
+		errorPacketChecker(null, "Invalid ERROR packet received, missing opCode", makePacket());
+		errorPacketChecker(null, "Invalid ERROR packet received, incorrect opCode " + Var.WRITE[0] + "" + Var.WRITE[1], makePacket(Var.WRITE));
+
+		errorPacketChecker(null, "Invalid ERROR packet received, missing error code", makePacket(Var.ERROR));
+		errorPacketChecker(null, "Invalid ERROR packet received, incorrect error code 7", makePacket(Var.ERROR, new byte[] {7}));
+		errorPacketChecker(null, "Invalid ERROR packet received, incorrect error code -1", makePacket(Var.ERROR, new byte[] {-1}));
+	}
+
+	public void errorPacketChecker(Integer expectedError, String expectedMsg, DatagramPacket p) {
+		//System.out.println(Log.bString(p.getData()));
+		//System.out.println(Log.bBytes(p.getData()));
+		Log.saveLog(true);
+		TFTPErrorHelper.unPackError(p);
+		String log = Log.getLog();
+		Log.saveLog(false);
+		
+		if (expectedError != null) {
+			if (expectedMsg != null) {
+				assertTrue("Missing error message or code is incorrect", log.contains("Error packet type " + expectedError  + " received:"));
+				assertTrue("Message attached is either missing or wrong", log.contains(expectedMsg));
+			} else {
+				assertTrue("Missing error message or code is incorrect", log.contains("Error packet type " + expectedError  + " received, no attached message."));
+			}
+		} else {
+			assertTrue("Expected log message was not found", log.contains(expectedMsg));
+		}
+	}
 	
 	private DatagramPacket makePacket(byte[]... bytes) {
 		return makePacket(Var.BUF_SIZE, bytes);
