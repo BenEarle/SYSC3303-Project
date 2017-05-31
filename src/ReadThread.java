@@ -151,7 +151,7 @@ public class ReadThread extends ClientResponseThread {
 		if (packet == null) {
 			System.out.println("Server<ReadThread>: Server never recieved the final ack packet, please check the validity of the transfer.");
 		} else {
-			Integer check = TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1], firstLoop);
+			Integer check = TFTPErrorHelper.ackPacketChecker(udp, packet, Byte.toUnsignedInt(blockNum[0]) * 256 + Byte.toUnsignedInt(blockNum[1]), firstLoop);
 			if (check != null && check != -1) {
 				if (TFTPErrorHelper.isError(packet.getData()))
 					TFTPErrorHelper.unPackError(packet);

@@ -183,7 +183,7 @@ public class Client {
 			packet = udp.receivePacket();
 			if (packet != null) {
 				// Check the data packet is valid.
-				Integer check = TFTPErrorHelper.dataPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1], firstLoop);
+				Integer check = TFTPErrorHelper.dataPacketChecker(udp, packet, Byte.toUnsignedInt(blockNum[0]) * 256 + Byte.toUnsignedInt(blockNum[1]), firstLoop);
 				if (check == null) {
 					// Valid packet received, continue normally.
 
@@ -348,7 +348,7 @@ public class Client {
 		packet = udp.receivePacket();
 		if (packet == null)
 			System.out.println("Never recieved the final acknowledgement, please check the validity of the transfer.");
-		else if (TFTPErrorHelper.ackPacketChecker(udp, packet, blockNum[0] * 256 + blockNum[1],firstLoop) != null) {
+		else if (TFTPErrorHelper.ackPacketChecker(udp, packet, Byte.toUnsignedInt(blockNum[0]) * 256 + Byte.toUnsignedInt(blockNum[1]),firstLoop) != null) {
 			if (TFTPErrorHelper.isError(packet.getData()))
 				TFTPErrorHelper.unPackError(packet);
 			udp.setTestSender(false);
