@@ -240,12 +240,14 @@ public class ErrorScenario {
 					Log.out(
 						"Select a Fault Case to Test:\n"
 					  + " 1) opcode\n"
-					  + " 2) Errcode"
+					  + " 2) errcode\n"
+					  + " 3) size"
 					);
 					scanner = new Scanner(System.in);
 					switch(scanner.nextLine().trim()){
 						case "1": faultType = OPCODE_FAULT; break;
 						case "2": faultType = ERRCODE_FAULT;  break;
+						case "3": faultType = SIZE_FAULT;  break;
 				        default: Log.out("ERROR - Invalid Entry"); break;
 					}
 				}

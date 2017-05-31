@@ -227,6 +227,11 @@ public class ErrorSimulator {
 					data[2] = (byte)0xFF;
 					data[3] = (byte)0xFF;
 					packet.setData(data,0,packet.getLength());
+				//-------------------------------------------------
+				// Changes Size
+				} else if(err.getFaultType()==ErrorScenario.SIZE_FAULT){
+					byte[] newData = {0x00, 0x05};
+					packet.setData(newData,0,2);
 				}	
 			}
 		//-------------------------------------------------
