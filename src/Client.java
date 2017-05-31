@@ -102,7 +102,7 @@ public class Client {
 			case ("cd"):
 			case ("c"):
 				String newPath = getUserInput("New Path: ");
-				if(newPath.charAt(newPath.length()) != '\\' || newPath.charAt(newPath.length()) != '/') {
+				if(newPath.charAt(newPath.length()-1) != '\\' || newPath.charAt(newPath.length()-1) != '/') {
 					newPath += '\\';
 				} 
 				Var.CLIENT_ROOT = newPath;
@@ -110,9 +110,10 @@ public class Client {
 			case ("ls"):
 			case ("dir"):
 				System.out.println("Current server directory: " + Var.CLIENT_ROOT);
+				break;
 			case ("h"):
 			case ("help"):
-				System.out.println("Client: Available commands: read, write, verbose, test, help, ip, cd.");
+				System.out.println("Client: Available commands: read, write, verbose, test, help, ip, cd, ls.");
 				break;
 			default:
 				System.out.println("Client: Unrecognized command, type 'help' for a list of commands.");
