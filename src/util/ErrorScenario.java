@@ -1,11 +1,8 @@
 package util;
 
 import java.util.Scanner;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-
 import util.Log;
-import util.Var;
+
 
 public class ErrorScenario {
 	/*************************************************************************/

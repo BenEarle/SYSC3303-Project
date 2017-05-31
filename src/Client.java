@@ -45,7 +45,7 @@ public class Client {
 		Log.out("Client: Starting Client");
 		System.out.println(Var.CMDStart);
 		System.out.println("Client: Type 'help' to get a list of available commands.");
-
+		this.getServerIP();
 		running = true;
 		while (running) {
 			udp.setResendOnTimeout(true);
@@ -375,6 +375,46 @@ public class Client {
 		return s;
 	}
 
+	private void getServerIP () {
+		boolean noValidIP = true;
+		while (noValidIP) {
+			String serverIP = getUserInput("IP of Server: ");
+			noValidIP = !isValidIP(serverIP);
+			if (!noValidIP) {
+				addrServer = new InetSocketAddress(serverIP, Var.PORT_SERVER);
+			} else {
+				System.out.println("Please enter a valid IP address");
+			}
+		}
+	}
+	
+	private boolean isValidIP (String ip) {
+	    try {
+	        if ( ip == null || ip.isEmpty() ) {
+	            return false;
+	        }
+
+	        String[] parts = ip.split( "\\." );
+	        if ( parts.length != 4 ) {
+	            return false;
+	        }
+
+	        for ( String s : parts ) {
+	            int i = Integer.parseInt( s );
+	            if ( (i < 0) || (i > 255) ) {
+	                return false;
+	            }
+	        }
+	        if ( ip.endsWith(".") ) {
+	            return false;
+	        }
+
+	        return true;
+	    } catch (NumberFormatException nfe) {
+	        return false;
+	    }
+	}
+	
 	private byte[] makeData(byte[]... bytes) {
 		// Get the required length of the byte array.
 		int length = 0;

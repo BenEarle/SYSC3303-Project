@@ -36,7 +36,6 @@ public class WriteThread extends ClientResponseThread {
 	public void run() {
 		DatagramPacket packet;
 		FileWriter fw = null;
-		byte[] data;
 		byte[] ack = Var.ACK_WRITE.clone(); // initial ack message
 
 		// Send initial Acknowledge
