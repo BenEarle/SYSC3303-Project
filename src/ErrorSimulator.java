@@ -38,6 +38,7 @@ public class ErrorSimulator {
 	private boolean lastData;
 	private boolean error;
 	private boolean initiated;
+	private boolean rollOver;
 	
 	// Error Scenario
 	private ErrorScenario err;
@@ -197,10 +198,11 @@ public class ErrorSimulator {
 					data[2] = (byte)0xFF;
 					data[3] = (byte)0xFF;
 					packet.setData(data,0,packet.getLength());
-					
-					if(nextSendToClient) socClient.send(packet);
-					else socServer.send(packet);			
-					packet = lose(packet);
+					if(rollOver){
+						if(nextSendToClient) socClient.send(packet);
+						else                 socServer.send(packet);			
+						packet = lose(packet); // wait for another packet in its place
+					}
 					
 				//-------------------------------------------------
 				// Make a packet larger by 100 bytes and fill with 0xFFs
@@ -311,7 +313,12 @@ public class ErrorSimulator {
 		} else if(data[0]==Var.DATA[0] && data[1]==Var.DATA[1]){
 			// packet is expected
 			if(expDataBlk == getBlockNum(packet)){
-				expDataBlk++;
+				if(expDataBlk == 65535){
+					rollOver = true;
+					expDataBlk = 0;
+				} else {
+					expDataBlk++;
+				}
 				if (packet.getLength() < 516) {
 					Log.out("ErrorSimulatorChannel: Received Last DATA Packet in Transfer");
 					lastData = true;
@@ -334,7 +341,12 @@ public class ErrorSimulator {
 		} else if(data[0]==Var.ACK[0] && data[1] == Var.ACK[1]){
 			// packet is expected
 			if(expAckBlk == getBlockNum(packet)){
-				expAckBlk++;
+				if(expAckBlk == 65535){
+					rollOver = true;
+					expAckBlk = 0;
+				} else {
+					expAckBlk++;
+				}
 				if (lastData == true) {
 					Log.out("ErrorSimulatorChannel: Received Last ACK Packet in Transfer");
 					lastAck = true;
