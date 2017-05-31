@@ -114,7 +114,7 @@ public class TFTPErrorHelperTest {
 	public void dataPacketChecker(Integer expectedError, String expectedMsg, int expectedBlock, DatagramPacket p) {
 		//System.out.println(Log.bString(p.getData()));
 		System.out.println("ASAD");
-		Integer actual = TFTPErrorHelper.dataPacketChecker(u, p, expectedBlock);
+		Integer actual = TFTPErrorHelper.dataPacketChecker(u, p, expectedBlock, true);
 		
 		if (actual != null && actual != -1) {
 			DatagramPacket pa = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);
@@ -153,7 +153,7 @@ public class TFTPErrorHelperTest {
 		//System.out.println(Log.bString(p.getData()));
 		//System.out.println(Log.bBytes(p.getData()));
 		System.out.println(expectedMsg);
-		Integer actual = TFTPErrorHelper.ackPacketChecker(u, p, expectedBlock);
+		Integer actual = TFTPErrorHelper.ackPacketChecker(u, p, expectedBlock, true);
 
 		if (actual != null && actual != -1) {
 			DatagramPacket pa = new DatagramPacket(new byte[Var.BUF_SIZE], Var.BUF_SIZE);

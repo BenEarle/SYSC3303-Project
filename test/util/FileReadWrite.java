@@ -13,7 +13,7 @@ import org.junit.Test;
 public class FileReadWrite {
 	private static final String FILENAME = "test.txt";
 	private static final String DIR1 = "temp/";
-	private static final String DIR2 = "some/boDY/Once/tOLd/ME/";
+	private static final String DIR2 = "some/boDY\\Once/tOLd/ME///";
 	private static final int ITERATIONS = 420;
 	
 	private FileReader r;
