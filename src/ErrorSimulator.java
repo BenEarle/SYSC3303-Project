@@ -34,11 +34,11 @@ public class ErrorSimulator {
 	// Packet Count
 	private int expAckBlk;
 	private int expDataBlk;
+	private int rollOver;
 	private boolean lastAck;
 	private boolean lastData;
 	private boolean error;
 	private boolean initiated;
-	private boolean rollOver;
 	
 	// Error Scenario
 	private ErrorScenario err;
@@ -198,7 +198,7 @@ public class ErrorSimulator {
 					data[2] = (byte)0xFF;
 					data[3] = (byte)0xFF;
 					packet.setData(data,0,packet.getLength());
-					if(rollOver){
+					if(rollOver > 0){
 						if(nextSendToClient) socClient.send(packet);
 						else                 socServer.send(packet);			
 						packet = lose(packet); // wait for another packet in its place
@@ -270,11 +270,11 @@ public class ErrorSimulator {
 			triggered = true;
 			Log.out("ErrorSimulatorChannel: WRITE Packet sabotaged with "+ErrorScenario.FAULT[err.getFaultType()] +" Fault");
 		// Trigger an error for a Specific DATA packet
-		} else if( data[1]==Var.DATA[1] && err.getPacketType()==ErrorScenario.DATA_PACKET && getBlockNum(packet)==err.getBlockNum() ){
+		} else if( data[1]==Var.DATA[1] && err.getPacketType()==ErrorScenario.DATA_PACKET && getBlockNum(packet)==(rollOver*65535)+err.getBlockNum() ){
 			triggered = true;
 			Log.out("ErrorSimulatorChannel: DATA Packet #"+err.getBlockNum()+" sabotaged with "+ErrorScenario.FAULT[err.getFaultType()] +" Fault");
 		// Trigger an error for a Specific ACK packet
-		} else if( data[1]==Var.ACK[1] && err.getPacketType()==ErrorScenario.ACK_PACKET && getBlockNum(packet)==err.getBlockNum() ){
+		} else if( data[1]==Var.ACK[1] && err.getPacketType()==ErrorScenario.ACK_PACKET && getBlockNum(packet)==(rollOver*65535)+err.getBlockNum() ){
 			triggered = true;
 			Log.out("ErrorSimulatorChannel: ACK Packet #" +err.getBlockNum()+" sabotaged with "+ErrorScenario.FAULT[err.getFaultType()] +" Fault");
 		// Trigger an error for an ERROR packet
@@ -314,7 +314,7 @@ public class ErrorSimulator {
 			// packet is expected
 			if(expDataBlk == getBlockNum(packet)){
 				if(expDataBlk == 65535){
-					rollOver = true;
+					rollOver++;
 					expDataBlk = 0;
 				} else {
 					expDataBlk++;
@@ -342,7 +342,7 @@ public class ErrorSimulator {
 			// packet is expected
 			if(expAckBlk == getBlockNum(packet)){
 				if(expAckBlk == 65535){
-					rollOver = true;
+					// Rollover handled by data
 					expAckBlk = 0;
 				} else {
 					expAckBlk++;
@@ -395,7 +395,7 @@ public class ErrorSimulator {
 		lastAck    = false;
 		error      = false;
 		triggered  = false;
-		rollOver   = false;
+		rollOver   = 0;
 		
 		DatagramPacket packet = null;
 		initiated = false;
