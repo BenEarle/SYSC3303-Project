@@ -428,7 +428,7 @@ public class TransferTest {
 		assertTrue("Disk full error was not found in log", log.contains(LANG_DENIED));
 		log = log.substring(log.indexOf(LANG_DENIED) + LANG_DENIED.length());
 		assertTrue("packet type 3 not received in log", log.contains(LANG_PACKET_2));
-		assertTrue("Disk full error was not found in log", log.contains(LANG_DENIED));
+		assertTrue("Denied error was not found in log", log.contains(LANG_DENIED));
 	}
 	
 	@Test
