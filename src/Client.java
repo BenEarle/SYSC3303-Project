@@ -392,6 +392,7 @@ public class Client {
 				addrHost = new InetSocketAddress(serverIP, Var.PORT_CLIENT);
 				return;
 			} else {
+				//Timeout hit, destination unreachable
 				System.out.println("\tNo response from IP: " + serverIP
 						+ "\n\tPlease check connection or try a valid IP");
 			}
