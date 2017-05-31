@@ -109,7 +109,7 @@ public class Client {
 				break;
 			case ("ls"):
 			case ("dir"):
-				System.out.println("Current server directory: " + Var.CLIENT_ROOT);
+				System.out.println("Current client directory: " + Var.CLIENT_ROOT);
 				break;
 			case ("h"):
 			case ("help"):
