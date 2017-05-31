@@ -100,7 +100,7 @@ public class Client {
 				break;
 			case ("h"):
 			case ("help"):
-				System.out.println("Client: Available commands: read, write, verbose, test, help.");
+				System.out.println("Client: Available commands: read, write, verbose, test, help, ip.");
 				break;
 			default:
 				System.out.println("Client: Unrecognized command, type 'help' for a list of commands.");
