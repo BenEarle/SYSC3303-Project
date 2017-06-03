@@ -246,11 +246,11 @@ public class TFTPErrorHelper {
 			return;
 		}
 		
-		if (p.getLength() > 3) {
-			Log.err("Error packet type " + data[2] + " received:");
+		if (p.getLength() > 4) {
+			Log.err("Error packet type " + data[3] + " received:");
 			Log.err(new String(data, 3, p.getLength() - 3));
 		} else {
-			Log.err("Error packet type " + data[2] + " received, no attached message.");
+			Log.err("Error packet type " + data[3] + " received, no attached message.");
 		}
 	}
 	

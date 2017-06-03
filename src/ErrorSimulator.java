@@ -269,7 +269,7 @@ public class ErrorSimulator {
 		// Trigger an error for a RRQ packet
 		if( data[1]==Var.READ[1] && err.getPacketType()==ErrorScenario.READ_PACKET){
 			triggered = true;
-			Log.out("ErrorSimulatorChannel: READ Packet sabotaged with "+ErrorScenario.FAULT[err.getFaultType()]+" Fault");	
+			Log.out("ErrorSimulatorChannel: READ Packet sabotaged with "+ ErrorScenario.FAULT[err.getFaultType()]+" Fault");	
 		// Trigger an error for a WRQ packet
 		} else if( data[1]==Var.WRITE[1]  && err.getPacketType()==ErrorScenario.WRITE_PACKET){
 			triggered = true;
@@ -289,7 +289,8 @@ public class ErrorSimulator {
 		}
 		// Run error case if triggered
 		if(triggered){
-			if     ( err.getErrorCode()==1 ) packet = lose     (packet);
+			if 	   ( err.getErrorCode()==6 ) packet.setData(err.getNewData());
+			else if( err.getErrorCode()==1 ) packet = lose     (packet);
 			else if( err.getErrorCode()==2 ) packet = delay    (packet); 
 			else if( err.getErrorCode()==3 ) packet = duplicate(packet);	
 			else                             packet = sabotage (packet);	

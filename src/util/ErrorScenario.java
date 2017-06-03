@@ -18,7 +18,7 @@ public class ErrorScenario {
 	public static final int ACK_PACKET   = 4;
 	public static final int ERR_PACKET   = 5;
 
-	public static final String[] FAULT   = {"NONE","OPCODE","MODE","NULL","BLOCK","SIZE","SOURCE", "LOSS", "DELAY", "DUPLICATE", "ERRCODE"};
+	public static final String[] FAULT   = {"NONE","OPCODE","MODE","NULL","BLOCK","SIZE","SOURCE", "LOSS", "DELAY", "DUPLICATE", "ERRCODE", "CUSTOM"};
 	public static final int OPCODE_FAULT    = 1;
 	public static final int MODE_FAULT      = 2;
 	public static final int NULL_FAULT      = 3;
@@ -29,7 +29,7 @@ public class ErrorScenario {
 	public static final int DELAY_FAULT     = 8;
 	public static final int DUPLICATE_FAULT = 9;
 	public static final int ERRCODE_FAULT   = 10;
-	
+	public static final int CUSTOM_FAULT    = 11;
 	/*************************************************************************/
 	// Instance Variables
 	/*************************************************************************/
@@ -38,6 +38,7 @@ public class ErrorScenario {
 	private int faultType;
 	private int blockNum;
 	private int packetDelay;
+	private byte[] newData;
 	
 	private Scanner scanner;
 	
@@ -58,6 +59,9 @@ public class ErrorScenario {
 	}
 	public int getDelay(){
 		return packetDelay;
+	}
+	public byte[] getNewData(){
+		return newData;
 	}
 	/*************************************************************************/
 	// Constructor
@@ -91,7 +95,8 @@ public class ErrorScenario {
 			  + " [2] Delay Packet\n"
 			  + " [3] Duplicate Packet\n"
 			  + " [4] Illegal TFTP operation (CODE 4)\n"
-			  + " [5] Unknown transfer ID (CODE 5)"
+			  + " [5] Unknown transfer ID (CODE 5)\n"
+			  + " [6] Custom Error"
 			);
 			switch(scanner.next().trim()){
 				case "0": errorType = 0; break;
@@ -100,6 +105,7 @@ public class ErrorScenario {
 				case "3": errorType = 3; break;
 				case "4": errorType = 4; break;
 				case "5": errorType = 5; break;
+				case "6": errorType = 6; break;
 				default: Log.out("ERROR - Invalid Entry"); break;
 			}
 		}
@@ -117,7 +123,7 @@ public class ErrorScenario {
 			packetType = IRRELEVANT;
 		//-------------------------------------------------
 		// 1,2,3,4 - Multiple Cases
-		} else if(1 <= errorCode && errorCode <= 4){
+		} else if(1 <= errorCode && errorCode <= 4 || errorCode == 6){
 			while(packetType == UNDEFINED){
 				Log.out(
 					"Select a Message Type to Test:\n"
@@ -257,7 +263,21 @@ public class ErrorScenario {
 		} else if(errorCode == 5){
 			faultType = SOURCE_FAULT;
 		//-------------------------------------------------
-		} return faultType;
+		} else if (errorCode == 6){
+			System.out.println("Building Custom packet contents.");
+			System.out.println("Enter the data to be inserted into the packet. All numbers will be changed from 0x3X to 0x0X.");
+			scanner = new Scanner(System.in);
+			String temp = scanner.nextLine();
+			newData = temp.getBytes();
+			for(int i = 0; i < newData.length; i ++)
+				if(newData[i] >= '0' && newData[i] <= '9')
+					newData[i] -= '0';
+			System.out.println(Log.bBytes(newData));
+
+			faultType = CUSTOM_FAULT;
+		}
+		
+		return faultType;
 	}
 	
 	/*************************************************************************/
@@ -270,8 +290,8 @@ public class ErrorScenario {
 		if (errorCode == 0) {
 			blockNum = IRRELEVANT;
 		//-------------------------------------------------
-		// 1-5 - All Cases
-		} else if ( 1 <= errorCode && errorCode <= 5) {
+		// 1-6 - All Cases
+		} else if ( 1 <= errorCode && errorCode <= 6) {
 			if( packetType == READ_PACKET || packetType == WRITE_PACKET || packetType == ERR_PACKET) { 
 				blockNum = IRRELEVANT;
 			} else { // Block Number only relevant for ack and data packets 
