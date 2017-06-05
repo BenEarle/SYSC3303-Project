@@ -141,7 +141,10 @@ public class WriteThread extends ClientResponseThread {
 	}
 
 	private byte[] ackIncrement(byte[] data) {
-		if (data[3] == -1) {
+		if (data[3] == -1 && data[2] == -1){
+			data[2] = 0x00;
+			data[3] = 0x01;
+		} else if (data[3] == -1) {
 			data[2]++;
 			data[3] = 0x00;
 		} else {
