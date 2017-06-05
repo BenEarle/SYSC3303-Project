@@ -321,7 +321,7 @@ public class ErrorSimulator {
 			if(expAckBlk == 128) Log.out(""+getBlockNum(packet));
 			if(expDataBlk == getBlockNum(packet)){
 				if(expDataBlk == 65535){
-					expDataBlk = 0;
+					expDataBlk = 1;
 				} else {
 					expDataBlk++;
 				}
@@ -350,7 +350,7 @@ public class ErrorSimulator {
 			if(expAckBlk == getBlockNum(packet)){
 				if(expAckBlk == 65535){
 					rollOver++;
-					expAckBlk = 0;
+					expAckBlk = 1;
 				} else {
 					expAckBlk++;
 				}
