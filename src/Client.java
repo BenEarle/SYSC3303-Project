@@ -409,7 +409,7 @@ public class Client {
 	private void getServerIP() {
 		String serverIP = getUserInput("IP of Destination: ");
 		try {
-			if (InetAddress.getByName(serverIP).isReachable(100)){
+			if (InetAddress.getByName(serverIP).isReachable(Var.TIMEOUT)){
 				if (serverIP.equals("")) {
 					System.out.println("\tIP destination now: localHost");
 				} else {
