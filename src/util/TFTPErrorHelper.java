@@ -105,7 +105,7 @@ public class TFTPErrorHelper {
 	}
 
 	/**
-	 * checks indivdual characters for readable characters
+	 * checks individual characters for readable characters
 	 * 
 	 * @param ch
 	 * @return
@@ -221,9 +221,10 @@ public class TFTPErrorHelper {
 
 	public static void unPackError(DatagramPacket p) {
 		byte[] data = p.getData();
+		int length = p.getLength();
 		
 		// Check opCode.
-		if (p.getLength() < 2) {
+		if (length < 2) {
 			// Data not long enough.
 			Log.err("Invalid ERROR packet received, missing opCode");
 			return;
@@ -235,22 +236,32 @@ public class TFTPErrorHelper {
 		}
 		
 		// Check error code.
-		if (p.getLength() < 3) {
+		if (length < 4) {
 			// Data not long enough.
 			Log.err("Invalid ERROR packet received, missing error code");
 			return;
 		}
-		if (data[2] < 0 || data[2] > 6) {
+		int errorCode = data[2] * 256 + data[3];
+		if (errorCode < 0 || errorCode > 6) {
 			// Error code is incorrect.
-			Log.err("Invalid ERROR packet received, incorrect error code " + data[2]);
+			Log.err("Invalid ERROR packet received, incorrect error code " + errorCode);
 			return;
 		}
+
+		// Capture the message, if the buffer is overrun the packet is invalid.
+		int i = 4;
+		do {
+			if (i >= length) {
+				Log.err("Invalid ERROR packet received, missing end null character");
+				return;
+			}
+		} while (data[i++] != 0);
 		
-		if (p.getLength() > 4) {
-			Log.err("Error packet type " + data[3] + " received:");
-			Log.err(new String(data, 3, p.getLength() - 3));
+		if (5 != i) {
+			String errorMsg = new String(data, 4, i - 5);
+			Log.err("Error packet type " + errorCode + " received:\n" + errorMsg);
 		} else {
-			Log.err("Error packet type " + data[3] + " received, no attached message.");
+			Log.err("Error packet type " + errorCode + " received, no attached message.");
 		}
 	}
 	

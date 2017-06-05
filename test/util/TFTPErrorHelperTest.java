@@ -171,17 +171,22 @@ public class TFTPErrorHelperTest {
 	@Test
 	public void testErrorPacketChecker() {
 		// GOOD
-		errorPacketChecker(2, "testing a message", makePacket(Var.ERROR, new byte[] {2}, "testing a message".getBytes()));
-		errorPacketChecker(6, "hi there", makePacket(Var.ERROR, new byte[] {6}, "hi there".getBytes()));
-		errorPacketChecker(0, null, makePacket(Var.ERROR, new byte[] {0}));
+		errorPacketChecker(2, "testing a message", makePacket(Var.ERROR, new byte[] {0, 2}, "testing a message".getBytes(), Var.ZERO));
+		errorPacketChecker(6, "hi there", makePacket(Var.ERROR, new byte[] {0, 6}, "hi there".getBytes(), Var.ZERO));
+		errorPacketChecker(0, null, makePacket(Var.ERROR, new byte[] {0, 0}, Var.ZERO));
 		
 		// BAD
 		errorPacketChecker(null, "Invalid ERROR packet received, missing opCode", makePacket());
 		errorPacketChecker(null, "Invalid ERROR packet received, incorrect opCode " + Var.WRITE[0] + "" + Var.WRITE[1], makePacket(Var.WRITE));
 
 		errorPacketChecker(null, "Invalid ERROR packet received, missing error code", makePacket(Var.ERROR));
-		errorPacketChecker(null, "Invalid ERROR packet received, incorrect error code 7", makePacket(Var.ERROR, new byte[] {7}));
-		errorPacketChecker(null, "Invalid ERROR packet received, incorrect error code -1", makePacket(Var.ERROR, new byte[] {-1}));
+		errorPacketChecker(null, "Invalid ERROR packet received, missing error code", makePacket(Var.ERROR, Var.ZERO));
+		errorPacketChecker(null, "Invalid ERROR packet received, incorrect error code 7", makePacket(Var.ERROR, new byte[] {0, 7}));
+		errorPacketChecker(null, "Invalid ERROR packet received, incorrect error code -1", makePacket(Var.ERROR, new byte[] {0, -1}));
+
+		errorPacketChecker(null, "Invalid ERROR packet received, missing end null character", makePacket(Var.ERROR, new byte[] {0, 2}));
+		errorPacketChecker(null, "Invalid ERROR packet received, missing end null character", makePacket(Var.ERROR, new byte[] {0, 0}));
+		errorPacketChecker(null, "Invalid ERROR packet received, missing end null character", makePacket(Var.ERROR, new byte[] {0, 3}, "test".getBytes()));
 	}
 
 	public void errorPacketChecker(Integer expectedError, String expectedMsg, DatagramPacket p) {
